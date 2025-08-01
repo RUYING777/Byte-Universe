@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虫洞穿透传输器2.0 - 操作文档</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff7e5f;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 0 0 0 6px;
+        }
+        
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: -1px;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background: white;
+            border-bottom: 1px solid white;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .note {
+            background: #e7f5ff;
+            border-left: 4px solid var(--info-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .warning {
+            background: #fff3bf;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .success {
+            background: #ebfbee;
+            border-left: 4px solid var(--success-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .danger {
+            background: #fff5f5;
+            border-left: 4px solid var(--danger-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .feature-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .feature-item h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>虫洞穿透传输器2.0</h1>
+            <p>跨平台文件传输与云存储解决方案</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section id="introduction">
+            <div class="card">
+                <h2>简介</h2>
+                <p>虫洞穿透传输器2.0是一款基于Python Flask的轻量级文件传输服务器，提供简单易用的界面和强大的API，可以将您的计算机变成个人云存储服务器。</p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>多协议支持</h4>
+                        <p>支持HTTP协议上传、下载、查看和删除文件，兼容各种编程语言。</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>跨平台</h4>
+                        <p>可在Windows、macOS和Linux系统上运行，无需复杂配置。</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>大文件支持</h4>
+                        <p>无文件大小限制，支持超大文件传输。</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>文件夹传输</h4>
+                        <p>支持整个文件夹的压缩上传和解压保存。</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>文本编辑</h4>
+                        <p>内置文本文件编辑器，可直接在界面中编辑文件内容。</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>磁盘管理</h4>
+                        <p>自动选择剩余空间最多的磁盘，实时显示磁盘使用情况。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="quick-start">
+            <div class="card">
+                <h2>快速开始</h2>
+                
+                <h3>1. 启动服务器</h3>
+                <p>运行程序后，服务器会自动启动，界面显示如下信息：</p>
+                <ul>
+                    <li>监听地址：服务器的IP地址（自动获取）</li>
+                    <li>端口号：自动选择的可用端口（通常为5000-6000之间的端口）</li>
+                    <li>保存目录：自动选择的磁盘空间最大的目录下的"server_data"文件夹</li>
+                </ul>
+                
+                <div class="note">
+                    <p><strong>注意：</strong> 如需更改这些设置，可以在界面中修改后重新启动程序。</p>
+                </div>
+                
+                <h3>2. 访问服务器</h3>
+                <p>服务器启动后，可以通过以下方式访问：</p>
+                <ul>
+                    <li>同一局域网内的设备：使用服务器显示的IP地址和端口</li>
+                    <li>本机访问：使用<code>http://localhost:端口号</code>或<code>http://127.0.0.1:端口号</code></li>
+                </ul>
+                
+                <div class="warning">
+                    <p><strong>安全提示：</strong> 默认情况下，服务器会监听所有网络接口(0.0.0.0)，这意味着同一局域网内的其他设备也可以访问。如果仅限本机使用，请将监听地址改为127.0.0.1。</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="api-documentation">
+            <div class="card">
+                <h2>API文档</h2>
+                <p>虫洞穿透传输器提供以下API端点，支持各种文件操作：</p>
+                
+                <h3>1. 上传文件</h3>
+                <p><strong>Endpoint:</strong> <code>POST /upload</code></p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>data_type</code>: 数据类型，可以是"file"(默认)、"text"或"folder"</li>
+                    <li>对于文件上传: <code>file</code> (表单文件字段)</li>
+                    <li>对于文本上传: <code>content</code> (文本内容) 和 <code>filename</code> (可选文件名)</li>
+                    <li>对于文件夹上传: <code>file</code> (zip格式的文件夹) 和 <code>original_folder_name</code> (原始文件夹名)</li>
+                </ul>
+                
+                <h3>2. 下载文件</h3>
+                <p><strong>Endpoint:</strong> <code>GET /download</code></p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 相对于保存目录的文件路径</li>
+                </ul>
+                
+                <h3>3. 查看文件内容</h3>
+                <p><strong>Endpoint:</strong> <code>GET /view/&lt;path:filename&gt;</code></p>
+                <p>直接返回文件内容而不是下载，适用于文本、图片等文件。</p>
+                
+                <h3>4. 删除文件</h3>
+                <p><strong>Endpoint:</strong> <code>POST /delete</code></p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 相对于保存目录的文件路径</li>
+                </ul>
+                
+                <h3>5. 更新文件内容</h3>
+                <p><strong>Endpoint:</strong> <code>POST /update_file</code></p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 相对于保存目录的文件路径</li>
+                    <li><code>content</code>: 新的文件内容</li>
+                </ul>
+                
+                <h3>6. 列出文件</h3>
+                <p><strong>Endpoint:</strong> <code>GET /list_files</code></p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 相对于保存目录的路径(可选，默认为根目录)</li>
+                </ul>
+                
+                <div class="success">
+                    <p><strong>提示：</strong> 所有API都返回JSON格式的响应，包含<code>status</code>(success/error)和<code>message</code>字段。</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="code-examples">
+            <div class="card">
+                <h2>代码示例</h2>
+                <p>以下是如何使用不同编程语言与虫洞穿透传输器API交互的示例代码。</p>
+                
+                <div class="tab-container">
+                    <div class="tab active" onclick="switchTab('python')">Python</div>
+                    <div class="tab" onclick="switchTab('javascript')">JavaScript</div>
+                    <div class="tab" onclick="switchTab('java')">Java</div>
+                    <div class="tab" onclick="switchTab('cpp')">C++</div>
+                    <div class="tab" onclick="switchTab('go')">Go</div>
+                    <div class="tab" onclick="switchTab('php')">PHP</div>
+                    <div class="tab" onclick="switchTab('ruby')">Ruby</div>
+                </div>
+                
+                <div id="python" class="tab-content active">
+                    <h3>Python 示例</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="python">
+                        import requests
+
+                        url = "http://服务器IP:端口/upload"
+                        file_path = "/path/to/your/file.txt"
+                        
+                        with open(file_path, 'rb') as f:
+                            files = {'file': (file_path.split('/')[-1], f)}
+                            response = requests.post(url, files=files)
+                        
+                        print(response.json())
+                    </div>
+                    
+                    <h4>2. 上传文本</h4>
+                    <div class="code-block" data-lang="python">
+                        import requests
+
+                        url = "http://服务器IP:端口/upload"
+                        data = {
+                            'data_type': 'text',
+                            'content': '这是一段要保存的文本内容',
+                            'filename': 'my_text_file.txt'  # 可选
+                        }
+                        
+                        response = requests.post(url, data=data)
+                        print(response.json())
+                    </div>
+                    
+                    <h4>3. 下载文件</h4>
+                    <div class="code-block" data-lang="python">
+                        import requests
+
+                        url = "http://服务器IP:端口/download"
+                        params = {'path': 'relative/path/from/save/dir/file.txt'}
+                        
+                        response = requests.get(url, params=params)
+                        
+                        if response.status_code == 200:
+                            with open('local_copy.txt', 'wb') as f:
+                                f.write(response.content)
+                            print("文件下载成功")
+                        else:
+                            print("下载失败:", response.json())
+                    </div>
+                    
+                    <h4>4. 查看文件内容</h4>
+                    <div class="code-block" data-lang="python">
+                        import requests
+
+                        url = "http://服务器IP:端口/view/relative/path/from/save/dir/file.txt"
+                        
+                        response = requests.get(url)
+                        print(response.text)  # 直接获取文件内容
+                    </div>
+                    
+                    <h4>5. 删除文件</h4>
+                    <div class="code-block" data-lang="python">
+                        import requests
+
+                        url = "http://服务器IP:端口/delete"
+                        data = {'path': 'relative/path/from/save/dir/file_to_delete.txt'}
+                        
+                        response = requests.post(url, data=data)
+                        print(response.json())
+                    </div>
+                </div>
+                
+                <div id="javascript" class="tab-content">
+                    <h3>JavaScript 示例</h3>
+                    
+                    <h4>1. 上传文件 (浏览器环境)</h4>
+                    <div class="code-block" data-lang="javascript">
+                        async function uploadFile(file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            try {
+                                const response = await fetch('http://服务器IP:端口/upload', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                
+                                const result = await response.json();
+                                console.log(result);
+                            } catch (error) {
+                                console.error('上传失败:', error);
+                            }
+                        }
+                        
+                        // 使用示例
+                        const fileInput = document.getElementById('fileInput');
+                        fileInput.addEventListener('change', (e) => {
+                            uploadFile(e.target.files[0]);
+                        });
+                    </div>
+                    
+                    <h4>2. 上传文本 (Node.js环境)</h4>
+                    <div class="code-block" data-lang="javascript">
+                        const axios = require('axios');
+                        
+                        async function uploadText() {
+                            try {
+                                const response = await axios.post('http://服务器IP:端口/upload', {
+                                    data_type: 'text',
+                                    content: '这是要保存的文本内容',
+                                    filename: 'my_text_file.txt'
+                                });
+                                
+                                console.log(response.data);
+                            } catch (error) {
+                                console.error('上传失败:', error.response?.data || error.message);
+                            }
+                        }
+                        
+                        uploadText();
+                    </div>
+                    
+                    <h4>3. 下载文件 (Node.js环境)</h4>
+                    <div class="code-block" data-lang="javascript">
+                        const axios = require('axios');
+                        const fs = require('fs');
+                        
+                        async function downloadFile() {
+                            try {
+                                const response = await axios.get('http://服务器IP:端口/download', {
+                                    params: { path: 'relative/path/to/file.txt' },
+                                    responseType: 'stream'
+                                });
+                                
+                                const writer = fs.createWriteStream('local_copy.txt');
+                                response.data.pipe(writer);
+                                
+                                return new Promise((resolve, reject) => {
+                                    writer.on('finish', resolve);
+                                    writer.on('error', reject);
+                                });
+                                
+                            } catch (error) {
+                                console.error('下载失败:', error.response?.data || error.message);
+                            }
+                        }
+                        
+                        downloadFile().then(() => console.log('文件下载完成'));
+                    </div>
+                    
+                    <h4>4. 查看文件内容 (浏览器环境)</h4>
+                    <div class="code-block" data-lang="javascript">
+                        async function viewFile() {
+                            try {
+                                const response = await fetch('http://服务器IP:端口/view/relative/path/to/file.txt');
+                                if (response.ok) {
+                                    const content = await response.text();
+                                    console.log(content);
+                                } else {
+                                    const error = await response.json();
+                                    console.error('查看失败:', error);
+                                }
+                            } catch (error) {
+                                console.error('请求失败:', error);
+                            }
+                        }
+                        
+                        viewFile();
+                    </div>
+                </div>
+                
+                <div id="java" class="tab-content">
+                    <h3>Java 示例</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="java">
+                        import java.io.*;
+                        import java.net.*;
+                        import org.apache.http.HttpEntity;
+                        import org.apache.http.client.methods.CloseableHttpResponse;
+                        import org.apache.http.client.methods.HttpPost;
+                        import org.apache.http.entity.ContentType;
+                        import org.apache.http.entity.mime.MultipartEntityBuilder;
+                        import org.apache.http.impl.client.CloseableHttpClient;
+                        import org.apache.http.impl.client.HttpClients;
+                        import org.apache.http.util.EntityUtils;
+                        
+                        public class FileUploader {
+                            public static void main(String[] args) throws IOException {
+                                CloseableHttpClient httpClient = HttpClients.createDefault();
+                                HttpPost uploadFile = new HttpPost("http://服务器IP:端口/upload");
+                                
+                                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                                builder.addBinaryBody(
+                                    "file",
+                                    new File("/path/to/your/file.txt"),
+                                    ContentType.APPLICATION_OCTET_STREAM,
+                                    "file.txt"
+                                );
+                                
+                                HttpEntity multipart = builder.build();
+                                uploadFile.setEntity(multipart);
+                                
+                                CloseableHttpResponse response = httpClient.execute(uploadFile);
+                                HttpEntity responseEntity = response.getEntity();
+                                
+                                System.out.println(EntityUtils.toString(responseEntity));
+                                httpClient.close();
+                            }
+                        }
+                    </div>
+                    
+                    <h4>2. 上传文本</h4>
+                    <div class="code-block" data-lang="java">
+                        import java.io.*;
+                        import java.net.*;
+                        import org.apache.http.HttpEntity;
+                        import org.apache.http.client.methods.CloseableHttpResponse;
+                        import org.apache.http.client.methods.HttpPost;
+                        import org.apache.http.entity.StringEntity;
+                        import org.apache.http.impl.client.CloseableHttpClient;
+                        import org.apache.http.impl.client.HttpClients;
+                        import org.apache.http.util.EntityUtils;
+                        
+                        public class TextUploader {
+                            public static void main(String[] args) throws IOException {
+                                CloseableHttpClient httpClient = HttpClients.createDefault();
+                                HttpPost uploadText = new HttpPost("http://服务器IP:端口/upload");
+                                
+                                StringEntity params = new StringEntity(
+                                    "data_type=text&content=这是要保存的文本内容&filename=my_text_file.txt",
+                                    "UTF-8"
+                                );
+                                params.setContentType("application/x-www-form-urlencoded");
+                                uploadText.setEntity(params);
+                                
+                                CloseableHttpResponse response = httpClient.execute(uploadText);
+                                HttpEntity responseEntity = response.getEntity();
+                                
+                                System.out.println(EntityUtils.toString(responseEntity));
+                                httpClient.close();
+                            }
+                        }
+                    </div>
+                    
+                    <h4>3. 下载文件</h4>
+                    <div class="code-block" data-lang="java">
+                        import java.io.*;
+                        import java.net.*;
+                        
+                        public class FileDownloader {
+                            public static void main(String[] args) {
+                                try {
+                                    URL url = new URL("http://服务器IP:端口/download?path=relative/path/to/file.txt");
+                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                    connection.setRequestMethod("GET");
+                                    
+                                    int responseCode = connection.getResponseCode();
+                                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                                        InputStream inputStream = connection.getInputStream();
+                                        FileOutputStream outputStream = new FileOutputStream("local_copy.txt");
+                                        
+                                        byte[] buffer = new byte[4096];
+                                        int bytesRead;
+                                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                            outputStream.write(buffer, 0, bytesRead);
+                                        }
+                                        
+                                        outputStream.close();
+                                        inputStream.close();
+                                        System.out.println("文件下载成功");
+                                    } else {
+                                        System.out.println("下载失败，响应码: " + responseCode);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+                
+                <div id="cpp" class="tab-content">
+                    <h3>C++ 示例 (使用 cURL)</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="cpp">
+                        #include <iostream>
+                        #include <curl/curl.h>
+                        
+                        int main() {
+                            CURL *curl;
+                            CURLcode res;
+                            
+                            curl_global_init(CURL_GLOBAL_ALL);
+                            curl = curl_easy_init();
+                            
+                            if(curl) {
+                                struct curl_httppost *formpost = NULL;
+                                struct curl_httppost *lastptr = NULL;
+                                
+                                // 添加文件字段
+                                curl_formadd(&formpost, &lastptr,
+                                    CURLFORM_COPYNAME, "file",
+                                    CURLFORM_FILE, "/path/to/your/file.txt",
+                                    CURLFORM_END);
+                                
+                                curl_easy_setopt(curl, CURLOPT_URL, "http://服务器IP:端口/upload");
+                                curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+                                
+                                // 执行请求
+                                res = curl_easy_perform(curl);
+                                if(res != CURLE_OK) {
+                                    std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+                                }
+                                
+                                // 清理
+                                curl_formfree(formpost);
+                                curl_easy_cleanup(curl);
+                            }
+                            
+                            curl_global_cleanup();
+                            return 0;
+                        }
+                    </div>
+                    
+                    <h4>2. 下载文件</h4>
+                    <div class="code-block" data-lang="cpp">
+                        #include <iostream>
+                        #include <fstream>
+                        #include <curl/curl.h>
+                        
+                        // 回调函数，用于写入数据到文件
+                        static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
+                            size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
+                            return written;
+                        }
+                        
+                        int main() {
+                            CURL *curl;
+                            FILE *fp;
+                            CURLcode res;
+                            
+                            curl_global_init(CURL_GLOBAL_ALL);
+                            curl = curl_easy_init();
+                            
+                            if(curl) {
+                                std::string url = "http://服务器IP:端口/download?path=relative/path/to/file.txt";
+                                fp = fopen("local_copy.txt", "wb");
+                                
+                                curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+                                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+                                curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+                                
+                                // 执行请求
+                                res = curl_easy_perform(curl);
+                                if(res != CURLE_OK) {
+                                    std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+                                }
+                                
+                                // 清理
+                                fclose(fp);
+                                curl_easy_cleanup(curl);
+                            }
+                            
+                            curl_global_cleanup();
+                            return 0;
+                        }
+                    </div>
+                </div>
+                
+                <div id="go" class="tab-content">
+                    <h3>Go 示例</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="go">
+                        package main
+                        
+                        import (
+                            "bytes"
+                            "fmt"
+                            "io"
+                            "mime/multipart"
+                            "net/http"
+                            "os"
+                        )
+                        
+                        func main() {
+                            // 打开文件
+                            file, err := os.Open("/path/to/your/file.txt")
+                            if err != nil {
+                                fmt.Println("打开文件失败:", err)
+                                return
+                            }
+                            defer file.Close()
+                            
+                            // 创建multipart表单
+                            body := &bytes.Buffer{}
+                            writer := multipart.NewWriter(body)
+                            part, err := writer.CreateFormFile("file", "file.txt")
+                            if err != nil {
+                                fmt.Println("创建表单文件失败:", err)
+                                return
+                            }
+                            
+                            _, err = io.Copy(part, file)
+                            if err != nil {
+                                fmt.Println("复制文件内容失败:", err)
+                                return
+                            }
+                            
+                            writer.Close()
+                            
+                            // 创建请求
+                            req, err := http.NewRequest("POST", "http://服务器IP:端口/upload", body)
+                            if err != nil {
+                                fmt.Println("创建请求失败:", err)
+                                return
+                            }
+                            
+                            req.Header.Set("Content-Type", writer.FormDataContentType())
+                            
+                            // 发送请求
+                            client := &http.Client{}
+                            resp, err := client.Do(req)
+                            if err != nil {
+                                fmt.Println("发送请求失败:", err)
+                                return
+                            }
+                            defer resp.Body.Close()
+                            
+                            // 读取响应
+                            respBody, err := io.ReadAll(resp.Body)
+                            if err != nil {
+                                fmt.Println("读取响应失败:", err)
+                                return
+                            }
+                            
+                            fmt.Println(string(respBody))
+                        }
+                    </div>
+                    
+                    <h4>2. 下载文件</h4>
+                    <div class="code-block" data-lang="go">
+                        package main
+                        
+                        import (
+                            "fmt"
+                            "io"
+                            "net/http"
+                            "os"
+                        )
+                        
+                        func main() {
+                            // 创建请求
+                            url := "http://服务器IP:端口/download?path=relative/path/to/file.txt"
+                            resp, err := http.Get(url)
+                            if err != nil {
+                                fmt.Println("请求失败:", err)
+                                return
+                            }
+                            defer resp.Body.Close()
+                            
+                            // 创建本地文件
+                            out, err := os.Create("local_copy.txt")
+                            if err != nil {
+                                fmt.Println("创建文件失败:", err)
+                                return
+                            }
+                            defer out.Close()
+                            
+                            // 复制内容到文件
+                            _, err = io.Copy(out, resp.Body)
+                            if err != nil {
+                                fmt.Println("保存文件失败:", err)
+                                return
+                            }
+                            
+                            fmt.Println("文件下载成功")
+                        }
+                    </div>
+                    
+                    <h4>3. 查看文件内容</h4>
+                    <div class="code-block" data-lang="go">
+                        package main
+                        
+                        import (
+                            "fmt"
+                            "io"
+                            "net/http"
+                        )
+                        
+                        func main() {
+                            url := "http://服务器IP:端口/view/relative/path/to/file.txt"
+                            resp, err := http.Get(url)
+                            if err != nil {
+                                fmt.Println("请求失败:", err)
+                                return
+                            }
+                            defer resp.Body.Close()
+                            
+                            content, err := io.ReadAll(resp.Body)
+                            if err != nil {
+                                fmt.Println("读取内容失败:", err)
+                                return
+                            }
+                            
+                            fmt.Println(string(content))
+                        }
+                    </div>
+                </div>
+                
+                <div id="php" class="tab-content">
+                    <h3>PHP 示例</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="php">
+                        <?php
+                        $url = 'http://服务器IP:端口/upload';
+                        $file_path = '/path/to/your/file.txt';
+                        
+                        $post_data = [
+                            'file' => new CURLFile($file_path)
+                        ];
+                        
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $url);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        
+                        $response = curl_exec($ch);
+                        if (curl_errno($ch)) {
+                            echo 'Error:' . curl_error($ch);
+                        } else {
+                            echo $response;
+                        }
+                        
+                        curl_close($ch);
+                        ?>
+                    </div>
+                    
+                    <h4>2. 上传文本</h4>
+                    <div class="code-block" data-lang="php">
+                        <?php
+                        $url = 'http://服务器IP:端口/upload';
+                        $data = [
+                            'data_type' => 'text',
+                            'content' => '这是要保存的文本内容',
+                            'filename' => 'my_text_file.txt'
+                        ];
+                        
+                        $options = [
+                            'http' => [
+                                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                                'method' => 'POST',
+                                'content' => http_build_query($data)
+                            ]
+                        ];
+                        
+                        $context = stream_context_create($options);
+                        $response = file_get_contents($url, false, $context);
+                        
+                        echo $response;
+                        ?>
+                    </div>
+                    
+                    <h4>3. 下载文件</h4>
+                    <div class="code-block" data-lang="php">
+                        <?php
+                        $url = 'http://服务器IP:端口/download?path=relative/path/to/file.txt';
+                        $local_file = 'local_copy.txt';
+                        
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                        
+                        $data = curl_exec($ch);
+                        if (curl_errno($ch)) {
+                            echo 'Error:' . curl_error($ch);
+                        } else {
+                            file_put_contents($local_file, $data);
+                            echo '文件下载成功';
+                        }
+                        
+                        curl_close($ch);
+                        ?>
+                    </div>
+                </div>
+                
+                <div id="ruby" class="tab-content">
+                    <h3>Ruby 示例</h3>
+                    
+                    <h4>1. 上传文件</h4>
+                    <div class="code-block" data-lang="ruby">
+                        require 'net/http'
+                        require 'uri'
+                        
+                        url = URI.parse('http://服务器IP:端口/upload')
+                        file_path = '/path/to/your/file.txt'
+                        
+                        # 创建multipart请求
+                        boundary = "----WebKitFormBoundary#{Time.now.to_i}"
+                        
+                        post_body = []
+                        post_body << "--#{boundary}\r\n"
+                        post_body << "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.basename(file_path)}\"\r\n"
+                        post_body << "Content-Type: text/plain\r\n\r\n"
+                        post_body << File.read(file_path)
+                        post_body << "\r\n--#{boundary}--\r\n"
+                        
+                        http = Net::HTTP.new(url.host, url.port)
+                        request = Net::HTTP::Post.new(url.path)
+                        request.body = post_body.join
+                        request['Content-Type'] = "multipart/form-data; boundary=#{boundary}"
+                        
+                        response = http.request(request)
+                        puts response.body
+                    </div>
+                    
+                    <h4>2. 下载文件</h4>
+                    <div class="code-block" data-lang="ruby">
+                        require 'net/http'
+                        require 'uri'
+                        
+                        url = URI.parse('http://服务器IP:端口/download?path=relative/path/to/file.txt')
+                        
+                        http = Net::HTTP.new(url.host, url.port)
+                        request = Net::HTTP::Get.new(url.request_uri)
+                        
+                        response = http.request(request)
+                        
+                        if response.code == '200'
+                            File.open('local_copy.txt', 'wb') do |file|
+                                file.write(response.body)
+                            end
+                            puts '文件下载成功'
+                        else
+                            puts "下载失败: #{response.code} #{response.message}"
+                        end
+                    </div>
+                    
+                    <h4>3. 查看文件内容</h4>
+                    <div class="code-block" data-lang="ruby">
+                        require 'net/http'
+                        require 'uri'
+                        
+                        url = URI.parse('http://服务器IP:端口/view/relative/path/to/file.txt')
+                        
+                        http = Net::HTTP.new(url.host, url.port)
+                        request = Net::HTTP::Get.new(url.request_uri)
+                        
+                        response = http.request(request)
+                        puts response.body
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="advanced-usage">
+            <div class="card">
+                <h2>高级用法</h2>
+                
+                <h3>1. 文件夹上传</h3>
+                <p>虫洞穿透传输器支持整个文件夹的上传，客户端需要先将文件夹压缩为ZIP格式再上传。</p>
+                
+                <div class="code-block" data-lang="python">
+                    import requests
+                    import zipfile
+                    import os
+                    
+                    def upload_folder(folder_path, server_url):
+                        # 创建临时zip文件
+                        zip_path = f"{folder_path}.zip"
+                        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                            for root, dirs, files in os.walk(folder_path):
+                                for file in files:
+                                    file_path = os.path.join(root, file)
+                                    arcname = os.path.relpath(file_path, start=folder_path)
+                                    zipf.write(file_path, arcname)
+                        
+                        # 上传zip文件
+                        with open(zip_path, 'rb') as f:
+                            files = {'file': (os.path.basename(zip_path), f)}
+                            data = {
+                                'data_type': 'folder',
+                                'original_folder_name': os.path.basename(folder_path)
+                            }
+                            response = requests.post(server_url, files=files, data=data)
+                        
+                        # 删除临时zip文件
+                        os.remove(zip_path)
+                        return response.json()
+                    
+                    # 使用示例
+                    result = upload_folder("/path/to/your/folder", "http://服务器IP:端口/upload")
+                    print(result)
+                </div>
+                
+                <h3>2. 大文件分块上传</h3>
+                <p>对于超大文件，可以实现分块上传以提高可靠性和效率。</p>
+                
+                <div class="code-block" data-lang="python">
+                    import requests
+                    import os
+                    
+                    def chunk_upload(file_path, server_url, chunk_size=10*1024*1024):  # 10MB每块
+                        file_size = os.path.getsize(file_path)
+                        chunks = (file_size + chunk_size - 1) // chunk_size
+                        file_name = os.path.basename(file_path)
+                        
+                        with open(file_path, 'rb') as f:
+                            for i in range(chunks):
+                                offset = i * chunk_size
+                                f.seek(offset)
+                                data = f.read(chunk_size)
+                                
+                                files = {
+                                    'file': (file_name, data),
+                                    'chunk_index': str(i),
+                                    'total_chunks': str(chunks),
+                                    'original_filename': file_name
+                                }
+                                
+                                response = requests.post(server_url, files=files)
+                                print(f"上传块 {i+1}/{chunks}: {response.json()}")
+                        
+                        return response.json()
+                    
+                    # 使用示例
+                    result = chunk_upload("/path/to/large/file.iso", "http://服务器IP:端口/upload")
+                    print(result)
+                </div>
+                
+                <div class="note">
+                    <p><strong>注意：</strong> 分块上传需要在服务器端实现相应的合并逻辑，当前版本的虫洞穿透传输器不直接支持分块上传，需要自行扩展。</p>
+                </div>
+                
+                <h3>3. 断点续传</h3>
+                <p>对于下载大文件，可以实现断点续传功能。</p>
+                
+                <div class="code-block" data-lang="python">
+                    import requests
+                    import os
+                    
+                    def resume_download(url, save_path):
+                        # 检查已下载部分
+                        downloaded = 0
+                        if os.path.exists(save_path):
+                            downloaded = os.path.getsize(save_path)
+                        
+                        headers = {'Range': f'bytes={downloaded}-'} if downloaded else None
+                        
+                        with requests.get(url, headers=headers, stream=True) as r:
+                            r.raise_for_status()
+                            mode = 'ab' if downloaded else 'wb'
+                            
+                            with open(save_path, mode) as f:
+                                for chunk in r.iter_content(chunk_size=8192):
+                                    if chunk:  # 过滤掉keep-alive的chunk
+                                        f.write(chunk)
+                                        f.flush()
+                    
+                    # 使用示例
+                    url = "http://服务器IP:端口/download?path=relative/path/to/large_file.iso"
+                    resume_download(url, "local_copy.iso")
+                </div>
+            </div>
+        </section>
+        
+        <section id="troubleshooting">
+            <div class="card">
+                <h2>故障排除</h2>
+                
+                <h3>常见问题</h3>
+                
+                <div class="danger">
+                    <h4>1. 服务器无法启动</h4>
+                    <p><strong>可能原因：</strong> 端口被占用</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>尝试更改端口号</li>
+                        <li>检查是否有其他程序占用了相同端口</li>
+                        <li>在命令行中运行 <code>netstat -ano | findstr "端口号"</code> (Windows) 或 <code>lsof -i :端口号</code> (macOS/Linux) 查看端口占用情况</li>
+                    </ul>
+                </div>
+                
+                <div class="warning">
+                    <h4>2. 无法从其他设备访问</h4>
+                    <p><strong>可能原因：</strong></p>
+                    <ul>
+                        <li>防火墙阻止了端口访问</li>
+                        <li>路由器未正确配置</li>
+                        <li>服务器绑定到了127.0.0.1而不是0.0.0.0</li>
+                    </ul>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>检查防火墙设置，确保端口已开放</li>
+                        <li>确保服务器监听地址设置为0.0.0.0</li>
+                        <li>如果是跨网络访问，可能需要配置路由器端口转发</li>
+                    </ul>
+                </div>
+                
+                <div class="note">
+                    <h4>3. 上传大文件失败</h4>
+                    <p><strong>可能原因：</strong> 网络不稳定或超时</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>尝试减小上传的文件大小</li>
+                        <li>实现分块上传功能</li>
+                        <li>检查网络连接稳定性</li>
+                    </ul>
+                </div>
+                
+                <div class="success">
+                    <h4>4. 文件权限问题</h4>
+                    <p><strong>可能原因：</strong> 服务器没有足够的权限访问指定目录</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>确保保存目录有读写权限</li>
+                        <li>在Linux/macOS上，可能需要使用<code>chmod</code>更改权限</li>
+                        <li>避免使用系统保护目录作为保存目录</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>虫洞穿透传输器2.0 - 版权所有 © 2023</p>
+            <p>文档最后更新: 2023-11-15</p>
+        </div>
+    </footer>
+    
+    <script>
+        function switchTab(tabId) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 取消所有标签的活动状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的内容
+            document.getElementById(tabId).classList.add('active');
+            
+            // 设置选中标签的活动状态
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

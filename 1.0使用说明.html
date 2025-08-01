@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虫洞传输器 - 操作文档</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff7e5f;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1rem 0;
+        }
+        
+        .code-tab {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #e9ecef;
+            border-radius: 4px 4px 0 0;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .code-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .screenshot {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+        }
+        
+        .note {
+            background: #e7f5ff;
+            border-left: 4px solid var(--info-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .warning {
+            background: #fff3bf;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .danger {
+            background: #ffe3e3;
+            border-left: 4px solid var(--danger-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .success {
+            background: #ebfbee;
+            border-left: 4px solid var(--success-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            color: #6c757d;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>虫洞传输器</h1>
+            <div class="subtitle">跨平台文件传输与数据共享解决方案</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section id="introduction">
+            <div class="card">
+                <h2>产品介绍</h2>
+                <p>虫洞传输器是一款基于Flask和Python的轻量级文件传输工具，提供简洁的图形用户界面，能够快速搭建本地文件服务器，实现跨设备、跨平台的文件共享和数据传输。</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📁</div>
+                        <h3>文件传输</h3>
+                        <p>支持上传、下载各种类型的文件，包括文档、图片、视频、压缩包等，无大小限制。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <h3>文本共享</h3>
+                        <p>可直接传输文本内容，自动保存为文本文件，适合代码片段、配置信息等快速共享。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📂</div>
+                        <h3>文件夹同步</h3>
+                        <p>完整目录结构打包传输，保持原始文件夹层级关系。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3>文件管理</h3>
+                        <p>内置文件浏览器，支持查看、删除、编辑服务器上的文件。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚙️</div>
+                        <h3>自动配置</h3>
+                        <p>自动检测最佳存储位置、可用端口和本地IP地址，减少手动配置。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <h3>跨平台</h3>
+                        <p>支持任何能发送HTTP请求的设备访问，包括PC、手机、平板等。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="quick-start">
+            <div class="card">
+                <h2>快速开始</h2>
+                
+                <h3>1. 启动应用程序</h3>
+                <p>双击运行虫洞传输器应用程序，程序将自动启动并显示主界面。</p>
+                
+                <div class="note">
+                    <p><strong>注意：</strong>首次运行时，程序会自动选择剩余空间最大的磁盘分区作为默认存储位置，并自动检测可用的端口号和本机IP地址。</p>
+                </div>
+                
+                <h3>2. 配置服务器</h3>
+                <p>主界面包含以下配置选项：</p>
+                <ul>
+                    <li><strong>监听地址：</strong>默认显示本机IP地址，可手动修改</li>
+                    <li><strong>端口号：</strong>默认自动选择5000-6000范围内的可用端口</li>
+                    <li><strong>保存目录：</strong>默认选择剩余空间最大的磁盘分区下的"server_data"文件夹</li>
+                </ul>
+                
+                <h3>3. 启动服务器</h3>
+                <p>程序会自动启动服务器，状态栏显示"服务器运行中..."表示启动成功。</p>
+                
+                <div class="success">
+                    <p><strong>提示：</strong>服务器启动后，您可以通过其他设备访问 <code>http://[监听地址]:[端口号]</code> 来使用各项功能。</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="interface-guide">
+            <div class="card">
+                <h2>界面功能详解</h2>
+                
+                <h3>1. 服务器配置面板</h3>
+                <p>位于界面顶部，包含以下功能：</p>
+                <ul>
+                    <li><strong>获取本机IP：</strong>点击按钮重新检测本机IP地址</li>
+                    <li><strong>获取可用端口：</strong>点击按钮重新扫描可用端口</li>
+                    <li><strong>浏览...：</strong>选择文件保存目录</li>
+                    <li><strong>查看磁盘信息：</strong>显示所有磁盘分区的空间使用情况</li>
+                </ul>
+                
+                <h3>2. 下载文件面板</h3>
+                <p>提供生成文件下载链接的功能：</p>
+                <ul>
+                    <li>在"文件路径"输入框中输入或选择要下载的文件</li>
+                    <li>点击"生成下载链接"按钮创建下载URL</li>
+                    <li>生成的链接会显示在"下载链接"输入框中</li>
+                </ul>
+                
+                <h3>3. 服务器文件浏览器</h3>
+                <p>以树形结构显示服务器上的文件和文件夹：</p>
+                <ul>
+                    <li>双击文件夹可展开/折叠</li>
+                    <li>右键点击文件或文件夹可弹出操作菜单</li>
+                    <li>显示文件大小和修改时间信息</li>
+                </ul>
+                
+                <h3>4. 服务器日志</h3>
+                <p>实时显示服务器操作日志，包括：</p>
+                <ul>
+                    <li>服务器启动信息</li>
+                    <li>文件上传/下载记录</li>
+                    <li>错误和警告信息</li>
+                    <li>磁盘空间变化</li>
+                </ul>
+                
+                <h3>5. 状态栏</h3>
+                <p>显示服务器当前状态：</p>
+                <ul>
+                    <li>服务器准备启动...</li>
+                    <li>服务器运行中...</li>
+                    <li>错误状态提示</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="usage-scenarios">
+            <div class="card">
+                <h2>主要使用场景</h2>
+                
+                <h3>1. 跨设备文件传输</h3>
+                <p>在不同设备间快速传输文件，无需数据线或第三方云服务：</p>
+                <ol>
+                    <li>在发送设备上打开虫洞传输器并启动服务器</li>
+                    <li>在接收设备上通过浏览器访问服务器地址</li>
+                    <li>上传或下载所需文件</li>
+                </ol>
+                
+                <div class="note">
+                    <p><strong>提示：</strong>确保发送和接收设备在同一局域网内，或通过端口映射实现外网访问。</p>
+                </div>
+                
+                <h3>2. 开发调试数据共享</h3>
+                <p>开发过程中快速共享测试数据、日志文件或配置信息：</p>
+                <ul>
+                    <li>后端开发者可以快速将API测试数据共享给前端开发者</li>
+                    <li>团队成员间共享日志文件用于问题排查</li>
+                    <li>快速分发开发环境配置文件</li>
+                </ul>
+                
+                <h3>3. 临时文件共享中心</h3>
+                <p>在会议、培训等场合作为临时文件共享平台：</p>
+                <ul>
+                    <li>讲师共享培训资料给所有学员</li>
+                    <li>会议参与者上传共享文档</li>
+                    <li>工作坊收集参与者作品</li>
+                </ul>
+                
+                <h3>4. 自动化脚本数据交换</h3>
+                <p>作为自动化脚本间的数据交换中介：</p>
+                <ul>
+                    <li>Python脚本生成的数据供其他语言程序读取</li>
+                    <li>定时任务结果集中存储</li>
+                    <li>不同系统间数据中转站</li>
+                </ul>
+                
+                <h3>5. 移动设备与电脑互传</h3>
+                <p>在手机/平板和电脑间传输文件：</p>
+                <ol>
+                    <li>在电脑上运行虫洞传输器</li>
+                    <li>手机浏览器访问电脑IP和端口</li>
+                    <li>上传手机文件或下载电脑文件</li>
+                </ol>
+            </div>
+        </section>
+        
+        <section id="api-usage">
+            <div class="card">
+                <h2>API接口使用指南</h2>
+                <p>虫洞传输器提供RESTful API接口，支持各种编程语言调用。</p>
+                
+                <h3>基础URL</h3>
+                <p>所有API请求的基础URL为：<code>http://[服务器IP]:[端口号]</code></p>
+                
+                <h3>1. 上传文件</h3>
+                <p><strong>Endpoint:</strong> <code>/upload</code></p>
+                <p><strong>Method:</strong> POST</p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>data_type</code>: 数据类型(file/text/folder)</li>
+                    <li>文件上传使用<code>file</code>字段</li>
+                    <li>文本内容使用<code>content</code>字段</li>
+                    <li><code>filename</code>/<code>original_folder_name</code>: 指定文件名/文件夹名</li>
+                </ul>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" onclick="switchTab(event, 'python-upload')">Python</div>
+                    <div class="code-tab" onclick="switchTab(event, 'javascript-upload')">JavaScript</div>
+                    <div class="code-tab" onclick="switchTab(event, 'java-upload')">Java</div>
+                    <div class="code-tab" onclick="switchTab(event, 'curl-upload')">cURL</div>
+                </div>
+                
+                <div class="code-block tab-content active" id="python-upload">
+                    <pre><code>import requests
+
+# 上传普通文件
+url = "http://localhost:5000/upload"
+files = {'file': open('example.txt', 'rb')}
+response = requests.post(url, files=files)
+print(response.json())
+
+# 上传文本内容
+data = {
+    'data_type': 'text',
+    'content': '这是一段文本内容',
+    'filename': 'custom_name.txt'
+}
+response = requests.post(url, data=data)
+print(response.json())
+
+# 上传文件夹(需要先压缩)
+import zipfile
+with zipfile.ZipFile('folder.zip', 'w') as zipf:
+    # 添加文件夹内容到zip
+    pass
+files = {'file': open('folder.zip', 'rb')}
+data = {'data_type': 'folder', 'original_folder_name': 'my_folder'}
+response = requests.post(url, files=files, data=data)
+print(response.json())</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="javascript-upload">
+                    <pre><code>// 使用Fetch API上传文件
+const formData = new FormData();
+formData.append('file', document.querySelector('input[type="file"]').files[0]);
+
+fetch('http://localhost:5000/upload', {
+    method: 'POST',
+    body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+// 上传文本内容
+const textData = {
+    data_type: 'text',
+    content: '这是一段文本内容',
+    filename: 'custom_name.txt'
+};
+
+fetch('http://localhost:5000/upload', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(textData)
+})
+.then(response => response.json())
+.then(data => console.log(data));</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="java-upload">
+                    <pre><code>// 使用Java HttpClient上传文件
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Path;
+
+public class FileUploader {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        // 构建multipart表单数据
+        String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:5000/upload"))
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofFile(Path.of("example.txt")))
+            .build();
+        
+        HttpResponse&lt;String> response = client.send(
+            request, HttpResponse.BodyHandlers.ofString());
+        
+        System.out.println(response.body());
+    }
+}</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="curl-upload">
+                    <pre><code># 上传文件
+curl -X POST http://localhost:5000/upload \
+  -F "file=@/path/to/file.txt"
+
+# 上传文本内容
+curl -X POST http://localhost:5000/upload \
+  -d "data_type=text" \
+  -d "content=这是一段文本内容" \
+  -d "filename=custom_name.txt"
+
+# 上传文件夹(需先压缩)
+zip -r folder.zip folder/
+curl -X POST http://localhost:5000/upload \
+  -F "data_type=folder" \
+  -F "original_folder_name=my_folder" \
+  -F "file=@folder.zip"</code></pre>
+                </div>
+                
+                <h3>2. 下载文件</h3>
+                <p><strong>Endpoint:</strong> <code>/download</code></p>
+                <p><strong>Method:</strong> GET</p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 文件在服务器上的相对路径</li>
+                </ul>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" onclick="switchTab(event, 'python-download')">Python</div>
+                    <div class="code-tab" onclick="switchTab(event, 'javascript-download')">JavaScript</div>
+                    <div class="code-tab" onclick="switchTab(event, 'java-download')">Java</div>
+                    <div class="code-tab" onclick="switchTab(event, 'curl-download')">cURL</div>
+                </div>
+                
+                <div class="code-block tab-content active" id="python-download">
+                    <pre><code>import requests
+
+url = "http://localhost:5000/download"
+params = {'path': 'example.txt'}  # 相对于保存目录的路径
+
+response = requests.get(url, params=params)
+if response.status_code == 200:
+    with open('downloaded_file.txt', 'wb') as f:
+        f.write(response.content)
+    print("文件下载成功")
+else:
+    print("下载失败:", response.json())</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="javascript-download">
+                    <pre><code>// 使用Fetch API下载文件
+const params = new URLSearchParams({path: 'example.txt'});
+const url = `http://localhost:5000/download?${params}`;
+
+fetch(url)
+.then(response => {
+    if (!response.ok) throw new Error('下载失败');
+    return response.blob();
+})
+.then(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'downloaded_file.txt';
+    a.click();
+})
+.catch(error => console.error('Error:', error));</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="java-download">
+                    <pre><code>import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
+public class FileDownloader {
+    public static void main(String[] args) throws Exception {
+        String filePath = "example.txt";
+        String encodedPath = URLEncoder.encode(filePath, "UTF-8");
+        String url = "http://localhost:5000/download?path=" + encodedPath;
+        
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
+        
+        HttpResponse&lt;byte[]> response = client.send(
+            request, HttpResponse.BodyHandlers.ofByteArray());
+        
+        if (response.statusCode() == 200) {
+            Files.write(Path.of("downloaded_file.txt"), 
+                      response.body(), 
+                      StandardOpenOption.CREATE);
+            System.out.println("文件下载成功");
+        } else {
+            System.out.println("下载失败: " + response.statusCode());
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="curl-download">
+                    <pre><code># 下载文件
+curl -o downloaded_file.txt \
+  "http://localhost:5000/download?path=example.txt"
+
+# 或者使用wget
+wget -O downloaded_file.txt \
+  "http://localhost:5000/download?path=example.txt"</code></pre>
+                </div>
+                
+                <h3>3. 列出文件</h3>
+                <p><strong>Endpoint:</strong> <code>/list_files</code></p>
+                <p><strong>Method:</strong> GET</p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: (可选)要列出的子目录路径</li>
+                </ul>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" onclick="switchTab(event, 'python-list')">Python</div>
+                    <div class="code-tab" onclick="switchTab(event, 'javascript-list')">JavaScript</div>
+                    <div class="code-tab" onclick="switchTab(event, 'java-list')">Java</div>
+                </div>
+                
+                <div class="code-block tab-content active" id="python-list">
+                    <pre><code>import requests
+
+# 列出根目录文件
+url = "http://localhost:5000/list_files"
+response = requests.get(url)
+files = response.json()
+print("根目录文件:", files)
+
+# 列出子目录文件
+params = {'path': 'subfolder'}
+response = requests.get(url, params=params)
+subfolder_files = response.json()
+print("子目录文件:", subfolder_files)</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="javascript-list">
+                    <pre><code>// 列出根目录文件
+fetch('http://localhost:5000/list_files')
+.then(response => response.json())
+.then(data => console.log('根目录文件:', data));
+
+// 列出子目录文件
+const params = new URLSearchParams({path: 'subfolder'});
+fetch(`http://localhost:5000/list_files?${params}`)
+.then(response => response.json())
+.then(data => console.log('子目录文件:', data));</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="java-list">
+                    <pre><code>import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class FileLister {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        // 列出根目录文件
+        HttpRequest rootRequest = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:5000/list_files"))
+            .GET()
+            .build();
+        
+        HttpResponse&lt;String> rootResponse = client.send(
+            rootRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println("根目录文件: " + rootResponse.body());
+        
+        // 列出子目录文件
+        String subfolderUrl = "http://localhost:5000/list_files?path=subfolder";
+        HttpRequest subfolderRequest = HttpRequest.newBuilder()
+            .uri(URI.create(subfolderUrl))
+            .GET()
+            .build();
+        
+        HttpResponse&lt;String> subfolderResponse = client.send(
+            subfolderRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println("子目录文件: " + subfolderResponse.body());
+    }
+}</code></pre>
+                </div>
+                
+                <h3>4. 删除文件/文件夹</h3>
+                <p><strong>Endpoint:</strong> <code>/delete</code></p>
+                <p><strong>Method:</strong> POST</p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 要删除的文件或文件夹路径</li>
+                </ul>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" onclick="switchTab(event, 'python-delete')">Python</div>
+                    <div class="code-tab" onclick="switchTab(event, 'javascript-delete')">JavaScript</div>
+                </div>
+                
+                <div class="code-block tab-content active" id="python-delete">
+                    <pre><code>import requests
+
+url = "http://localhost:5000/delete"
+data = {'path': 'example.txt'}  # 要删除的文件路径
+
+response = requests.post(url, data=data)
+print(response.json())</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="javascript-delete">
+                    <pre><code>// 删除文件
+const data = {path: 'example.txt'};
+
+fetch('http://localhost:5000/delete', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(data)
+})
+.then(response => response.json())
+.then(data => console.log(data));</code></pre>
+                </div>
+                
+                <h3>5. 更新文件内容</h3>
+                <p><strong>Endpoint:</strong> <code>/update_file</code></p>
+                <p><strong>Method:</strong> POST</p>
+                <p><strong>参数:</strong></p>
+                <ul>
+                    <li><code>path</code>: 要更新的文件路径</li>
+                    <li><code>content</code>: 新的文件内容</li>
+                </ul>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" onclick="switchTab(event, 'python-update')">Python</div>
+                    <div class="code-tab" onclick="switchTab(event, 'javascript-update')">JavaScript</div>
+                </div>
+                
+                <div class="code-block tab-content active" id="python-update">
+                    <pre><code>import requests
+
+url = "http://localhost:5000/update_file"
+data = {
+    'path': 'example.txt',
+    'content': '这是更新后的文件内容'
+}
+
+response = requests.post(url, data=data)
+print(response.json())</code></pre>
+                </div>
+                
+                <div class="code-block tab-content" id="javascript-update">
+                    <pre><code>// 更新文件内容
+const data = {
+    path: 'example.txt',
+    content: '这是更新后的文件内容'
+};
+
+fetch('http://localhost:5000/update_file', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(data)
+})
+.then(response => response.json())
+.then(data => console.log(data));</code></pre>
+                </div>
+            </div>
+        </section>
+        
+        <section id="advanced-usage">
+            <div class="card">
+                <h2>高级使用技巧</h2>
+                
+                <h3>1. 外网访问配置</h3>
+                <p>默认情况下，虫洞传输器只能在局域网内访问。如需外网访问，需要进行端口映射：</p>
+                <ol>
+                    <li>在路由器设置中配置端口转发，将外部端口映射到运行虫洞传输器的计算机的内部IP和端口</li>
+                    <li>确保防火墙允许传入连接</li>
+                    <li>使用动态DNS服务(如no-ip)或公网IP访问</li>
+                </ol>
+                
+                <div class="warning">
+                    <p><strong>安全警告：</strong>将服务器暴露在公网存在安全风险，建议：</p>
+                    <ul>
+                        <li>仅临时开启外网访问</li>
+                        <li>使用复杂路径或基本认证增加安全性</li>
+                        <li>传输完成后及时关闭服务器</li>
+                    </ul>
+                </div>
+                
+                <h3>2. 自动化脚本集成</h3>
+                <p>将虫洞传输器集成到自动化工作流中：</p>
+                
+                <h4>场景1：自动备份日志文件</h4>
+                <div class="code-block">
+                    <pre><code>import requests
+import glob
+import os
+from datetime import datetime
+
+# 1. 查找所有日志文件
+log_files = glob.glob('/var/log/*.log')
+
+# 2. 创建临时备份目录
+backup_dir = f"logs_backup_{datetime.now().strftime('%Y%m%d')}"
+os.makedirs(backup_dir, exist_ok=True)
+
+# 3. 复制日志文件到备份目录
+for log_file in log_files:
+    shutil.copy(log_file, backup_dir)
+
+# 4. 压缩备份目录
+with zipfile.ZipFile(f'{backup_dir}.zip', 'w') as zipf:
+    for root, _, files in os.walk(backup_dir):
+        for file in files:
+            zipf.write(os.path.join(root, file), 
+                      os.path.relpath(os.path.join(root, file), 
+                                      os.path.join(backup_dir, '..')))
+
+# 5. 上传到虫洞服务器
+url = "http://localhost:5000/upload"
+files = {'file': open(f'{backup_dir}.zip', 'rb')}
+data = {'data_type': 'folder', 'original_folder_name': backup_dir}
+response = requests.post(url, files=files, data=data)
+print("备份完成:", response.json())
+
+# 6. 清理临时文件
+shutil.rmtree(backup_dir)
+os.remove(f'{backup_dir}.zip')</code></pre>
+                </div>
+                
+                <h4>场景2：监控系统状态并上传报告</h4>
+                <div class="code-block">
+                    <pre><code>import psutil
+import requests
+from datetime import datetime
+
+# 收集系统信息
+def get_system_info():
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "cpu_usage": psutil.cpu_percent(),
+        "memory_usage": psutil.virtual_memory().percent,
+        "disk_usage": {d.mountpoint: psutil.disk_usage(d.mountpoint).percent 
+                      for d in psutil.disk_partitions()},
+        "network_io": psutil.net_io_counters()._asdict()
+    }
+
+# 生成报告并上传
+system_info = get_system_info()
+report = "\n".join(f"{k}: {v}" for k, v in system_info.items())
+
+url = "http://localhost:5000/upload"
+data = {
+    'data_type': 'text',
+    'content': report,
+    'filename': f"system_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+}
+response = requests.post(url, data=data)
+print("系统报告已上传:", response.json())</code></pre>
+                </div>
+                
+                <h3>3. 多客户端并发使用</h3>
+                <p>虫洞传输器支持多客户端同时连接，适用于以下场景：</p>
+                <ul>
+                    <li>团队协作共享文件</li>
+                    <li>多设备同时备份数据</li>
+                    <li>分布式系统收集日志</li>
+                </ul>
+                
+                <div class="note">
+                    <p><strong>性能提示：</strong>对于高并发场景，建议：</p>
+                    <ul>
+                        <li>使用有线网络连接提高传输速度</li>
+                        <li>避免同时上传大文件</li>
+                        <li>定期清理服务器上的旧文件</li>
+                    </ul>
+                </div>
+                
+                <h3>4. 与版本控制系统集成</h3>
+                <p>将虫洞传输器作为临时代码仓库或备份：</p>
+                
+                <h4>Git临时远程仓库</h4>
+                <div class="code-block">
+                    <pre><code># 1. 在虫洞服务器上创建空仓库
+mkdir my_project.git
+cd my_project.git
+git init --bare
+
+# 2. 压缩仓库
+cd ..
+zip -r my_project.git.zip my_project.git
+
+# 3. 上传到虫洞服务器(使用前面介绍的API)
+
+# 4. 在其他机器上下载并克隆
+git clone http://localhost:5000/download?path=my_project.git.zip</code></pre>
+                </div>
+            </div>
+            
+        </section>
+        
+        <section id="troubleshooting">
+            <div class="card">
+                <h2>常见问题解答</h2>
+                
+                <h3>1. 服务器无法启动</h3>
+                <p><strong>可能原因：</strong></p>
+                <ul>
+                    <li>端口被占用 - 尝试更换端口</li>
+                    <li>IP地址无效 - 检查网络连接</li>
+                    <li>防火墙阻止 - 添加防火墙例外</li>
+                </ul>
+                
+                <h3>2. 无法上传大文件</h3>
+                <p><strong>解决方案：</strong></p>
+                <ul>
+                    <li>检查磁盘空间是否充足</li>
+                    <li>尝试分卷压缩大文件</li>
+                    <li>确保网络连接稳定</li>
+                </ul>
+                
+                <h3>3. 其他设备无法访问服务器</h3>
+                <p><strong>排查步骤：</strong></p>
+                <ol>
+                    <li>确认所有设备在同一局域网</li>
+                    <li>检查服务器IP和端口是否正确</li>
+                    <li>尝试关闭防火墙临时测试</li>
+                    <li>在服务器电脑上使用<code>telnet [IP] [端口]</code>测试连通性</li>
+                </ol>
+                
+                <h3>4. 文件浏览器不显示最新文件</h3>
+                <p><strong>解决方法：</strong></p>
+                <ul>
+                    <li>点击右键菜单中的"刷新"按钮</li>
+                    <li>确保文件确实上传到了正确目录</li>
+                    <li>检查是否有权限问题</li>
+                </ul>
+                
+                <h3>5. 下载链接失效</h3>
+                <p><strong>可能原因：</strong></p>
+                <ul>
+                    <li>服务器已关闭</li>
+                    <li>文件已被删除或移动</li>
+                    <li>IP地址发生变化</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="security">
+            <div class="card">
+                <h2>安全注意事项</h2>
+                
+                <h3>1. 访问控制</h3>
+                <p>虫洞传输器默认不包含身份验证机制，因此：</p>
+                <ul>
+                    <li>仅在可信网络中使用</li>
+                    <li>避免传输敏感数据</li>
+                    <li>使用后及时关闭服务器</li>
+                </ul>
+                
+                <h3>2. 文件安全</h3>
+                <p>上传文件时注意：</p>
+                <ul>
+                    <li>扫描文件是否包含恶意代码</li>
+                    <li>不要盲目执行下载的脚本</li>
+                    <li>定期清理服务器上的文件</li>
+                </ul>
+                
+                <h3>3. 网络安全</h3>
+                <p>在外网使用时：</p>
+                <ul>
+                    <li>考虑使用VPN建立安全连接</li>
+                    <li>限制可访问的IP范围</li>
+                    <li>监控异常访问日志</li>
+                </ul>
+                
+                <div class="danger">
+                    <p><strong>重要警告：</strong>虫洞传输器设计为便捷的临时文件传输工具，不适合作为长期公开的文件服务器使用。如需长期、安全的文件共享服务，请考虑专业解决方案。</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>虫洞传输器 &copy; 2023 - 轻量级文件传输解决方案</p>
+            <p>版本: 1.0.0 | 最后更新: 2023年11月15日</p>
+        </div>
+    </footer>
+    
+    <script>
+        function switchTab(event, tabId) {
+            // 获取所有标签和内容
+            const tabs = event.target.parentElement.querySelectorAll('.code-tab');
+            const contents = event.target.parentElement.parentElement.querySelectorAll('.tab-content');
+            
+            // 移除所有active类
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // 为当前标签和对应内容添加active类
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
