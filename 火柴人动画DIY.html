@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火柴人动画制作软件</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            width: 250px;
+            background-color: #444;
+            color: white;
+            padding: 15px;
+            overflow-y: auto;
+            transition: width 0.3s;
+        }
+        
+        .toolbar.collapsed {
+            width: 50px;
+        }
+        
+        .tool-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+        }
+        
+        .tool-button:hover {
+            background-color: #666;
+        }
+        
+        .tool-button i {
+            margin-right: 10px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-color: #ddd;
+        }
+        
+        #mainCanvas {
+            background-color: white;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .properties-panel {
+            width: 250px;
+            background-color: #444;
+            color: white;
+            padding: 15px;
+            overflow-y: auto;
+            transition: width 0.3s;
+        }
+        
+        .properties-panel.collapsed {
+            width: 50px;
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .property-group {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 10px;
+        }
+        
+        .property-group h3 {
+            margin-top: 0;
+            font-size: 1em;
+        }
+        
+        .property-item {
+            margin-bottom: 10px;
+        }
+        
+        .property-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .property-item input, .property-item select {
+            width: 100%;
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid #666;
+        }
+        
+        .scene-controls {
+            display: flex;
+            flex-direction: column;
+            background-color: #333;
+        }
+        
+        .timeline-container {
+            height: 60px;
+            background-color: #222;
+            padding: 5px 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .timeline-frame {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background-color: #555;
+            margin-right: 5px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .timeline-frame.active {
+            background-color: #4CAF50;
+        }
+        
+        .timeline-frame-number {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            color: white;
+            font-size: 10px;
+        }
+        
+        .timeline-current-marker {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #FF5722;
+        }
+        
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        .scene-btn {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .scene-btn:hover {
+            background-color: #666;
+        }
+        
+        .sync-status {
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .sync-success {
+            background-color: #4CAF50;
+        }
+        
+        .sync-error {
+            background-color: #F44336;
+        }
+        
+        .sync-pending {
+            background-color: #FFC107;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .toolbar, .properties-panel {
+                width: 100%;
+                height: auto;
+            }
+            
+            .toolbar.collapsed, .properties-panel.collapsed {
+                width: 100%;
+                height: 40px;
+                overflow: hidden;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">火柴人动画制作</div>
+        <div>
+            <button class="scene-btn" id="saveBtn">保存</button>
+            <button class="scene-btn" id="loadBtn">加载</button>
+            <button class="scene-btn" id="exportBtn">导出</button>
+            <button class="scene-btn" id="syncBtn">同步</button>
+            <span id="syncStatus" class="sync-status" style="display: none;"></span>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="toolbar" id="toolbar">
+            <button class="toggle-btn" id="toggleToolbar">☰</button>
+            <h3>添加元素</h3>
+            <button class="tool-button" id="addStickmanBtn"><i>👤</i>添加火柴人</button>
+            <button class="tool-button" id="addStickBtn"><i>─</i>添加火柴</button>
+            <button class="tool-button" id="addCircleBtn"><i>○</i>添加圆圈</button>
+            
+            <h3>场景</h3>
+            <button class="tool-button" id="addGroundBtn"><i>▔</i>添加地面</button>
+            <button class="tool-button" id="addSunBtn"><i>☀</i>添加太阳</button>
+            <button class="tool-button" id="addTreeBtn"><i>🌲</i>添加树木</button>
+            
+            <h3>工具</h3>
+            <button class="tool-button" id="selectBtn"><i>↖</i>选择工具</button>
+            <button class="tool-button" id="deleteBtn"><i>🗑</i>删除</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+        
+        <div class="properties-panel" id="propertiesPanel">
+            <button class="toggle-btn" id="toggleProperties">☰</button>
+            <div class="property-group">
+                <h3>元素属性</h3>
+                <div class="property-item">
+                    <label>X位置</label>
+                    <input type="number" id="propX">
+                </div>
+                <div class="property-item">
+                    <label>Y位置</label>
+                    <input type="number" id="propY">
+                </div>
+                <div class="property-item">
+                    <label>颜色</label>
+                    <input type="color" id="propColor" value="#000000">
+                </div>
+                <div class="property-item">
+                    <label>线宽</label>
+                    <input type="number" id="propLineWidth" min="1" max="10" value="2">
+                </div>
+            </div>
+            <div class="property-group" id="stickmanProps">
+                <h3>火柴人属性</h3>
+                <div class="property-item">
+                    <label>头部大小</label>
+                    <input type="number" id="propHeadSize" min="10" max="50" value="20">
+                </div>
+                <div class="property-item">
+                    <label>身体长度</label>
+                    <input type="number" id="propBodyLength" min="20" max="100" value="40">
+                </div>
+                <div class="property-item">
+                    <label>手臂长度</label>
+                    <input type="number" id="propArmLength" min="10" max="50" value="25">
+                </div>
+                <div class="property-item">
+                    <label>腿部长度</label>
+                    <input type="number" id="propLegLength" min="10" max="60" value="30">
+                </div>
+            </div>
+            <div class="property-group">
+                <h3>云存储设置</h3>
+                <div class="property-item">
+                    <label>COS SecretId</label>
+                    <input type="text" id="cosSecretId" placeholder="输入SecretId">
+                </div>
+                <div class="property-item">
+                    <label>COS SecretKey</label>
+                    <input type="password" id="cosSecretKey" placeholder="输入SecretKey">
+                </div>
+                <div class="property-item">
+                    <label>COS Bucket</label>
+                    <input type="text" id="cosBucket" placeholder="输入Bucket名称">
+                </div>
+                <div class="property-item">
+                    <label>COS Region</label>
+                    <input type="text" id="cosRegion" placeholder="输入区域如ap-beijing">
+                </div>
+                <button class="tool-button" id="saveCosConfigBtn">保存配置</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="scene-controls">
+        <div class="timeline-container" id="timelineContainer">
+            <!-- 时间轴帧将在这里动态生成 -->
+        </div>
+        <div class="controls-row">
+            <button class="scene-btn" id="playBtn">▶ 播放</button>
+            <button class="scene-btn" id="pauseBtn">❚❚ 暂停</button>
+            <button class="scene-btn" id="stopBtn">■ 停止</button>
+            <button class="scene-btn" id="addFrameBtn">+ 添加关键帧</button>
+            <button class="scene-btn" id="deleteFrameBtn">- 删除关键帧</button>
+        </div>
+    </div>
+
+    <script>
+        // COS SDK 动态加载
+        function loadCOSSDK() {
+            return new Promise((resolve, reject) => {
+                if (window.COS) {
+                    resolve(window.COS);
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js';
+                script.onload = () => resolve(window.COS);
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // 数据库服务
+        class DatabaseService {
+            constructor() {
+                this.dbName = 'StickmanAnimationDB';
+                this.dbVersion = 1;
+                this.db = null;
+                this.initialize();
+                this.setupDataCleanup();
+            }
+
+            initialize() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.dbVersion);
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        
+                        if (!db.objectStoreNames.contains('projects')) {
+                            db.createObjectStore('projects', { keyPath: 'id' });
+                        }
+                        
+                        if (!db.objectStoreNames.contains('frames')) {
+                            db.createObjectStore('frames', { keyPath: 'id' });
+                        }
+                        
+                        if (!db.objectStoreNames.contains('settings')) {
+                            db.createObjectStore('settings', { keyPath: 'key' });
+                        }
+                    };
+
+                    request.onsuccess = (event) => {
+                        this.db = event.target.result;
+                        resolve(this.db);
+                    };
+
+                    request.onerror = (event) => {
+                        console.error('Database error:', event.target.error);
+                        reject(event.target.error);
+                    };
+                });
+            }
+
+            setupDataCleanup() {
+                // 每天清理一次30天前的数据
+                setInterval(() => {
+                    this.cleanupOldData(30);
+                }, 24 * 60 * 60 * 1000);
+            }
+
+            cleanupOldData(days) {
+                const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
+                
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['projects', 'frames'], 'readwrite');
+                    const projectStore = transaction.objectStore('projects');
+                    const frameStore = transaction.objectStore('frames');
+                    
+                    const projectRequest = projectStore.getAll();
+                    const frameRequest = frameStore.getAll();
+                    
+                    projectRequest.onsuccess = () => {
+                        const projects = projectRequest.result;
+                        projects.forEach(project => {
+                            if (project.lastModified < threshold) {
+                                projectStore.delete(project.id);
+                                
+                                // 删除相关的帧
+                                const frameDeleteRequest = frameStore.index('projectId').openCursor(IDBKeyRange.only(project.id));
+                                frameDeleteRequest.onsuccess = (event) => {
+                                    const cursor = event.target.result;
+                                    if (cursor) {
+                                        frameStore.delete(cursor.primaryKey);
+                                        cursor.continue();
+                                    }
+                                };
+                            }
+                        });
+                    };
+                    
+                    frameRequest.onsuccess = () => {
+                        const frames = frameRequest.result;
+                        frames.forEach(frame => {
+                            if (frame.timestamp < threshold) {
+                                frameStore.delete(frame.id);
+                            }
+                        });
+                    };
+                    
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = reject;
+                });
+            }
+
+            saveProject(project) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    project.lastModified = Date.now();
+                    
+                    const transaction = this.db.transaction(['projects'], 'readwrite');
+                    const store = transaction.objectStore('projects');
+                    
+                    const request = store.put(project);
+                    
+                    request.onsuccess = () => resolve(project);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            getProject(id) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['projects'], 'readonly');
+                    const store = transaction.objectStore('projects');
+                    
+                    const request = store.get(id);
+                    
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            getAllProjects() {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['projects'], 'readonly');
+                    const store = transaction.objectStore('projects');
+                    
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            deleteProject(id) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['projects', 'frames'], 'readwrite');
+                    const projectStore = transaction.objectStore('projects');
+                    const frameStore = transaction.objectStore('frames');
+                    
+                    // 删除项目
+                    const projectRequest = projectStore.delete(id);
+                    
+                    // 删除相关的帧
+                    const frameRequest = frameStore.index('projectId').openCursor(IDBKeyRange.only(id));
+                    frameRequest.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            frameStore.delete(cursor.primaryKey);
+                            cursor.continue();
+                        }
+                    };
+                    
+                    transaction.oncomplete = () => resolve();
+                    transaction.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            saveFrames(projectId, frames) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['frames'], 'readwrite');
+                    const store = transaction.objectStore('frames');
+                    
+                    // 先删除旧的帧
+                    const deleteRequest = store.index('projectId').openCursor(IDBKeyRange.only(projectId));
+                    deleteRequest.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            store.delete(cursor.primaryKey);
+                            cursor.continue();
+                        }
+                    };
+                    
+                    // 添加新的帧
+                    frames.forEach((frame, index) => {
+                        const frameData = {
+                            id: `${projectId}_${index}`,
+                            projectId: projectId,
+                            data: frame,
+                            timestamp: Date.now(),
+                            frameIndex: index
+                        };
+                        store.add(frameData);
+                    });
+                    
+                    transaction.oncomplete = () => resolve();
+                    transaction.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            getFrames(projectId) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['frames'], 'readonly');
+                    const store = transaction.objectStore('frames');
+                    
+                    const request = store.index('projectId').getAll(IDBKeyRange.only(projectId));
+                    
+                    request.onsuccess = () => {
+                        const frames = request.result
+                            .sort((a, b) => a.frameIndex - b.frameIndex)
+                            .map(item => item.data);
+                        resolve(frames);
+                    };
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            saveSetting(key, value) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['settings'], 'readwrite');
+                    const store = transaction.objectStore('settings');
+                    
+                    const request = store.put({ key, value });
+                    
+                    request.onsuccess = () => resolve();
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            getSetting(key) {
+                return new Promise((resolve, reject) => {
+                    if (!this.db) {
+                        reject(new Error('Database not initialized'));
+                        return;
+                    }
+
+                    const transaction = this.db.transaction(['settings'], 'readonly');
+                    const store = transaction.objectStore('settings');
+                    
+                    const request = store.get(key);
+                    
+                    request.onsuccess = () => resolve(request.result ? request.result.value : null);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+        }
+
+        // COS 服务
+        class COSService {
+            constructor() {
+                this.cos = null;
+                this.bucket = null;
+                this.region = null;
+                this.initialized = false;
+                this.loadCOSSDK().then(() => {
+                    this.initialized = true;
+                });
+            }
+
+            async loadCOSSDK() {
+                try {
+                    await loadCOSSDK();
+                    this.cos = window.COS;
+                } catch (error) {
+                    console.error('Failed to load COS SDK:', error);
+                }
+            }
+
+            async initialize(secretId, secretKey, bucket, region) {
+                if (!this.cos) {
+                    await this.loadCOSSDK();
+                }
+                
+                this.bucket = bucket;
+                this.region = region;
+                
+                this.cosInstance = new this.cos({
+                    SecretId: secretId,
+                    SecretKey: secretKey
+                });
+            }
+
+            async uploadProject(projectId, data) {
+                if (!this.cosInstance || !this.bucket || !this.region) {
+                    throw new Error('COS not initialized');
+                }
+
+                const key = `projects/${projectId}.json`;
+                const params = {
+                    Bucket: this.bucket,
+                    Region: this.region,
+                    Key: key,
+                    Body: JSON.stringify(data),
+                    ContentType: 'application/json'
+                };
+
+                return new Promise((resolve, reject) => {
+                    this.cosInstance.putObject(params, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                });
+            }
+
+            async downloadProject(projectId) {
+                if (!this.cosInstance || !this.bucket || !this.region) {
+                    throw new Error('COS not initialized');
+                }
+
+                const key = `projects/${projectId}.json`;
+                const params = {
+                    Bucket: this.bucket,
+                    Region: this.region,
+                    Key: key
+                };
+
+                return new Promise((resolve, reject) => {
+                    this.cosInstance.getObject(params, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            try {
+                                const projectData = JSON.parse(data.Body);
+                                resolve(projectData);
+                            } catch (parseErr) {
+                                reject(parseErr);
+                            }
+                        }
+                    });
+                });
+            }
+
+            async listProjects() {
+                if (!this.cosInstance || !this.bucket || !this.region) {
+                    throw new Error('COS not initialized');
+                }
+
+                const params = {
+                    Bucket: this.bucket,
+                    Region: this.region,
+                    Prefix: 'projects/',
+                    Delimiter: '/'
+                };
+
+                return new Promise((resolve, reject) => {
+                    this.cosInstance.getBucket(params, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            const projects = data.Contents
+                                ? data.Contents
+                                    .filter(item => item.Key.endsWith('.json'))
+                                    .map(item => ({
+                                        id: item.Key.replace('projects/', '').replace('.json', ''),
+                                        lastModified: new Date(item.LastModified).getTime()
+                                    }))
+                                : [];
+                            resolve(projects);
+                        }
+                    });
+                });
+            }
+
+            async deleteProject(projectId) {
+                if (!this.cosInstance || !this.bucket || !this.region) {
+                    throw new Error('COS not initialized');
+                }
+
+                const key = `projects/${projectId}.json`;
+                const params = {
+                    Bucket: this.bucket,
+                    Region: this.region,
+                    Key: key
+                };
+
+                return new Promise((resolve, reject) => {
+                    this.cosInstance.deleteObject(params, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                });
+            }
+        }
+
+        // 动画应用
+        class StickmanAnimationApp {
+            constructor() {
+                this.dbService = new DatabaseService();
+                this.cosService = new COSService();
+                this.currentProjectId = null;
+                this.elements = [];
+                this.selectedElement = null;
+                this.selectedNode = null;
+                this.isDragging = false;
+                this.currentTool = 'select';
+                this.animationFrames = [];
+                this.currentFrame = 0;
+                this.isPlaying = false;
+                this.animationInterval = null;
+                this.initializeUI();
+                this.loadSettings();
+                this.setupAutoSave();
+            }
+
+            initializeUI() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // 调整Canvas大小以适应窗口
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                // 工具栏和属性面板的折叠/展开
+                document.getElementById('toggleToolbar').addEventListener('click', () => {
+                    document.getElementById('toolbar').classList.toggle('collapsed');
+                });
+                
+                document.getElementById('toggleProperties').addEventListener('click', () => {
+                    document.getElementById('propertiesPanel').classList.toggle('collapsed');
+                });
+                
+                // 工具按钮事件
+                document.getElementById('selectBtn').addEventListener('click', () => {
+                    this.currentTool = 'select';
+                });
+                
+                document.getElementById('addStickmanBtn').addEventListener('click', () => {
+                    this.currentTool = 'addStickman';
+                });
+                
+                document.getElementById('addStickBtn').addEventListener('click', () => {
+                    this.currentTool = 'addStick';
+                });
+                
+                document.getElementById('addCircleBtn').addEventListener('click', () => {
+                    this.currentTool = 'addCircle';
+                });
+                
+                document.getElementById('addGroundBtn').addEventListener('click', () => this.addGround());
+                document.getElementById('addSunBtn').addEventListener('click', () => this.addSun());
+                document.getElementById('addTreeBtn').addEventListener('click', () => this.addTree());
+                
+                document.getElementById('deleteBtn').addEventListener('click', () => this.deleteSelected());
+                
+                // 属性变化事件
+                document.getElementById('propX').addEventListener('change', (e) => this.updateProperty('x', parseInt(e.target.value)));
+                document.getElementById('propY').addEventListener('change', (e) => this.updateProperty('y', parseInt(e.target.value)));
+                document.getElementById('propColor').addEventListener('change', (e) => this.updateProperty('color', e.target.value));
+                document.getElementById('propLineWidth').addEventListener('change', (e) => this.updateProperty('lineWidth', parseInt(e.target.value)));
+                
+                // 火柴人属性变化
+                document.getElementById('propHeadSize').addEventListener('change', (e) => this.updateProperty('headSize', parseInt(e.target.value)));
+                document.getElementById('propBodyLength').addEventListener('change', (e) => this.updateProperty('bodyLength', parseInt(e.target.value)));
+                document.getElementById('propArmLength').addEventListener('change', (e) => this.updateProperty('armLength', parseInt(e.target.value)));
+                document.getElementById('propLegLength').addEventListener('change', (e) => this.updateProperty('legLength', parseInt(e.target.value)));
+                
+                // 动画控制
+                document.getElementById('playBtn').addEventListener('click', () => this.playAnimation());
+                document.getElementById('pauseBtn').addEventListener('click', () => this.pauseAnimation());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopAnimation());
+                document.getElementById('addFrameBtn').addEventListener('click', () => this.addFrame());
+                document.getElementById('deleteFrameBtn').addEventListener('click', () => this.deleteFrame());
+                
+                // 保存/加载/导出/同步
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveProject());
+                document.getElementById('loadBtn').addEventListener('click', () => this.loadProject());
+                document.getElementById('exportBtn').addEventListener('click', () => this.exportAnimation());
+                document.getElementById('syncBtn').addEventListener('click', () => this.syncWithCloud());
+                
+                // COS配置保存
+                document.getElementById('saveCosConfigBtn').addEventListener('click', () => this.saveCosConfig());
+                
+                // 鼠标事件
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
+                this.canvas.addEventListener('mouseleave', () => this.handleMouseUp());
+                
+                // 初始绘制
+                this.redraw();
+            }
+            
+            async loadSettings() {
+                try {
+                    const secretId = await this.dbService.getSetting('cosSecretId');
+                    const secretKey = await this.dbService.getSetting('cosSecretKey');
+                    const bucket = await this.dbService.getSetting('cosBucket');
+                    const region = await this.dbService.getSetting('cosRegion');
+                    
+                    if (secretId && secretKey && bucket && region) {
+                        document.getElementById('cosSecretId').value = secretId;
+                        document.getElementById('cosSecretKey').value = secretKey;
+                        document.getElementById('cosBucket').value = bucket;
+                        document.getElementById('cosRegion').value = region;
+                        
+                        await this.cosService.initialize(secretId, secretKey, bucket, region);
+                    }
+                } catch (error) {
+                    console.error('Failed to load settings:', error);
+                }
+            }
+            
+            async saveCosConfig() {
+                const secretId = document.getElementById('cosSecretId').value;
+                const secretKey = document.getElementById('cosSecretKey').value;
+                const bucket = document.getElementById('cosBucket').value;
+                const region = document.getElementById('cosRegion').value;
+                
+                try {
+                    await this.dbService.saveSetting('cosSecretId', secretId);
+                    await this.dbService.saveSetting('cosSecretKey', secretKey);
+                    await this.dbService.saveSetting('cosBucket', bucket);
+                    await this.dbService.saveSetting('cosRegion', region);
+                    
+                    await this.cosService.initialize(secretId, secretKey, bucket, region);
+                    alert('COS配置保存成功');
+                } catch (error) {
+                    console.error('Failed to save COS config:', error);
+                    alert('保存配置失败: ' + error.message);
+                }
+            }
+            
+            setupAutoSave() {
+                // 每5分钟自动保存一次
+                setInterval(() => {
+                    if (this.currentProjectId && this.elements.length > 0) {
+                        this.saveProject(false);
+                    }
+                }, 5 * 60 * 1000);
+            }
+            
+            resizeCanvas() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth - 40;
+                this.canvas.height = container.clientHeight - 40;
+                this.redraw();
+            }
+            
+            updateProperty(prop, value) {
+                if (this.selectedElement) {
+                    this.selectedElement[prop] = value;
+                    this.redraw();
+                }
+            }
+            
+            addGround() {
+                this.elements.push({
+                    type: 'ground',
+                    y: this.canvas.height - 50,
+                    color: '#4CAF50',
+                    lineWidth: 2
+                });
+                this.redraw();
+            }
+            
+            addSun() {
+                this.elements.push({
+                    type: 'sun',
+                    x: 100,
+                    y: 100,
+                    radius: 30,
+                    color: '#FFC107',
+                    lineWidth: 2
+                });
+                this.redraw();
+            }
+            
+            addTree() {
+                this.elements.push({
+                    type: 'tree',
+                    x: 200,
+                    y: this.canvas.height - 50,
+                    height: 100,
+                    color: '#8BC34A',
+                    trunkColor: '#795548',
+                    lineWidth: 2
+                });
+                this.redraw();
+            }
+            
+            deleteSelected() {
+                if (this.selectedElement) {
+                    this.elements = this.elements.filter(el => el !== this.selectedElement);
+                    this.selectedElement = null;
+                    this.selectedNode = null;
+                    this.redraw();
+                    this.updatePropertiesPanel();
+                }
+            }
+            
+            updatePropertiesPanel() {
+                if (this.selectedElement) {
+                    document.getElementById('propX').value = Math.round(this.selectedElement.x);
+                    document.getElementById('propY').value = Math.round(this.selectedElement.y);
+                    document.getElementById('propColor').value = this.selectedElement.color || '#000000';
+                    document.getElementById('propLineWidth').value = this.selectedElement.lineWidth || 2;
+                    
+                    // 显示/隐藏火柴人特定属性
+                    const stickmanProps = document.getElementById('stickmanProps');
+                    if (this.selectedElement.type === 'stickman') {
+                        stickmanProps.style.display = 'block';
+                        document.getElementById('propHeadSize').value = this.selectedElement.headSize;
+                        document.getElementById('propBodyLength').value = this.selectedElement.bodyLength;
+                        document.getElementById('propArmLength').value = this.selectedElement.armLength;
+                        document.getElementById('propLegLength').value = this.selectedElement.legLength;
+                    } else {
+                        stickmanProps.style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('propX').value = '';
+                    document.getElementById('propY').value = '';
+                }
+            }
+            
+            redraw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制网格背景
+                this.drawGrid();
+                
+                // 绘制所有元素
+                this.elements.forEach(element => {
+                    switch(element.type) {
+                        case 'stickman':
+                            this.drawStickman(element);
+                            break;
+                        case 'stick':
+                            this.drawStick(element);
+                            break;
+                        case 'circle':
+                            this.drawCircle(element);
+                            break;
+                        case 'ground':
+                            this.drawGround(element);
+                            break;
+                        case 'sun':
+                            this.drawSun(element);
+                            break;
+                        case 'tree':
+                            this.drawTree(element);
+                            break;
+                    }
+                });
+                
+                // 绘制选中的元素或节点
+                if (this.selectedElement) {
+                    if (this.selectedNode !== null) {
+                        // 绘制选中的节点
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.selectedNode.x, this.selectedNode.y, 8, 0, Math.PI * 2);
+                        
+                        // 固定节点用绿色表示，可调节节点用红色表示
+                        if (this.selectedNode.type === 'fixed') {
+                            this.ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+                        } else {
+                            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                        }
+                        
+                        this.ctx.fill();
+                    } else {
+                        // 绘制选中元素的边界框
+                        const bbox = this.getElementBoundingBox(this.selectedElement);
+                        if (bbox) {
+                            this.ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.setLineDash([5, 5]);
+                            this.ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                            this.ctx.setLineDash([]);
+                        }
+                    }
+                }
+                
+                // 更新时间轴
+                this.updateTimeline();
+            }
+            
+            drawGrid() {
+                const gridSize = 20;
+                this.ctx.strokeStyle = '#e0e0e0';
+                this.ctx.lineWidth = 1;
+                
+                // 垂直线
+                for (let x = 0; x <= this.canvas.width; x += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                // 水平线
+                for (let y = 0; y <= this.canvas.height; y += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawStickman(stickman) {
+                const { x, y, headSize, bodyLength, armLength, legLength, color, lineWidth } = stickman;
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.fillStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                
+                // 头部 (圆形)
+                this.ctx.beginPath();
+                this.ctx.arc(x, y - headSize/2, headSize/2, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // 面部特征
+                this.ctx.beginPath();
+                // 眼睛
+                this.ctx.arc(x - headSize/4, y - headSize/2 - headSize/8, headSize/10, 0, Math.PI * 2);
+                this.ctx.arc(x + headSize/4, y - headSize/2 - headSize/8, headSize/10, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // 嘴巴
+                this.ctx.beginPath();
+                this.ctx.arc(x, y - headSize/2 + headSize/8, headSize/4, 0, Math.PI);
+                this.ctx.stroke();
+                
+                // 脖子 (短线)
+                const neckY = y + headSize/3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, y);
+                this.ctx.lineTo(x, neckY);
+                this.ctx.stroke();
+                
+                // 身体 (从脖子到腰部)
+                const waistY = neckY + bodyLength;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, neckY);
+                this.ctx.lineTo(x, waistY);
+                this.ctx.stroke();
+                
+                // 手臂 (从肩膀到肘部再到手腕)
+                const shoulderY = neckY + headSize/6;
+                
+                // 左手臂
+                const leftElbowX = x - armLength;
+                const leftElbowY = shoulderY + armLength/2;
+                const leftHandX = leftElbowX - armLength/2;
+                const leftHandY = leftElbowY;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, shoulderY);
+                this.ctx.lineTo(leftElbowX, leftElbowY);
+                this.ctx.lineTo(leftHandX, leftHandY);
+                this.ctx.stroke();
+                
+                // 右手臂
+                const rightElbowX = x + armLength;
+                const rightElbowY = shoulderY + armLength/2;
+                const rightHandX = rightElbowX + armLength/2;
+                const rightHandY = rightElbowY;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, shoulderY);
+                this.ctx.lineTo(rightElbowX, rightElbowY);
+                this.ctx.lineTo(rightHandX, rightHandY);
+                this.ctx.stroke();
+                
+                // 腿 (从腰部到膝盖再到脚)
+                // 左腿
+                const leftKneeX = x - legLength/2;
+                const leftKneeY = waistY + legLength;
+                const leftFootX = leftKneeX;
+                const leftFootY = leftKneeY + legLength/2;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, waistY);
+                this.ctx.lineTo(leftKneeX, leftKneeY);
+                this.ctx.lineTo(leftFootX, leftFootY);
+                this.ctx.stroke();
+                
+                // 右腿
+                const rightKneeX = x + legLength/2;
+                const rightKneeY = waistY + legLength;
+                const rightFootX = rightKneeX;
+                const rightFootY = rightKneeY + legLength/2;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, waistY);
+                this.ctx.lineTo(rightKneeX, rightKneeY);
+                this.ctx.lineTo(rightFootX, rightFootY);
+                this.ctx.stroke();
+                
+                // 存储节点信息用于选择和连接
+                // 固定节点是脖子和腰部中间点
+                const fixedNodeY = neckY + (waistY - neckY) / 2;
+                
+                stickman.nodes = [
+                    // 固定节点（绿色）
+                    { x: x, y: fixedNodeY, type: 'fixed' },
+                    
+                    // 可调节节点（红色）
+                    { x: x, y: y - headSize/2, type: 'head' }, // 头部中心
+                    { x: leftHandX, y: leftHandY, type: 'left-hand' }, // 左手
+                    { x: rightHandX, y: rightHandY, type: 'right-hand' }, // 右手
+                    { x: leftFootX, y: leftFootY, type: 'left-foot' }, // 左脚
+                    { x: rightFootX, y: rightFootY, type: 'right-foot' }  // 右脚
+                ];
+                
+                // 更新火柴人属性
+                stickman.headX = x;
+                stickman.headY = y - headSize/2;
+                stickman.neckY = neckY;
+                stickman.waistY = waistY;
+                stickman.shoulderY = shoulderY;
+                stickman.leftHandX = leftHandX;
+                stickman.leftHandY = leftHandY;
+                stickman.rightHandX = rightHandX;
+                stickman.rightHandY = rightHandY;
+                stickman.leftFootX = leftFootX;
+                stickman.leftFootY = leftFootY;
+                stickman.rightFootX = rightFootX;
+                stickman.rightFootY = rightFootY;
+                stickman.fixedNodeY = fixedNodeY;
+            }
+            
+            drawStick(stick) {
+                const { x1, y1, x2, y2, color, lineWidth } = stick;
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+                
+                // 存储节点信息
+                // 第一个节点是固定的，第二个节点是可调节的
+                stick.nodes = [
+                    { x: x1, y: y1, type: 'fixed' },
+                    { x: x2, y: y2, type: 'end' }
+                ];
+            }
+            
+            drawCircle(circle) {
+                const { x, y, radius, color, lineWidth } = circle;
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // 存储节点信息
+                // 中心点是固定的，边缘点是可调节的
+                circle.nodes = [
+                    { x: x, y: y, type: 'fixed' },
+                    { x: x + radius, y: y, type: 'edge' }
+                ];
+            }
+            
+            drawGround(ground) {
+                const { y, color, lineWidth } = ground;
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.canvas.width, y);
+                this.ctx.stroke();
+                
+                // 添加一些草
+                this.ctx.strokeStyle = '#2E7D32';
+                this.ctx.lineWidth = 1;
+                for (let x = 0; x < this.canvas.width; x += 10) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                    this.ctx.lineTo(x + 5, y - 5 - Math.random() * 5);
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawSun(sun) {
+                const { x, y, radius, color, lineWidth } = sun;
+                
+                // 太阳光
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i * Math.PI * 2) / 12;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(
+                        x + Math.cos(angle) * radius,
+                        y + Math.sin(angle) * radius
+                    );
+                    this.ctx.lineTo(
+                        x + Math.cos(angle) * (radius + 10),
+                        y + Math.sin(angle) * (radius + 10)
+                    );
+                    this.ctx.stroke();
+                }
+                
+                // 太阳主体
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawTree(tree) {
+                const { x, y, height, color, trunkColor, lineWidth } = tree;
+                const trunkHeight = height * 0.4;
+                const treeTopY = y - height;
+                
+                // 树干
+                this.ctx.strokeStyle = trunkColor;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, y);
+                this.ctx.lineTo(x, y - trunkHeight);
+                this.ctx.stroke();
+                
+                // 树冠
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - height/2, y - trunkHeight);
+                this.ctx.quadraticCurveTo(x, y - trunkHeight - height, x + height/2, y - trunkHeight);
+                this.ctx.fill();
+            }
+            
+            getElementBoundingBox(element) {
+                switch(element.type) {
+                    case 'stickman':
+                        const minX = Math.min(
+                            element.headX,
+                            element.leftHandX,
+                            element.rightHandX,
+                            element.leftFootX,
+                            element.rightFootX
+                        );
+                        const maxX = Math.max(
+                            element.headX,
+                            element.leftHandX,
+                            element.rightHandX,
+                            element.leftFootX,
+                            element.rightFootX
+                        );
+                        const minY = Math.min(
+                            element.headY,
+                            element.leftHandY,
+                            element.rightHandY,
+                            element.leftFootY,
+                            element.rightFootY
+                        );
+                        const maxY = Math.max(
+                            element.headY,
+                            element.leftHandY,
+                            element.rightHandY,
+                            element.leftFootY,
+                            element.rightFootY
+                        );
+                        
+                        return {
+                            x: minX,
+                            y: minY,
+                            width: maxX - minX,
+                            height: maxY - minY
+                        };
+                        
+                    case 'stick':
+                        return {
+                            x: Math.min(element.x1, element.x2),
+                            y: Math.min(element.y1, element.y2),
+                            width: Math.abs(element.x1 - element.x2),
+                            height: Math.abs(element.y1 - element.y2)
+                        };
+                        
+                    case 'circle':
+                        const radius = element.radius || 20;
+                        return {
+                            x: element.x - radius,
+                            y: element.y - radius,
+                            width: radius * 2,
+                            height: radius * 2
+                        };
+                        
+                    case 'ground':
+                        return null;
+                        
+                    case 'sun':
+                        const sunRadius = element.radius || 30;
+                        return {
+                            x: element.x - sunRadius - 10,
+                            y: element.y - sunRadius - 10,
+                            width: (sunRadius + 10) * 2,
+                            height: (sunRadius + 10) * 2
+                        };
+                        
+                    case 'tree':
+                        return {
+                            x: element.x - element.height/2,
+                            y: element.y - element.height,
+                            width: element.height,
+                            height: element.height
+                        };
+                }
+                return null;
+            }
+            
+            isPointOnElement(x, y, element) {
+                switch(element.type) {
+                    case 'stickman':
+                        const bbox = this.getElementBoundingBox(element);
+                        if (bbox && x >= bbox.x && x <= bbox.x + bbox.width &&
+                            y >= bbox.y && y <= bbox.y + bbox.height) {
+                            // 检查是否点击了节点
+                            for (let i = 0; i < element.nodes.length; i++) {
+                                const node = element.nodes[i];
+                                const dist = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+                                if (dist < 8) {
+                                    return { element: element, node: node, nodeIndex: i };
+                                }
+                            }
+                            return { element: element };
+                        }
+                        break;
+                        
+                    case 'stick':
+                        // 检查是否点击了端点
+                        for (let i = 0; i < element.nodes.length; i++) {
+                            const node = element.nodes[i];
+                            const dist = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+                            if (dist < 8) {
+                                return { element: element, node: node, nodeIndex: i };
+                            }
+                        }
+                        
+                        // 检查是否点击了线段
+                        const distToLine = this.distanceToLine(x, y, element.x1, element.y1, element.x2, element.y2);
+                        if (distToLine < 5) {
+                            return { element: element };
+                        }
+                        break;
+                        
+                    case 'circle':
+                        // 检查是否点击了节点
+                        for (let i = 0; i < element.nodes.length; i++) {
+                            const node = element.nodes[i];
+                            const dist = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+                            if (dist < 8) {
+                                return { element: element, node: node, nodeIndex: i };
+                            }
+                        }
+                        
+                        // 检查是否点击了圆
+                        const radius = element.radius || 20;
+                        const distToCenter = Math.sqrt(Math.pow(x - element.x, 2) + Math.pow(y - element.y, 2));
+                        if (Math.abs(distToCenter - radius) < 5) {
+                            return { element: element };
+                        }
+                        break;
+                        
+                    case 'ground':
+                        if (Math.abs(y - element.y) < 5) {
+                            return { element: element };
+                        }
+                        break;
+                        
+                    case 'sun':
+                        const sunRadius = element.radius || 30;
+                        const distToSun = Math.sqrt(Math.pow(x - element.x, 2) + Math.pow(y - element.y, 2));
+                        if (distToSun < sunRadius + 15) {
+                            return { element: element };
+                        }
+                        break;
+                        
+                    case 'tree':
+                        const bboxTree = this.getElementBoundingBox(element);
+                        if (bboxTree && x >= bboxTree.x && x <= bboxTree.x + bboxTree.width &&
+                            y >= bboxTree.y && y <= bboxTree.y + bboxTree.height) {
+                            return { element: element };
+                        }
+                        break;
+                }
+                return null;
+            }
+            
+            distanceToLine(x, y, x1, y1, x2, y2) {
+                const A = x - x1;
+                const B = y - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+                
+                const dot = A * C + B * D;
+                const len_sq = C * C + D * D;
+                let param = -1;
+                if (len_sq !== 0) {
+                    param = dot / len_sq;
+                }
+                
+                let xx, yy;
+                
+                if (param < 0) {
+                    xx = x1;
+                    yy = y1;
+                } else if (param > 1) {
+                    xx = x2;
+                    yy = y2;
+                } else {
+                    xx = x1 + param * C;
+                    yy = y1 + param * D;
+                }
+                
+                const dx = x - xx;
+                const dy = y - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            handleMouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // 检查是否点击了现有元素
+                let clickedElement = null;
+                for (let i = this.elements.length - 1; i >= 0; i--) {
+                    const element = this.elements[i];
+                    const hit = this.isPointOnElement(x, y, element);
+                    if (hit) {
+                        clickedElement = hit;
+                        break;
+                    }
+                }
+                
+                if (this.currentTool === 'select') {
+                    if (clickedElement) {
+                        this.selectedElement = clickedElement.element;
+                        this.selectedNode = clickedElement.node || null;
+                        
+                        // 如果是固定节点，不允许拖动
+                        if (this.selectedNode && this.selectedNode.type === 'fixed') {
+                            this.selectedNode = null;
+                            this.isDragging = true;
+                        } else {
+                            this.isDragging = true;
+                        }
+                        
+                        // 如果点击了节点，记录相对于节点的偏移量
+                        if (this.selectedNode) {
+                            this.dragOffsetX = x - this.selectedNode.x;
+                            this.dragOffsetY = y - this.selectedNode.y;
+                        } else {
+                            // 如果点击了元素本身，记录相对于元素位置的偏移量
+                            if (this.selectedElement.type === 'stickman' || 
+                                this.selectedElement.type === 'circle' ||
+                                this.selectedElement.type === 'sun') {
+                                this.dragOffsetX = x - this.selectedElement.x;
+                                this.dragOffsetY = y - this.selectedElement.y;
+                            } else if (this.selectedElement.type === 'stick') {
+                                // 对于线段，计算中心点偏移
+                                const centerX = (this.selectedElement.x1 + this.selectedElement.x2) / 2;
+                                const centerY = (this.selectedElement.y1 + this.selectedElement.y2) / 2;
+                                this.dragOffsetX = x - centerX;
+                                this.dragOffsetY = y - centerY;
+                            } else if (this.selectedElement.type === 'ground') {
+                                this.dragOffsetX = 0;
+                                this.dragOffsetY = y - this.selectedElement.y;
+                            } else if (this.selectedElement.type === 'tree') {
+                                this.dragOffsetX = x - this.selectedElement.x;
+                                this.dragOffsetY = y - this.selectedElement.y;
+                            }
+                        }
+                    } else {
+                        this.selectedElement = null;
+                        this.selectedNode = null;
+                    }
+                    this.updatePropertiesPanel();
+                    this.redraw();
+                } else if (this.currentTool === 'addStickman') {
+                    // 添加火柴人
+                    const stickman = {
+                        type: 'stickman',
+                        x: x,
+                        y: y,
+                        headSize: 20,
+                        bodyLength: 40,
+                        armLength: 25,
+                        legLength: 30,
+                        color: '#000000',
+                        lineWidth: 2
+                    };
+                    this.elements.push(stickman);
+                    this.selectedElement = stickman;
+                    this.selectedNode = null;
+                    this.updatePropertiesPanel();
+                    this.redraw();
+                    this.currentTool = 'select';
+                } else if (this.currentTool === 'addStick') {
+                    // 添加火柴
+                    const stick = {
+                        type: 'stick',
+                        x1: x,
+                        y1: y,
+                        x2: x + 40,
+                        y2: y,
+                        color: '#000000',
+                        lineWidth: 2
+                    };
+                    this.elements.push(stick);
+                    this.selectedElement = stick;
+                    this.selectedNode = { x: stick.x2, y: stick.y2, type: 'end' };
+                    this.updatePropertiesPanel();
+                    this.redraw();
+                    this.currentTool = 'select';
+                } else if (this.currentTool === 'addCircle') {
+                    // 添加圆形
+                    const circle = {
+                        type: 'circle',
+                        x: x,
+                        y: y,
+                        radius: 20,
+                        color: '#000000',
+                        lineWidth: 2
+                    };
+                    this.elements.push(circle);
+                    this.selectedElement = circle;
+                    this.selectedNode = { x: circle.x + circle.radius, y: circle.y, type: 'edge' };
+                    this.updatePropertiesPanel();
+                    this.redraw();
+                    this.currentTool = 'select';
+                }
+            }
+            
+            handleMouseMove(e) {
+                if (!this.isDragging) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (this.selectedElement && this.selectedNode) {
+                    // 移动节点
+                    this.selectedNode.x = x - this.dragOffsetX;
+                    this.selectedNode.y = y - this.dragOffsetY;
+                    
+                    // 更新元素属性
+                    if (this.selectedElement.type === 'stick') {
+                        if (this.selectedNode.type === 'end') {
+                            const nodeIndex = this.selectedElement.nodes.indexOf(this.selectedNode);
+                            if (nodeIndex === 1) { // 第二个节点是可调节的
+                                this.selectedElement.x2 = this.selectedNode.x;
+                                this.selectedElement.y2 = this.selectedNode.y;
+                            }
+                        }
+                    } else if (this.selectedElement.type === 'circle') {
+                        // 对于圆形，移动边缘节点会调整半径
+                        const dx = this.selectedNode.x - this.selectedElement.x;
+                        const dy = this.selectedNode.y - this.selectedElement.y;
+                        this.selectedElement.radius = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // 更新边缘节点位置
+                        this.selectedElement.nodes[1].x = this.selectedElement.x + this.selectedElement.radius;
+                        this.selectedElement.nodes[1].y = this.selectedElement.y;
+                    } else if (this.selectedElement.type === 'stickman') {
+                        // 更新火柴人各部分位置
+                        const stickman = this.selectedElement;
+                        
+                        // 根据选中的节点类型更新相应部分
+                        switch(this.selectedNode.type) {
+                            case 'head':
+                                stickman.headX = this.selectedNode.x;
+                                stickman.headY = this.selectedNode.y;
+                                break;
+                            case 'left-hand':
+                                stickman.leftHandX = this.selectedNode.x;
+                                stickman.leftHandY = this.selectedNode.y;
+                                break;
+                            case 'right-hand':
+                                stickman.rightHandX = this.selectedNode.x;
+                                stickman.rightHandY = this.selectedNode.y;
+                                break;
+                            case 'left-foot':
+                                stickman.leftFootX = this.selectedNode.x;
+                                stickman.leftFootY = this.selectedNode.y;
+                                break;
+                            case 'right-foot':
+                                stickman.rightFootX = this.selectedNode.x;
+                                stickman.rightFootY = this.selectedNode.y;
+                                break;
+                        }
+                        
+                        // 重新计算其他属性
+                        stickman.x = stickman.nodes[0].x; // 固定节点的x位置
+                        stickman.y = stickman.fixedNodeY; // 固定节点的y位置
+                        
+                        // 计算头部大小
+                        stickman.headSize = Math.abs(stickman.headY - (stickman.neckY - stickman.headSize/3)) * 2;
+                        
+                        // 计算身体长度
+                        stickman.bodyLength = stickman.waistY - stickman.neckY;
+                        
+                        // 计算手臂长度
+                        const shoulderX = stickman.x;
+                        const shoulderY = stickman.shoulderY;
+                        const leftElbowX = (shoulderX + stickman.leftHandX) / 2;
+                        const leftElbowY = (shoulderY + stickman.leftHandY) / 2;
+                        stickman.armLength = Math.sqrt(
+                            Math.pow(leftElbowX - shoulderX, 2) + 
+                            Math.pow(leftElbowY - shoulderY, 2)
+                        ) * 2;
+                        
+                        // 计算腿部长度
+                        const leftKneeX = (stickman.x + stickman.leftFootX) / 2;
+                        const leftKneeY = (stickman.waistY + stickman.leftFootY) / 2;
+                        stickman.legLength = Math.sqrt(
+                            Math.pow(leftKneeX - stickman.x, 2) + 
+                            Math.pow(leftKneeY - stickman.waistY, 2)
+                        ) * 2;
+                    }
+                    
+                    // 检查节点连接
+                    this.checkNodeConnections(this.selectedNode, this.selectedElement);
+                } else if (this.selectedElement) {
+                    // 移动整个元素
+                    if (this.selectedElement.type === 'stickman' || 
+                        this.selectedElement.type === 'circle' ||
+                        this.selectedElement.type === 'sun') {
+                        const deltaX = (x - this.dragOffsetX) - this.selectedElement.x;
+                        const deltaY = (y - this.dragOffsetY) - this.selectedElement.y;
+                        
+                        this.selectedElement.x = x - this.dragOffsetX;
+                        this.selectedElement.y = y - this.dragOffsetY;
+                        
+                        // 更新所有节点位置
+                        if (this.selectedElement.nodes) {
+                            this.selectedElement.nodes.forEach(node => {
+                                node.x += deltaX;
+                                node.y += deltaY;
+                            });
+                        }
+                        
+                        // 对于火柴人，更新所有部位坐标
+                        if (this.selectedElement.type === 'stickman') {
+                            const stickman = this.selectedElement;
+                            stickman.headX += deltaX;
+                            stickman.headY += deltaY;
+                            stickman.neckY += deltaY;
+                            stickman.waistY += deltaY;
+                            stickman.shoulderY += deltaY;
+                            stickman.leftHandX += deltaX;
+                            stickman.leftHandY += deltaY;
+                            stickman.rightHandX += deltaX;
+                            stickman.rightHandY += deltaY;
+                            stickman.leftFootX += deltaX;
+                            stickman.leftFootY += deltaY;
+                            stickman.rightFootX += deltaX;
+                            stickman.rightFootY += deltaY;
+                            stickman.fixedNodeY += deltaY;
+                        }
+                    } else if (this.selectedElement.type === 'stick') {
+                        const deltaX = (x - this.dragOffsetX) - (this.selectedElement.x1 + this.selectedElement.x2) / 2;
+                        const deltaY = (y - this.dragOffsetY) - (this.selectedElement.y1 + this.selectedElement.y2) / 2;
+                        
+                        this.selectedElement.x1 += deltaX;
+                        this.selectedElement.y1 += deltaY;
+                        this.selectedElement.x2 += deltaX;
+                        this.selectedElement.y2 += deltaY;
+                        
+                        // 更新节点位置
+                        this.selectedElement.nodes[0].x = this.selectedElement.x1;
+                        this.selectedElement.nodes[0].y = this.selectedElement.y1;
+                        this.selectedElement.nodes[1].x = this.selectedElement.x2;
+                        this.selectedElement.nodes[1].y = this.selectedElement.y2;
+                    } else if (this.selectedElement.type === 'ground') {
+                        this.selectedElement.y = y - this.dragOffsetY;
+                    } else if (this.selectedElement.type === 'tree') {
+                        const deltaX = (x - this.dragOffsetX) - this.selectedElement.x;
+                        const deltaY = (y - this.dragOffsetY) - this.selectedElement.y;
+                        
+                        this.selectedElement.x = x - this.dragOffsetX;
+                        this.selectedElement.y = y - this.dragOffsetY;
+                    }
+                    
+                    // 更新属性面板
+                    this.updatePropertiesPanel();
+                }
+                
+                this.redraw();
+            }
+            
+            handleMouseUp() {
+                this.isDragging = false;
+            }
+            
+            checkNodeConnections(node, sourceElement) {
+                const connectionDistance = 10;
+                
+                this.elements.forEach(element => {
+                    if (element === sourceElement) return;
+                    
+                    if (element.nodes) {
+                        element.nodes.forEach(otherNode => {
+                            const dist = Math.sqrt(
+                                Math.pow(node.x - otherNode.x, 2) + 
+                                Math.pow(node.y - otherNode.y, 2)
+                            );
+                            
+                            if (dist < connectionDistance) {
+                                // 连接节点
+                                node.x = otherNode.x;
+                                node.y = otherNode.y;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            updateTimeline() {
+                const timelineContainer = document.getElementById('timelineContainer');
+                timelineContainer.innerHTML = '';
+                
+                this.animationFrames.forEach((frame, index) => {
+                    const frameElement = document.createElement('div');
+                    frameElement.className = 'timeline-frame';
+                    if (index === this.currentFrame) {
+                        frameElement.classList.add('active');
+                        const marker = document.createElement('div');
+                        marker.className = 'timeline-current-marker';
+                        frameElement.appendChild(marker);
+                    }
+                    
+                    const frameNumber = document.createElement('div');
+                    frameNumber.className = 'timeline-frame-number';
+                    frameNumber.textContent = index + 1;
+                    frameElement.appendChild(frameNumber);
+                    
+                    frameElement.addEventListener('click', () => {
+                        this.currentFrame = index;
+                        this.applyFrame(this.animationFrames[this.currentFrame]);
+                        this.redraw();
+                    });
+                    
+                    timelineContainer.appendChild(frameElement);
+                });
+            }
+            
+            playAnimation() {
+                if (this.animationFrames.length === 0) {
+                    alert('请先添加关键帧');
+                    return;
+                }
+                
+                this.isPlaying = true;
+                this.currentFrame = 0;
+                
+                this.animationInterval = setInterval(() => {
+                    if (this.currentFrame < this.animationFrames.length - 1) {
+                        this.currentFrame++;
+                        this.applyFrame(this.animationFrames[this.currentFrame]);
+                        this.redraw();
+                    } else {
+                        clearInterval(this.animationInterval);
+                        this.isPlaying = false;
+                    }
+                }, 1000 / 12); // 12 FPS
+            }
+            
+            pauseAnimation() {
+                if (this.isPlaying) {
+                    clearInterval(this.animationInterval);
+                    this.isPlaying = false;
+                }
+            }
+            
+            stopAnimation() {
+                if (this.isPlaying) {
+                    clearInterval(this.animationInterval);
+                    this.isPlaying = false;
+                }
+                this.currentFrame = 0;
+                if (this.animationFrames.length > 0) {
+                    this.applyFrame(this.animationFrames[0]);
+                    this.redraw();
+                }
+            }
+            
+            addFrame() {
+                const frame = this.captureFrame();
+                this.animationFrames.push(frame);
+                this.currentFrame = this.animationFrames.length - 1;
+                this.redraw();
+            }
+            
+            deleteFrame() {
+                if (this.animationFrames.length === 0) {
+                    return;
+                }
+                
+                this.animationFrames.splice(this.currentFrame, 1);
+                
+                if (this.currentFrame >= this.animationFrames.length) {
+                    this.currentFrame = Math.max(0, this.animationFrames.length - 1);
+                }
+                
+                if (this.animationFrames.length > 0) {
+                    this.applyFrame(this.animationFrames[this.currentFrame]);
+                } else {
+                    this.elements = [];
+                }
+                
+                this.redraw();
+            }
+            
+            captureFrame() {
+                return JSON.parse(JSON.stringify(this.elements));
+            }
+            
+            applyFrame(frame) {
+                this.elements = JSON.parse(JSON.stringify(frame));
+            }
+            
+            async saveProject(showAlert = true) {
+                try {
+                    if (this.elements.length === 0) {
+                        alert('没有内容可以保存');
+                        return;
+                    }
+                    
+                    // 如果没有项目ID，创建一个新的
+                    if (!this.currentProjectId) {
+                        this.currentProjectId = 'project_' + Date.now();
+                    }
+                    
+                    const project = {
+                        id: this.currentProjectId,
+                        name: `火柴人动画_${new Date().toLocaleDateString()}`,
+                        elements: this.elements,
+                        lastModified: Date.now()
+                    };
+                    
+                    // 保存项目到IndexedDB
+                    await this.dbService.saveProject(project);
+                    
+                    // 保存帧到IndexedDB
+                    if (this.animationFrames.length > 0) {
+                        await this.dbService.saveFrames(this.currentProjectId, this.animationFrames);
+                    }
+                    
+                    if (showAlert) {
+                        alert(`项目已保存 (ID: ${this.currentProjectId})`);
+                    }
+                } catch (error) {
+                    console.error('保存项目失败:', error);
+                    alert('保存失败: ' + error.message);
+                }
+            }
+            
+            async loadProject() {
+                try {
+                    // 从IndexedDB获取所有项目
+                    const projects = await this.dbService.getAllProjects();
+                    
+                    if (projects.length === 0) {
+                        alert('没有找到保存的项目');
+                        return;
+                    }
+                    
+                    // 简单的项目选择对话框
+                    const projectNames = projects.map(p => `${p.name} (${new Date(p.lastModified).toLocaleString()})`);
+                    const selectedProjectName = prompt('选择要加载的项目:\n\n' + projectNames.join('\n'));
+                    
+                    if (!selectedProjectName) return;
+                    
+                    const selectedIndex = projectNames.indexOf(selectedProjectName);
+                    if (selectedIndex === -1) return;
+                    
+                    const selectedProject = projects[selectedIndex];
+                    this.currentProjectId = selectedProject.id;
+                    
+                    // 加载项目元素
+                    this.elements = selectedProject.elements;
+                    
+                    // 加载动画帧
+                    this.animationFrames = await this.dbService.getFrames(this.currentProjectId);
+                    this.currentFrame = 0;
+                    
+                    this.redraw();
+                    alert(`已加载项目 "${selectedProject.name}"，包含 ${this.elements.length} 个元素和 ${this.animationFrames.length} 个关键帧`);
+                } catch (error) {
+                    console.error('加载项目失败:', error);
+                    alert('加载失败: ' + error.message);
+                }
+            }
+            
+            async syncWithCloud() {
+                try {
+                    if (!this.cosService.initialized) {
+                        alert('请先配置COS云存储设置');
+                        return;
+                    }
+                    
+                    const syncStatus = document.getElementById('syncStatus');
+                    syncStatus.textContent = '同步中...';
+                    syncStatus.className = 'sync-status sync-pending';
+                    syncStatus.style.display = 'inline-block';
+                    
+                    if (this.currentProjectId && this.elements.length > 0) {
+                        // 同步当前项目到云端
+                        const projectData = {
+                            id: this.currentProjectId,
+                            elements: this.elements,
+                            frames: this.animationFrames,
+                            lastModified: Date.now()
+                        };
+                        
+                        await this.cosService.uploadProject(this.currentProjectId, projectData);
+                        
+                        syncStatus.textContent = '同步成功';
+                        syncStatus.className = 'sync-status sync-success';
+                        setTimeout(() => {
+                            syncStatus.style.display = 'none';
+                        }, 3000);
+                    } else {
+                        // 从云端下载项目列表
+                        const cloudProjects = await this.cosService.listProjects();
+                        
+                        if (cloudProjects.length === 0) {
+                            syncStatus.textContent = '云端无项目';
+                            syncStatus.className = 'sync-status sync-error';
+                            setTimeout(() => {
+                                syncStatus.style.display = 'none';
+                            }, 3000);
+                            return;
+                        }
+                        
+                        // 简单的项目选择对话框
+                        const projectNames = cloudProjects.map(p => `项目 ${p.id} (${new Date(p.lastModified).toLocaleString()})`);
+                        const selectedProjectName = prompt('选择要从云端加载的项目:\n\n' + projectNames.join('\n'));
+                        
+                        if (!selectedProjectName) {
+                            syncStatus.style.display = 'none';
+                            return;
+                        }
+                        
+                        const selectedIndex = projectNames.indexOf(selectedProjectName);
+                        if (selectedIndex === -1) {
+                            syncStatus.style.display = 'none';
+                            return;
+                        }
+                        
+                        const selectedProject = cloudProjects[selectedIndex];
+                        
+                        // 从云端下载项目
+                        const projectData = await this.cosService.downloadProject(selectedProject.id);
+                        
+                        // 保存到本地数据库
+                        this.currentProjectId = projectData.id;
+                        this.elements = projectData.elements;
+                        this.animationFrames = projectData.frames || [];
+                        this.currentFrame = 0;
+                        
+                        await this.dbService.saveProject({
+                            id: projectData.id,
+                            name: `云端项目 ${projectData.id}`,
+                            elements: projectData.elements,
+                            lastModified: projectData.lastModified
+                        });
+                        
+                        if (projectData.frames && projectData.frames.length > 0) {
+                            await this.dbService.saveFrames(projectData.id, projectData.frames);
+                        }
+                        
+                        this.redraw();
+                        
+                        syncStatus.textContent = '同步成功';
+                        syncStatus.className = 'sync-status sync-success';
+                        setTimeout(() => {
+                            syncStatus.style.display = 'none';
+                        }, 3000);
+                        
+                        alert(`已从云端加载项目 ${selectedProject.id}，包含 ${this.elements.length} 个元素和 ${this.animationFrames.length} 个关键帧`);
+                    }
+                } catch (error) {
+                    console.error('同步失败:', error);
+                    
+                    const syncStatus = document.getElementById('syncStatus');
+                    syncStatus.textContent = '同步失败';
+                    syncStatus.className = 'sync-status sync-error';
+                    setTimeout(() => {
+                        syncStatus.style.display = 'none';
+                    }, 3000);
+                    
+                    alert('同步失败: ' + error.message);
+                }
+            }
+            
+            exportAnimation() {
+                if (this.animationFrames.length === 0) {
+                    alert('没有动画帧可以导出');
+                    return;
+                }
+                
+                alert('GIF导出功能需要引入gif.js库，请参考以下实现方式:\n\n1. 引入gif.js库\n2. 使用代码中的gif.addFrame()方法添加每一帧\n3. 调用gif.render()生成GIF');
+                
+                // 实际GIF导出代码需要引入gif.js库
+                /*
+                const gif = new GIF({
+                    workers: 2,
+                    quality: 10,
+                    width: this.canvas.width,
+                    height: this.canvas.height
+                });
+                
+                this.animationFrames.forEach(frame => {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = this.canvas.width;
+                    tempCanvas.height = this.canvas.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // 绘制帧到临时canvas
+                    // ... (类似redraw()函数的实现)
+                    
+                    gif.addFrame(tempCanvas, { delay: 100 });
+                });
+                
+                gif.on('finished', (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'stickman-animation.gif';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+                
+                gif.render();
+                */
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new StickmanAnimationApp();
+        });
+    </script>
+</body>
+</html>

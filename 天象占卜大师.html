@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>开元占经星象占卜</title>
+    <style>
+        :root {
+            --primary-color: #8e44ad;
+            --secondary-color: #9b59b6;
+            --bg-color: #0a0a1a;
+            --text-color: #e0e0ff;
+            --light-text: #a0a0c0;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            opacity: 0;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: var(--opacity); transform: scale(1); }
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .header h1 {
+            color: var(--text-color);
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(158, 68, 255, 0.5);
+        }
+        
+        .header p {
+            color: var(--light-text);
+            font-size: 16px;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(158, 68, 255, 0.5), transparent);
+            margin: 20px 0;
+            border: none;
+        }
+        
+        .divination-area {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .divination-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3), 0 0 15px rgba(158, 68, 255, 0.3);
+            transition: all 0.3s ease;
+            outline: none;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .divination-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .divination-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4), 0 0 20px rgba(158, 68, 255, 0.4);
+        }
+        
+        .divination-button:hover::before {
+            opacity: 1;
+        }
+        
+        .divination-button:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-title {
+            color: var(--text-color);
+            font-size: 22px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(158, 68, 255, 0.3);
+        }
+        
+        .result-content {
+            background: rgba(30, 20, 50, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(158, 68, 255, 0.05), rgba(255, 255, 255, 0.02));
+            pointer-events: none;
+        }
+        
+        .result-content p {
+            margin-bottom: 10px;
+        }
+        
+        .result-sign {
+            font-size: 60px;
+            margin: 20px 0;
+            color: var(--text-color);
+            text-align: center;
+            text-shadow: 0 0 15px currentColor;
+            animation: pulse 3s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .history {
+            margin-top: 30px;
+        }
+        
+        .history h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .history-list {
+            list-style: none;
+        }
+        
+        .history-item {
+            background: rgba(30, 20, 50, 0.6);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .history-item:hover {
+            background: rgba(50, 30, 80, 0.6);
+            transform: translateX(5px);
+        }
+        
+        .history-date {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .category-selector {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .category-selector select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(158, 68, 255, 0.3);
+            background-color: rgba(20, 10, 40, 0.8);
+            font-size: 16px;
+            color: var(--text-color);
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239e44ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+        }
+        
+        .constellation-display {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+            background: rgba(10, 5, 20, 0.5);
+            border-radius: 50%;
+            border: 1px solid rgba(158, 68, 255, 0.3);
+            box-shadow: 0 0 20px rgba(158, 68, 255, 0.2);
+        }
+        
+        .constellation-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: star-pulse 3s infinite ease-in-out;
+            opacity: 0.8;
+        }
+        
+        @keyframes star-pulse {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .divination-button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+            
+            .result-title {
+                font-size: 20px;
+            }
+            
+            .result-sign {
+                font-size: 50px;
+            }
+            
+            .constellation-display {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>天象占卜大师</h1>
+            <p>观星测运 · 洞察天机</p>
+        </div>
+        
+        <hr class="divider">
+        
+        <div class="divination-area">
+            <div class="category-selector">
+                <select id="categorySelect">
+                    <option value="all">全部星象 (186种)</option>
+                    <option value="28">二十八星宿</option>
+                    <option value="36">天罡三十六星</option>
+                    <option value="72">地煞七十二星</option>
+                    <option value="9">九曜星</option>
+                    <option value="4">四方星宿</option>
+                    <option value="37">其他星象</option>
+                </select>
+            </div>
+            
+            <div class="constellation-display" id="constellationDisplay"></div>
+            
+            <p>静心凝神，点击下方按钮进行占卜</p>
+            <button id="divinationBtn" class="divination-button">开始占卜</button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在解读天机...</p>
+            </div>
+            
+            <div class="result-container" id="resultContainer">
+                <h2 class="result-title">星象启示</h2>
+                <div class="result-sign" id="resultSign"></div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="history">
+            <h3>历史记录</h3>
+            <ul class="history-list" id="historyList">
+                <!-- 历史记录将通过JS动态添加 -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 创建星空背景
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = Math.floor(window.innerWidth * window.innerHeight / 1000);
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // 随机大小
+                const size = Math.random() * 2 + 1;
+                
+                // 随机动画参数
+                const duration = Math.random() * 5 + 3;
+                const delay = Math.random() * 5;
+                const opacity = Math.random() * 0.8 + 0.2;
+                
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--opacity', opacity);
+                star.style.animationDelay = `${delay}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // 创建星座显示
+        function createConstellation() {
+            const container = document.getElementById('constellationDisplay');
+            container.innerHTML = '';
+            
+            const starCount = 15 + Math.floor(Math.random() * 10);
+            const stars = [];
+            
+            // 创建星星
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'constellation-star';
+                
+                const x = 10 + Math.random() * 80;
+                const y = 10 + Math.random() * 80;
+                const size = 2 + Math.random() * 3;
+                const delay = Math.random() * 3;
+                
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(star);
+                stars.push({x, y, element: star});
+            }
+            
+            // 随机连接星星形成星座
+            if (stars.length > 3) {
+                const linesCount = Math.floor(stars.length * 0.7);
+                const connected = new Set();
+                
+                for (let i = 0; i < linesCount; i++) {
+                    const from = Math.floor(Math.random() * stars.length);
+                    let to = Math.floor(Math.random() * stars.length);
+                    
+                    // 确保不重复连接
+                    while (to === from || connected.has(`${from}-${to}`) || connected.has(`${to}-${from}`)) {
+                        to = Math.floor(Math.random() * stars.length);
+                    }
+                    
+                    connected.add(`${from}-${to}`);
+                    
+                    // 创建连线
+                    const line = document.createElement('div');
+                    line.className = 'constellation-line';
+                    
+                    const fromStar = stars[from];
+                    const toStar = stars[to];
+                    
+                    const length = Math.sqrt(
+                        Math.pow(fromStar.x - toStar.x, 2) + 
+                        Math.pow(fromStar.y - toStar.y, 2)
+                    );
+                    
+                    const angle = Math.atan2(toStar.y - fromStar.y, toStar.x - fromStar.x) * 180 / Math.PI;
+                    
+                    const centerX = (fromStar.x + toStar.x) / 2;
+                    const centerY = (fromStar.y + toStar.y) / 2;
+                    
+                    line.style.position = 'absolute';
+                    line.style.left = `${centerX}%`;
+                    line.style.top = `${centerY}%`;
+                    line.style.width = `${length}%`;
+                    line.style.height = '1px';
+                    line.style.backgroundColor = 'rgba(158, 68, 255, 0.3)';
+                    line.style.transformOrigin = 'center';
+                    line.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                    line.style.zIndex = '1';
+                    
+                    container.appendChild(line);
+                }
+            }
+        }
+        
+        // 占卜内容数据 - 扩展版186星
+        const divinationData = {
+            // 二十八星宿
+            "28": [
+                { sign: "角宿", symbol: "✨", content: "角宿明，主春生。宜开始新事业，万物复苏之象。此时宜谋划长远，播种希望。" },
+                { sign: "亢宿", symbol: "🌟", content: "亢宿动，主争斗。需防口舌是非，避免与人争执。以柔克刚为上策。" },
+                { sign: "氐宿", symbol: "💫", content: "氐宿显，主根基。家宅安宁，根基稳固。宜修葺房屋，巩固基础。" },
+                { sign: "房宿", symbol: "🌠", content: "房宿明，主婚嫁。姻缘将至，单身者宜把握机会。已婚者感情和睦。" },
+                { sign: "心宿", symbol: "☄️", content: "心宿动，主思虑。内心波动，需静心思考。重大决策宜三思后行。" },
+                { sign: "尾宿", symbol: "🌌", content: "尾宿显，主终结。事物将告一段落，宜总结反思，准备新的开始。" },
+                { sign: "箕宿", symbol: "🌉", content: "箕宿明，主收获。努力将得回报，宜收获成果，分享喜悦。" },
+                { sign: "斗宿", symbol: "🌃", content: "斗宿动，主量度。需权衡利弊，把握分寸。过犹不及，中庸为佳。" },
+                { sign: "牛宿", symbol: "🌄", content: "牛宿显，主勤勉。天道酬勤，踏实努力必有所成。忌投机取巧。" },
+                { sign: "女宿", symbol: "🌅", content: "女宿明，主阴柔。以柔克刚之时，女性力量彰显。宜培养耐心。" },
+                { sign: "虚宿", symbol: "🌆", content: "虚宿动，主空虚。需充实自我，避免虚度光阴。学习进修正当时。" },
+                { sign: "危宿", symbol: "🌇", content: "危宿显，主险境。前行需谨慎，遇险可化吉。贵人将暗中相助。" },
+                { sign: "室宿", symbol: "🌠", content: "室宿明，主家宅。家庭和睦，安居乐业。宜修缮房屋，增进亲情。" },
+                { sign: "壁宿", symbol: "🌌", content: "壁宿动，主阻碍。前路有障，需另辟蹊径。创新思维可破困局。" },
+                { sign: "奎宿", symbol: "🌉", content: "奎宿显，主文昌。学业进步，文思泉涌。考试竞赛有利，宜把握。" },
+                { sign: "娄宿", symbol: "🌃", content: "娄宿明，主积聚。财富渐增，宜储蓄理财。忌奢侈浪费。" },
+                { sign: "胃宿", symbol: "🌄", content: "胃宿动，主消化。身体需调养，饮食宜清淡。心灵亦需消化近期经历。" },
+                { sign: "昴宿", symbol: "🌅", content: "昴宿显，主光明。阴霾散去，前途光明。保持信心，曙光在前。" },
+                { sign: "毕宿", symbol: "🌆", content: "毕宿明，主完成。长期事务将圆满结束。宜做好收尾工作。" },
+                { sign: "觜宿", symbol: "🌇", content: "觜宿动，主口舌。谨言慎行，防是非缠身。沉默是金之时。" },
+                { sign: "参宿", symbol: "🌠", content: "参宿显，主参商。亲友或有离别，然终将重逢。珍惜当下情谊。" },
+                { sign: "井宿", symbol: "🌌", content: "井宿明，主源泉。资源丰富，灵感不断。宜深入挖掘潜能。" },
+                { sign: "鬼宿", symbol: "🌉", content: "鬼宿动，主隐秘。秘密将浮出水面。真相虽痛，终需面对。" },
+                { sign: "柳宿", symbol: "🌃", content: "柳宿显，主柔韧。以柔克刚，灵活应变。逆境中展现韧性。" },
+                { sign: "星宿", symbol: "🌄", content: "星宿明，主希望。黑暗中的星光指引方向。保持信念不放弃。" },
+                { sign: "张宿", symbol: "🌅", content: "张宿动，主扩张。事业可适度拓展。但需量力而行，防过度扩张。" },
+                { sign: "翼宿", symbol: "🌆", content: "翼宿显，主飞翔。理想远大，振翅高飞。宜规划长远目标。" },
+                { sign: "轸宿", symbol: "🌇", content: "轸宿明，主回转。事物循环往复，历史重演。宜从过往吸取教训。" }
+            ],
+            
+            // 天罡三十六星
+            "36": [
+                { sign: "天魁星", symbol: "🜁", content: "天魁照耀，贵人扶持。得此星者，诸事顺遂，遇难呈祥，有贵人暗中相助。" },
+                { sign: "天罡星", symbol: "🜂", content: "天罡正气，刚直不阿。行事光明磊落可得天助，邪念起则运势转衰。" },
+                { sign: "天机星", symbol: "🜃", content: "天机玄妙，智谋深远。此星主智慧谋略，宜筹划未来，慎防聪明反被聪明误。" },
+                { sign: "天闲星", symbol: "🜄", content: "天闲宁静，淡泊明志。宜修身养性，远离纷争。急躁冒进反招损失。" },
+                { sign: "天勇星", symbol: "🜅", content: "天勇当先，无畏艰难。面临挑战宜勇往直前，犹豫不决反失良机。" },
+                { sign: "天雄星", symbol: "🜆", content: "天雄威猛，气势如虹。领导力彰显，可统领大局。但需防刚愎自用。" },
+                { sign: "天猛星", symbol: "🜇", content: "天猛迅捷，雷厉风行。行动力强，但需防冲动冒失，三思后行为佳。" },
+                { sign: "天威星", symbol: "☉", content: "天威凛然，震慑四方。威严自生，小人远离。宜主持公道正义。" },
+                { sign: "天英星", symbol: "☊", content: "天英才俊，文采斐然。才华横溢，声名远播。宜展现才能，忌骄傲自满。" },
+                { sign: "天贵星", symbol: "☋", content: "天贵临门，福泽深厚。地位提升，受人尊敬。宜积德行善，福荫后人。" },
+                { sign: "天富星", symbol: "☌", content: "天富招财，财源广进。投资理财有利，但需防奢侈浪费，守成为上。" },
+                { sign: "天满星", symbol: "☍", content: "天满月圆，事事圆满。心愿得偿，家庭和睦。宜分享喜悦，广结善缘。" },
+                { sign: "天孤星", symbol: "⚹", content: "天孤独照，清高自持。虽才华出众，但知音难觅。宜放下身段，融入群体。" },
+                { sign: "天伤星", symbol: "⚺", content: "天伤不利，谨防损失。身体健康需注意，行事多加小心，可化解灾厄。" },
+                { sign: "天立星", symbol: "⚻", content: "天立中正，特立独行。坚持原则可得尊重，但需防过于固执己见。" },
+                { sign: "天捷星", symbol: "⚶", content: "天捷迅敏，反应机警。应变能力强，机会稍纵即逝，宜快速把握。" },
+                { sign: "天暗星", symbol: "☇", content: "天暗不明，前路朦胧。暂时不宜重大决策，等待迷雾散去再行动。" },
+                { sign: "天佑星", symbol: "☈", content: "天佑护持，逢凶化吉。纵有险阻，终能平安度过。常怀感恩之心。" },
+                { sign: "天空星", symbol: "☉", content: "天空广阔，心境豁达。放下执念，海阔天空。创意灵感涌现之时。" },
+                { sign: "天速星", symbol: "☊", content: "天速如风，变化迅速。事态发展快于预期，需提前准备，随机应变。" },
+                { sign: "天异星", symbol: "☋", content: "天异常现，与众不同。独特见解可得认可，但需防标新立异过度。" },
+                { sign: "天煞星", symbol: "☌", content: "天煞凶险，波折重重。行事需谨慎，重大决定宜延期，可避灾祸。" },
+                { sign: "天微星", symbol: "☍", content: "天微隐现，明察秋毫。细节决定成败，需细心观察，防微杜渐。" },
+                { sign: "天究星", symbol: "⚹", content: "天究真理，探索未知。研究学习大有收获，宜深入专研某领域。" },
+                { sign: "天退星", symbol: "⚺", content: "天退守成，以退为进。暂时退让可积蓄力量，强行前进反招损失。" },
+                { sign: "天寿星", symbol: "⚻", content: "天寿延年，健康长寿。养生保健正当时，身体为一切之本。" },
+                { sign: "天剑星", symbol: "⚶", content: "天剑锋芒，锐不可当。竞争中有优势，但需防伤人伤己，适可而止。" },
+                { sign: "天平星", symbol: "☇", content: "天平公正，不偏不倚。处理纠纷宜秉公决断，偏私将招致不满。" },
+                { sign: "天罪星", symbol: "☈", content: "天罪警示，因果循环。往日过错恐有报应，忏悔补救可减轻业障。" },
+                { sign: "天损星", symbol: "☉", content: "天损不利，破财消灾。小损失可免大灾，莫因小失大而懊悔。" },
+                { sign: "天败星", symbol: "☊", content: "天败垂成，功亏一篑。成功在望却生变故，需做多手准备以防万一。" },
+                { sign: "天牢星", symbol: "☋", content: "天牢困顿，束缚难行。暂时受限需忍耐，待时机成熟自可解脱。" },
+                { sign: "天慧星", symbol: "☌", content: "天慧启蒙，智慧增长。学习领悟力强，宜吸收新知识，提升自我。" },
+                { sign: "天暴星", symbol: "☍", content: "天暴无常，情绪波动。易怒易躁，需克制情绪，冷静处理问题。" },
+                { sign: "天哭星", symbol: "⚹", content: "天哭悲伤，情感受挫。失意之时需自我调节，时间将治愈一切。" },
+                { sign: "天巧星", symbol: "⚺", content: "天巧手艺，技艺精湛。手工创作有利，可展现才华，获得认可。" }
+            ],
+            
+            // 地煞七十二星
+            "72": [
+                { sign: "地魁星", symbol: "🝿", content: "地魁镇守，稳固根基。脚踏实地可成大事，好高骛远则事难成。" },
+                { sign: "地煞星", symbol: "🞀", content: "地煞凶险，暗藏危机。行事需格外谨慎，夜间避免独行。" },
+                { sign: "地勇星", symbol: "🞁", content: "地勇坚韧，不屈不挠。面对困难需坚持到底，半途而废前功尽弃。" },
+                { sign: "地杰星", symbol: "🞂", content: "地杰人灵，才华出众。地方人才得展所长，宜积极参与本地事务。" },
+                { sign: "地雄星", symbol: "🞃", content: "地雄一方，领袖风范。在当地有影响力，宜善用地位造福乡里。" },
+                { sign: "地威星", symbol: "🞄", content: "地威震慑，宵小遁形。正气凛然令恶人畏惧，宜主持公道。" },
+                { sign: "地英星", symbol: "🞅", content: "地英才俊，德才兼备。在当地有名望，言行举止应为表率。" },
+                { sign: "地奇星", symbol: "🞆", content: "地奇非凡，独具慧眼。能发现常人忽略的机会，独特见解可得认可。" },
+                { sign: "地猛星", symbol: "🞇", content: "地猛突进，势如破竹。行动果断可突破障碍，但需防后劲不足。" },
+                { sign: "地文星", symbol: "🜀", content: "地文昌盛，文风蔚然。学术文化有利，宜著书立说或参与文化活动。" },
+                { sign: "地正星", symbol: "🜁", content: "地正人直，光明磊落。品行端正受人尊敬，歪门邪道终将败露。" },
+                { sign: "地辟星", symbol: "🜂", content: "地辟蹊径，另寻出路。常规方法无效时，创新思维可打开新局面。" },
+                { sign: "地阖星", symbol: "🜃", content: "地阖门关，保守秘密。重要信息需严守，泄密将招致损失。" },
+                { sign: "地强星", symbol: "🜄", content: "地强稳固，难以撼动。地位稳固，但需防僵化不思进取。" },
+                { sign: "地暗星", symbol: "🜅", content: "地暗不明，真相隐藏。表面平静下暗流涌动，需透过现象看本质。" },
+                { sign: "地辅星", symbol: "🜆", content: "地辅相助，得道多助。合作共赢，单打独斗不如团队协作。" },
+                { sign: "地会星", symbol: "🜇", content: "地会群聚，人气聚集。社交活动有利，可拓展人脉资源。" },
+                { sign: "地佐星", symbol: "☉", content: "地佐良才，辅佐得力。适合担任副手职位，发挥辅助协调才能。" },
+                { sign: "地佑星", symbol: "☊", content: "地佑平安，逢凶化吉。纵有险阻，本地神明护佑可保平安。" },
+                { sign: "地灵星", symbol: "☋", content: "地灵人杰，风水宝地。所处之地气场良好，宜善加利用。" },
+                { sign: "地兽星", symbol: "☌", content: "地兽凶猛，防患未然。需提防动物伤害或小人如兽般狡诈。" },
+                { sign: "地微星", symbol: "☍", content: "地微细察，明辨是非。细节处见真章，留心观察可得重要信息。" },
+                { sign: "地慧星", symbol: "⚹", content: "地慧心灵，直觉敏锐。相信第一感觉，理性分析反可能误判。" },
+                { sign: "地暴星", symbol: "⚺", content: "地暴无常，突发灾祸。谨防自然灾害或突发事件，提前做好应急预案。" },
+                { sign: "地默星", symbol: "⚻", content: "地默无言，保守秘密。此时无声胜有声，言多必失，沉默是金。" },
+                { sign: "地猖星", symbol: "⚶", content: "地猖狂乱，秩序失控。局势混乱需保持冷静，待风暴过去再行动。" },
+                { sign: "地狂星", symbol: "☇", content: "地狂不羁，打破常规。创新需适度，过度反叛将招致排斥。" },
+                { sign: "地飞星", symbol: "☈", content: "地飞远行，变动不居。宜外出发展或改变居住地，守旧不利。" },
+                { sign: "地走星", symbol: "☉", content: "地走奔波，劳碌辛苦。频繁走动可获机遇，安居不动反失良机。" },
+                { sign: "地巧星", symbol: "☊", content: "地巧手艺，技艺精湛。手工制作、技术工作有利，可展现巧思。" },
+                { sign: "地明星", symbol: "☋", content: "地明光照，真相大白。隐藏之事将曝光，诚实面对可获谅解。" },
+                { sign: "地进星", symbol: "☌", content: "地进发展，稳步向前。循序渐进可致成功，冒进则根基不稳。" },
+                { sign: "地退星", symbol: "☍", content: "地退守成，以退为进。暂时退让可避锋芒，待机再起。" },
+                { sign: "地满星", symbol: "⚹", content: "地满丰收，硕果累累。努力终得回报，宜分享成果，广结善缘。" },
+                { sign: "地遂星", symbol: "⚺", content: "地遂心愿，如愿以偿。长期愿望可实现，宜把握时机。" },
+                { sign: "地周星", symbol: "⚻", content: "地周循环，周而复始。历史重演，宜从过往经验中吸取教训。" },
+                { sign: "地隐星", symbol: "⚶", content: "地隐遁形，韬光养晦。暂不宜抛头露面，暗中准备以待时机。" },
+                { sign: "地异星", symbol: "☇", content: "地异常现，与众不同。独特见解可得认可，但需防过于标新立异。" },
+                { sign: "地理星", symbol: "☈", content: "地理通达，熟悉环境。了解当地情况可获优势，盲目行动易失误。" },
+                { sign: "地俊星", symbol: "☉", content: "地俊风流，才华横溢。艺术创作有利，可展现才华获得赞赏。" },
+                { sign: "地乐星", symbol: "☊", content: "地乐欢愉，心情舒畅。娱乐休闲正当时，适度放松有益身心。" },
+                { sign: "地捷星", symbol: "☋", content: "地捷迅速，反应灵敏。机会稍纵即逝，需快速判断并行动。" },
+                { sign: "地速星", symbol: "☌", content: "地速如风，变化迅速。事态发展快于预期，需提前做好准备。" },
+                { sign: "地镇星", symbol: "☍", content: "地镇安定，稳如磐石。局势稳定，宜巩固基础，不宜冒险。" },
+                { sign: "地稽星", symbol: "⚹", content: "地稽延迟，事有阻碍。计划可能延期，耐心等待勿强求。" },
+                { sign: "地魔星", symbol: "⚺", content: "地魔诱惑，陷阱暗藏。谨防美丽谎言，贪心将招致损失。" },
+                { sign: "地妖星", symbol: "⚻", content: "地妖迷惑，真假难辨。表象不可轻信，需深入调查核实。" },
+                { sign: "地幽星", symbol: "⚶", content: "地幽冥暗，阴气沉沉。精神状态低迷，需多接触阳光活力。" },
+                { sign: "地伏星", symbol: "☇", content: "地伏隐藏，伺机而动。暂时潜伏观察，待时机成熟再出击。" },
+                { sign: "地空星", symbol: "☈", content: "地空虚幻，不切实际。理想需与现实结合，空想无益。" },
+                { sign: "地僻星", symbol: "☉", content: "地僻偏远，信息闭塞。与外界沟通不畅，需主动获取信息。" },
+                { sign: "地全星", symbol: "☊", content: "地全完备，万事俱备。条件成熟，可放手实施计划。" },
+                { sign: "地孤星", symbol: "☋", content: "地孤独立，形单影只。需主动融入群体，封闭自我不利发展。" },
+                { sign: "地短星", symbol: "☌", content: "地短暂现，昙花一现。机会短暂，需及时把握，错过难再。" },
+                { sign: "地角星", symbol: "☍", content: "地角尖锐，冲突难免。人际摩擦增多，需克制情绪，避免争执。" },
+                { sign: "地囚星", symbol: "⚹", content: "地囚困顿，束缚难行。暂时受限需忍耐，待时机转好。" },
+                { sign: "地藏星", symbol: "⚺", content: "地藏珍宝，有待发掘。潜在资源丰富，需深入挖掘利用。" },
+                { sign: "地平星", symbol: "⚻", content: "地平顺遂，稳步发展。无大风浪，循序渐进可获成功。" },
+                { sign: "地损星", symbol: "⚶", content: "地损消耗，破财消灾。小损失可免大灾，莫因小失大懊悔。" },
+                { sign: "地奴星", symbol: "☇", content: "地奴劳役，身不由己。暂时受制于人，需忍耐并寻找解脱之道。" },
+                { sign: "地察星", symbol: "☈", content: "地察秋毫，明辨是非。细节处见真相，留心观察可得重要信息。" },
+                { sign: "地恶星", symbol: "☉", content: "地恶险峻，小人当道。谨防背后中伤，重要事务亲力亲为。" },
+                { sign: "地丑星", symbol: "☊", content: "地丑外现，内在美真。莫以貌取人，实质重于形式。" },
+                { sign: "地数星", symbol: "☋", content: "地数精确，计算无误。财务数据需仔细核对，防微小错误。" },
+                { sign: "地阴星", symbol: "☌", content: "地阴柔顺，以柔克刚。强硬不如柔韧，灵活应变可化解困难。" },
+                { sign: "地刑星", symbol: "☍", content: "地刑惩戒，因果报应。往日过错恐遭惩罚，忏悔补救可减轻。" },
+                { sign: "地壮星", symbol: "⚹", content: "地壮强健，体魄康泰。身体健康，可承担繁重任务。" },
+                { sign: "地劣星", symbol: "⚺", content: "地劣质差，基础薄弱。需从根本改善，表面修补无济于事。" },
+                { sign: "地健星", symbol: "⚻", content: "地健行远，持久耐力。长期项目有利，坚持到底可获成功。" },
+                { sign: "地耗星", symbol: "⚶", content: "地耗资源，浪费严重。需节约开支，避免不必要的消耗。" },
+                { sign: "地贼星", symbol: "☇", content: "地贼偷盗，谨防失物。重要物品妥善保管，防盗窃损失。" },
+                { sign: "地狗星", symbol: "☈", content: "地狗忠诚，朋友可靠。患难见真情，可信赖朋友相助。" }
+            ],
+            
+            // 九曜星
+            "9": [
+                { sign: "太阳星", symbol: "☉", content: "太阳当空，光明正大。能量充沛，领导力强。宜公开行事，阴暗手段反招灾祸。" },
+                { sign: "太阴星", symbol: "☽", content: "太阴柔美，内敛智慧。直觉敏锐，宜暗中谋划。女性力量彰显之时。" },
+                { sign: "辰星(水星)", symbol: "☿", content: "辰星主智，沟通交流。学习、谈判、写作有利。信息流动快速，需谨言慎行。" },
+                { sign: "太白星(金星)", symbol: "♀", content: "太白主和，艺术财富。感情、艺术、金钱事务顺利。审美眼光精准，宜投资美丽事物。" },
+                { sign: "荧惑星(火星)", symbol: "♂", content: "荧惑主战，勇猛冲动。行动力强但易怒。需控制脾气，将能量用于建设性事务。" },
+                { sign: "岁星(木星)", symbol: "♃", content: "岁星主扩，吉祥富贵。机遇增多，运势上升。宜拓展事业，学习成长。" },
+                { sign: "镇星(土星)", symbol: "♄", content: "镇星主限，考验责任。面临挑战需坚持。踏实努力终有回报，捷径反招失败。" },
+                { sign: "罗睺星", symbol: "☊", content: "罗睺阴暗，意外变故。谨防突发灾祸。行事需预留余地，重要决定宜延期。" },
+                { sign: "计都星", symbol: "☋", content: "计都诡秘，迷惑困扰。真相难明，易被欺骗。重大决策需多方验证信息。" }
+            ],
+            
+            // 四方星宿
+            "4": [
+                { sign: "青龙星", symbol: "🐉", content: "青龙腾飞，东方之灵。主生机勃发，事业腾达。春季运势最佳，宜开拓创新。" },
+                { sign: "白虎星", symbol: "🐅", content: "白虎威猛，西方之神。主变革决断，除旧布新。秋季力量最强，宜果断行动。" },
+                { sign: "朱雀星", symbol: "🦚", content: "朱雀翔舞，南方之精。主文采声誉，名利双收。夏季运势最旺，宜展现才华。" },
+                { sign: "玄武星", symbol: "🐢", content: "玄武镇守，北方之灵。主稳固持久，智慧谋略。冬季力量最盛，宜谋划长远。" }
+            ],
+            
+            // 其他星象
+            "37": [
+                { sign: "紫微星", symbol: "🟄", content: "紫微帝座，尊贵非凡。得此星者，有领导统御之能，事业可更上一层楼。" },
+                { sign: "天机星", symbol: "🟅", content: "天机妙算，智谋过人。此星主变化与智慧，宜筹划未来，随机应变。" },
+                { sign: "太阳星", symbol: "☉", content: "太阳光辉，正气凛然。能量充沛，驱散阴霾。宜公开公正行事。" },
+                { sign: "武曲星", symbol: "🟆", content: "武曲刚毅，决断果敢。财运与战斗力强，宜开拓事业，但需防过于强硬。" },
+                { sign: "天同星", symbol: "🟇", content: "天同福寿，和谐安乐。人际关系融洽，生活舒适。宜享受天伦之乐。" },
+                { sign: "廉贞星", symbol: "🟈", content: "廉贞刚烈，爱憎分明。原则性强，但需防过于固执。感情易生波折。" },
+                { sign: "天府星", symbol: "🟉", content: "天府库藏，丰厚稳定。财运稳固，资源丰富。宜守成积累，忌冒险投机。" },
+                { sign: "太阴星", symbol: "☽", content: "太阴柔美，内敛智慧。女性、情感、艺术方面有利。直觉敏锐之时。" },
+                { sign: "贪狼星", symbol: "🟊", content: "贪狼欲望，多才多艺。桃花旺盛，机遇多但易分散精力。需专注重点。" },
+                { sign: "巨门星", symbol: "🟋", content: "巨门口舌，是非分明。沟通能力强，但易惹口舌之争。谨言慎行为上。" },
+                { sign: "天相星", symbol: "🟌", content: "天相辅佐，忠诚可靠。适合副手职位，协助他人成功中实现自我价值。" },
+                { sign: "天梁星", symbol: "🟍", content: "天梁荫护，化解灾厄。遇难呈祥，有惊无险。长辈贵人相助明显。" },
+                { sign: "七杀星", symbol: "🟎", content: "七杀勇猛，变革创新。突破常规可获成功，但需防冲动冒失。" },
+                { sign: "破军星", symbol: "🟏", content: "破军先锋，破旧立新。开创力强，但破坏也大。需权衡得失后行动。" },
+                { sign: "文昌星", symbol: "✍️", content: "文昌文运，才华横溢。考试、创作、出版有利。文化事业可获发展。" },
+                { sign: "文曲星", symbol: "🖋️", content: "文曲艺术，灵感涌现。艺术创作佳期，才艺可得认可与赞赏。" },
+                { sign: "左辅星", symbol: "🟐", content: "左辅相助，贵人提携。得人帮助事业顺利，宜团队合作而非单打独斗。" },
+                { sign: "右弼星", symbol: "🟑", content: "右弼暗助，化险为夷。看似无援实有暗中助力，保持信心终能过关。" },
+                { sign: "禄存星", symbol: "💰", content: "禄存财禄，稳定积累。正财运佳，宜储蓄理财。投机赌博则必输。" },
+                { sign: "天马星", symbol: "🟒", content: "天马行空，变动远行。迁移、旅行有利。新环境带来新机遇。" },
+                { sign: "擎羊星", symbol: "⚔️", content: "擎羊冲突，尖锐伤害。易有外伤或人际冲突。行事需圆融，避免争执。" },
+                { sign: "陀罗星", symbol: "🌀", content: "陀罗拖延，反复纠缠。事务进展缓慢，需耐心应对。急迫反生混乱。" },
+                { sign: "火星", symbol: "♂", content: "火星急烈，冲突变动。行动力强但易怒。需控制脾气，避免冲动决策。" },
+                { sign: "铃星", symbol: "🔔", content: "铃星声响，惊扰不安。突发状况多，需保持警觉。提前准备应急预案。" },
+                { sign: "天空星", symbol: "☁️", content: "天空幻想，创意灵感。想象力丰富，但需防不切实际。艺术创作有利。" },
+                { sign: "地劫星", symbol: "🜏", content: "地劫破坏，损失消耗。谨防破财，重要资源需备份。保守行事为佳。" },
+                { sign: "地空星", symbol: "🜐", content: "地空无常，得失难料。看似得到实为失去，表面失去反有后福。" },
+                { sign: "化禄星", symbol: "🜑", content: "化禄增益，好运加持。各方面运势提升，宜把握机会拓展事业。" },
+                { sign: "化权星", symbol: "🜒", content: "化权威严，掌控力强。领导才能彰显，可担当重任。但需防专断独行。" },
+                { sign: "化科星", symbol: "🜓", content: "化科名声，才华显露。才艺得认可，考试竞赛有利。声誉提升之时。" },
+                { sign: "化忌星", symbol: "🜔", content: "化忌阻碍，困扰烦恼。行事多波折，重要计划宜延期。耐心等待转机。" },
+                { sign: "天喜星", symbol: "🎉", content: "天喜临门，喜庆吉祥。婚嫁添丁皆宜，人际关系和谐融洽。" },
+                { sign: "红鸾星", symbol: "❤️", content: "红鸾星动，姻缘将至。单身者易遇良缘，已婚者感情升温。" },
+                { sign: "天德星", symbol: "🌟", content: "天德庇佑，逢凶化吉。行善积德之报，遇险自有贵人相助。" },
+                { sign: "月德星", symbol: "🌙", content: "月德柔和，化解纷争。以柔克刚，和谐处事可获意外之助。" },
+                { sign: "华盖星", symbol: "🜕", content: "华盖孤高，艺术宗教。才华独特但知音难觅，宜专注精神追求。" },
+                { sign: "劫煞星", symbol: "🜖", content: "劫煞凶险，破财伤身。行事需谨慎，重要决策宜择吉日。" }
+            ]
+        };
+
+        // 获取DOM元素
+        const divinationBtn = document.getElementById('divinationBtn');
+        const categorySelect = document.getElementById('categorySelect');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultSign = document.getElementById('resultSign');
+        const resultContent = document.getElementById('resultContent');
+        const historyList = document.getElementById('historyList');
+        const constellationDisplay = document.getElementById('constellationDisplay');
+
+        // 历史记录
+        let history = JSON.parse(localStorage.getItem('divinationHistory')) || [];
+
+        // 初始化星空和星座
+        createStars();
+        createConstellation();
+        
+        // 根据当前时间获取实时星象权重
+        function getTimeBasedWeight() {
+            const now = new Date();
+            const hour = now.getHours();
+            const month = now.getMonth();
+            
+            // 夜间(18点-6点)星象更活跃
+            const nightWeight = (hour >= 18 || hour < 6) ? 1.5 : 1;
+            
+            // 季节影响 - 春木夏火秋金冬水
+            const seasonWeights = {
+                // 春季(2-4月) - 木星、青龙相关星象增强
+                1: { '岁星(木星)': 2, '青龙星': 2, '天机星': 1.5 },
+                2: { '岁星(木星)': 2, '青龙星': 2, '天机星': 1.5 },
+                3: { '岁星(木星)': 2, '青龙星': 2, '天机星': 1.5 },
+                // 夏季(5-7月) - 火星、朱雀相关星象增强
+                4: { '荧惑星(火星)': 2, '朱雀星': 2, '太阳星': 1.5 },
+                5: { '荧惑星(火星)': 2, '朱雀星': 2, '太阳星': 1.5 },
+                6: { '荧惑星(火星)': 2, '朱雀星': 2, '太阳星': 1.5 },
+                // 秋季(8-10月) - 金星、白虎相关星象增强
+                7: { '太白星(金星)': 2, '白虎星': 2, '武曲星': 1.5 },
+                8: { '太白星(金星)': 2, '白虎星': 2, '武曲星': 1.5 },
+                9: { '太白星(金星)': 2, '白虎星': 2, '武曲星': 1.5 },
+                // 冬季(11-1月) - 水星、玄武相关星象增强
+                10: { '辰星(水星)': 2, '玄武星': 2, '天同星': 1.5 },
+                11: { '辰星(水星)': 2, '玄武星': 2, '天同星': 1.5 },
+                0: { '辰星(水星)': 2, '玄武星': 2, '天同星': 1.5 }
+            };
+            
+            return {
+                nightWeight,
+                seasonWeights: seasonWeights[month] || {}
+            };
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            historyList.innerHTML = '';
+            history.slice(0, 5).forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <span>${item.symbol || '✨'} ${item.sign}</span>
+                    <span class="history-date">${item.date}</span>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        // 初始化渲染历史记录
+        renderHistory();
+
+        // 获取当前类别的占卜数据
+        function getCurrentDivinationData() {
+            const category = categorySelect.value;
+            if (category === 'all') {
+                // 合并所有类别的数据
+                return [...divinationData['28'], ...divinationData['36'], 
+                       ...divinationData['72'], ...divinationData['9'], 
+                       ...divinationData['4'], ...divinationData['37']];
+            }
+            return divinationData[category] || divinationData['28'];
+        }
+
+        // 占卜按钮点击事件
+        divinationBtn.addEventListener('click', function() {
+            // 显示加载中
+            loading.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            // 重新生成星座显示
+            createConstellation();
+            
+            // 模拟占卜过程
+            setTimeout(function() {
+                // 隐藏加载中
+                loading.style.display = 'none';
+                
+                // 获取当前类别的数据
+                let currentData = getCurrentDivinationData();
+                
+                // 获取实时星象权重
+                const timeWeights = getTimeBasedWeight();
+                
+                // 根据时间调整星象出现概率
+                currentData = currentData.map(item => {
+                    const weight = timeWeights.seasonWeights[item.sign] || 1;
+                    return {
+                        ...item,
+                        weight: weight * timeWeights.nightWeight
+                    };
+                });
+                
+                // 计算总权重
+                const totalWeight = currentData.reduce((sum, item) => sum + (item.weight || 1), 0);
+                
+                // 根据权重随机选择
+                let random = Math.random() * totalWeight;
+                let result = currentData[0];
+                
+                for (const item of currentData) {
+                    random -= item.weight || 1;
+                    if (random <= 0) {
+                        result = item;
+                        break;
+                    }
+                }
+                
+                // 显示结果
+                resultSign.textContent = result.symbol || '✨';
+                resultSign.style.color = getColorForSymbol(result.symbol);
+                resultContent.innerHTML = `<p>${result.content}</p>`;
+                resultContainer.style.display = 'block';
+                
+                // 添加到历史记录
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                
+                history.unshift({
+                    sign: result.sign,
+                    symbol: result.symbol,
+                    date: dateStr,
+                    content: result.content,
+                    category: categorySelect.value
+                });
+                
+                // 保存历史记录（最多保存20条）
+                if (history.length > 20) {
+                    history = history.slice(0, 20);
+                }
+                
+                localStorage.setItem('divinationHistory', JSON.stringify(history));
+                renderHistory();
+                
+                // 滚动到结果位置
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
+        });
+        
+        // 根据符号获取颜色
+        function getColorForSymbol(symbol) {
+            const colorMap = {
+                '🐉': '#4CAF50', // 青龙 - 绿色
+                '🐅': '#F44336', // 白虎 - 红色
+                '🦚': '#FF9800', // 朱雀 - 橙色
+                '🐢': '#2196F3', // 玄武 - 蓝色
+                '☉': '#FFEB3B', // 太阳 - 黄色
+                '☽': '#9C27B0', // 太阴 - 紫色
+                '♂': '#E91E63', // 火星 - 粉红
+                '♃': '#8BC34A', // 木星 - 浅绿
+                '♄': '#795548', // 土星 - 棕色
+                '☿': '#00BCD4', // 水星 - 青色
+                '♀': '#FFC107', // 金星 - 琥珀
+                '✨': '#FFFFFF', // 默认 - 白色
+                '🌟': '#FFFF00'  // 特别星 - 亮黄
+            };
+            
+            return colorMap[symbol] || '#FFFFFF';
+        }
+    </script>
+</body>
+</html>

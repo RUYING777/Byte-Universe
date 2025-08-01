@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebIDE编译器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #FF9AA2;
+            --secondary-color: #FFB7B2;
+            --accent-color: #FFDAC1;
+            --light-color: #E2F0CB;
+            --dark-color: #B5EAD7;
+            --text-color: #5E5E5E;
+            --sidebar-width: 250px;
+            --header-height: 50px;
+            --status-height: 25px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Marker Felt', 'Arial Rounded MT Bold', sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        h1 i {
+            margin-right: 10px;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - var(--header-height) - var(--status-height));
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: white;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            z-index: 5;
+        }
+        
+        .sidebar-header {
+            padding: 0.8rem;
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-title {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .sidebar-controls button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.2rem;
+        }
+        
+        .file-explorer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .folder {
+            margin-bottom: 0.5rem;
+        }
+        
+        .folder-header {
+            display: flex;
+            align-items: center;
+            padding: 0.3rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .folder-header:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .folder-icon {
+            margin-right: 5px;
+            color: var(--primary-color);
+        }
+        
+        .folder-name {
+            flex: 1;
+        }
+        
+        .folder-contents {
+            padding-left: 20px;
+            margin-top: 0.3rem;
+            display: none;
+        }
+        
+        .folder.open .folder-contents {
+            display: block;
+        }
+        
+        .file {
+            display: flex;
+            align-items: center;
+            padding: 0.3rem;
+            padding-left: 25px;
+            cursor: pointer;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .file:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .file.active {
+            background-color: var(--light-color);
+            font-weight: bold;
+        }
+        
+        .file-icon {
+            margin-right: 5px;
+            color: var(--dark-color);
+        }
+        
+        .file-name {
+            flex: 1;
+        }
+        
+        .file-actions {
+            display: none;
+            position: absolute;
+            right: 5px;
+        }
+        
+        .file:hover .file-actions {
+            display: block;
+        }
+        
+        .file-actions button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0.2rem;
+        }
+        
+        .add-btn {
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.5rem auto;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .editor-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .code-editors {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            border-right: 1px solid #eee;
+        }
+        
+        .editor-tabs {
+            display: flex;
+            background: linear-gradient(135deg, var(--light-color), var(--dark-color));
+        }
+        
+        .editor-tab {
+            padding: 0.5rem 1rem;
+            color: var(--text-color);
+            cursor: pointer;
+            border-right: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        
+        .editor-tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+        
+        .editor {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .CodeMirror {
+            height: 100% !important;
+            font-size: 14px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+        
+        .preview {
+            width: 50%;
+            background-color: white;
+            border-left: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-header {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--light-color), var(--dark-color));
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .run-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-left: 0.5rem;
+        }
+        
+        .run-btn i {
+            margin-right: 5px;
+        }
+        
+        .run-btn:hover {
+            background-color: #ff7b85;
+        }
+        
+        .preview-frame {
+            flex: 1;
+            border: none;
+            background-color: white;
+        }
+        
+        .status-bar {
+            height: var(--status-height);
+            padding: 0 1rem;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .editor-actions {
+            display: flex;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #ddd;
+            color: var(--text-color);
+        }
+        
+        /* 文件导入区域 */
+        .file-drop-area {
+            border: 2px dashed var(--dark-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .file-drop-area:hover {
+            background-color: rgba(181, 234, 215, 0.2);
+        }
+        
+        .file-drop-area i {
+            font-size: 2rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-drop-text {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.3rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-item-icon {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .file-item-name {
+            flex: 1;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 992px) {
+            :root {
+                --sidebar-width: 200px;
+            }
+            
+            .editor-container {
+                flex-direction: column;
+            }
+            
+            .code-editors, .preview {
+                width: 100%;
+                height: 50%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: 0;
+                top: var(--header-height);
+                bottom: var(--status-height);
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .logo-icon {
+            animation: bounce 2s infinite;
+        }
+        
+        /* 文件类型图标 */
+        .file-icon-img {
+            color: #FF9AA2;
+        }
+        
+        .file-icon-doc {
+            color: #3498db;
+        }
+        
+        .file-icon-media {
+            color: #9b59b6;
+        }
+        
+        .file-icon-archive {
+            color: #e67e22;
+        }
+        
+        .file-icon-other {
+            color: #95a5a6;
+        }
+        
+        /* 代码格式化按钮 */
+        .format-btn {
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-left: 0.5rem;
+        }
+        
+        .format-btn:hover {
+            background-color: #8fd8b6;
+        }
+        
+        /* 项目操作按钮 */
+        .project-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-left: 0.5rem;
+        }
+        
+        .project-btn:hover {
+            background-color: #ff9e9e;
+        }
+        #delete-project-btn {
+            margin-left: 0.5rem;
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+        #delete-project-btn:hover {
+            background-color: #ff5252;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-fish logo-icon"></i> WebIDE编译器</h1>
+    </header>
+    
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">文件资源管理器</div>
+                <div class="sidebar-controls">
+                    <button title="新建文件" id="new-file-btn"><i class="fas fa-plus"></i></button>
+                    <button title="导入文件" id="import-file-btn"><i class="fas fa-file-import"></i></button>
+                    <button title="刷新" id="refresh-btn"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </div>
+            
+            <div class="file-explorer" id="file-explorer">
+                <div class="folder open">
+                    <div class="folder-header">
+                        <i class="fas fa-folder-open folder-icon"></i>
+                        <span class="folder-name">我的项目</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="folder-contents">
+                        <div class="file active" data-type="html">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span class="file-name">index.html</span>
+                            <div class="file-actions">
+                                <button title="重命名"><i class="fas fa-pen"></i></button>
+                                <button title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="file" data-type="css">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span class="file-name">style.css</span>
+                            <div class="file-actions">
+                                <button title="重命名"><i class="fas fa-pen"></i></button>
+                                <button title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="file" data-type="js">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span class="file-name">script.js</span>
+                            <div class="file-actions">
+                                <button title="重命名"><i class="fas fa-pen"></i></button>
+                                <button title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="folder">
+                    <div class="folder-header">
+                    </div>
+                    <div class="folder-contents"></div>
+                </div>
+                
+                <button class="add-btn" title="保存整个项目" id="save-project-btn"><i class="fas fa-save"></i></button>
+                <button class="add-btn" title="加载项目" id="load-project-btn"><i class="fas fa-folder-open"></i></button>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="editor-container">
+                <div class="code-editors">
+                    <div class="editor-tabs">
+                        <div class="editor-tab active" data-target="html">HTML</div>
+                        <div class="editor-tab" data-target="css">CSS</div>
+                        <div class="editor-tab" data-target="js">JavaScript</div>
+                    </div>
+                    
+                    <div class="editor">
+                        <textarea id="html-code" class="code-editor"><!DOCTYPE html>
+<html>
+<head>
+    <title>我的网页</title>
+</head>
+<body>
+    <h1>欢迎使用WebIDE编译器</h1>
+    <p>在这里编写和测试您的代码</p>
+    <div id="output"></div>
+    <!-- 示例图片引用 -->
+    <img src="example.jpg" alt="示例图片" style="max-width: 300px; display: block; margin: 20px auto;">
+</body>
+</html></textarea>
+                        
+                        <textarea id="css-code" class="code-editor">body {
+    font-family: 'Comic Sans MS', cursive;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+}
+
+h1 {
+    color: #FF9AA2;
+    border-bottom: 2px dashed #B5EAD7;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+p {
+    color: #5E5E5E;
+}</textarea>
+                        
+                        <textarea id="js-code" class="code-editor">document.getElementById('output').innerHTML = 
+    '<p style="color: #FF9AA2; font-weight: bold;">这段文字是由JavaScript动态添加的~</p>';
+
+console.log('WebIDE编译器正在运行您的代码！🎉');</textarea>
+                    </div>
+                </div>
+                
+                <div class="preview">
+                    <div class="preview-header">
+                        <span>实时预览</span>
+                        <div class="editor-actions">
+                            <button class="format-btn" id="format-btn"><i class="fas fa-broom"></i> 格式化</button>
+                            <button class="project-btn" id="auto-save-btn"><i class="fas fa-save"></i> 自动保存</button>
+                            <button class="run-btn" id="save-btn"><i class="fas fa-save"></i> 导出</button>
+                            <button class="run-btn" id="run-btn"><i class="fas fa-play"></i> 运行</button>
+                        </div>
+                    </div>
+                    <iframe class="preview-frame" id="preview-frame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 保存文件模态框 -->
+    <div class="modal" id="save-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">导出文件</span>
+                <button class="close-modal" id="close-save-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="filename">文件名</label>
+                <input type="text" id="filename" placeholder="输入文件名（不带扩展名）">
+            </div>
+            <div class="form-group">
+                <label for="filetype">文件类型</label>
+                <select id="filetype">
+                    <option value="html">HTML (.html)</option>
+                    <option value="css">CSS (.css)</option>
+                    <option value="js">JavaScript (.js)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-save">取消</button>
+                <button class="btn-primary" id="confirm-save">导出</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导入文件模态框 -->
+    <div class="modal" id="import-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">导入文件</span>
+                <button class="close-modal" id="close-import-modal">&times;</button>
+            </div>
+            <div class="file-drop-area" id="file-drop-area">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="file-drop-text">拖放文件到此处或点击选择文件</p>
+                <input type="file" id="file-input" style="display: none;" multiple>
+            </div>
+            <div class="file-list" id="file-list">
+                <p style="text-align: center; color: #999;">暂无文件</p>
+            </div>
+            <div class="form-group">
+                <label for="import-folder">导入到文件夹</label>
+                <select id="import-folder">
+                    <option value="root">我的项目</option>
+                    <option value="resources">资源</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-import">取消</button>
+                <button class="btn-primary" id="confirm-import">导入</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 保存项目模态框 -->
+    <div class="modal" id="save-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">保存项目</span>
+                <button class="close-modal" id="close-save-project-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="project-name">项目名称</label>
+                <input type="text" id="project-name" placeholder="输入项目名称">
+            </div>
+            <div class="form-group">
+                <label for="project-description">项目描述</label>
+                <input type="text" id="project-description" placeholder="输入项目描述（可选）">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-save-project">取消</button>
+                <button class="btn-primary" id="confirm-save-project">保存项目</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载项目模态框 -->
+    <div class="modal" id="load-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">加载项目</span>
+                <button class="close-modal" id="close-load-project-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="project-list">选择项目</label>
+                <select id="project-list" size="5" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="" disabled selected>加载中...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="project-info">项目信息</label>
+                <textarea id="project-info" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" readonly></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-load-project">取消</button>
+                <button class="btn-primary" id="confirm-load-project">加载项目</button>
+                <button class="btn-secondary" id="delete-project-btn" style="background-color: #ff6b6b;"><i class="fas fa-trash"></i> 删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新建文件/文件夹模态框 -->
+    <div class="modal" id="new-item-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="new-item-title">新建</span>
+                <button class="close-modal" id="close-new-item-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="new-item-name">名称</label>
+                <input type="text" id="new-item-name" placeholder="输入名称">
+            </div>
+            <div class="form-group" id="new-item-type-container">
+                <label for="new-item-type">类型</label>
+                <select id="new-item-type">
+                    <option value="html">HTML (.html)</option>
+                    <option value="css">CSS (.css)</option>
+                    <option value="js">JavaScript (.js)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-new-item">取消</button>
+                <button class="btn-primary" id="confirm-new-item">创建</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <button class="toggle-sidebar" id="toggle-sidebar"><i class="fas fa-bars"></i></button>
+        <span id="status-message">就绪 - 欢迎使用WebIDE编译器！</span>
+        <span><i class="fas fa-heart" style="color: #FF9AA2;"></i></span>
+    </div>
+
+    <!-- 引入CodeMirror库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchtags.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/brace-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/xml-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/indent-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/comment-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/css-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/xml-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/anyword-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/formatting/formatting.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.css">
+    
+    <!-- 引入JSZip用于压缩项目 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- 引入js-beautify用于代码格式化 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // IndexedDB数据库配置
+            const DB_NAME = 'WebIDE_DB';
+            const DB_VERSION = 1;
+            const PROJECT_STORE = 'projects';
+            const FILE_STORE = 'files';
+            const RESOURCE_STORE = 'resources';
+            
+            let db;
+            let currentProjectId = null;
+            let autoSaveEnabled = false;
+            let autoSaveInterval;
+            
+            // 初始化数据库
+            function initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    
+                    request.onerror = function(event) {
+                        console.error('数据库打开失败:', event.target.error);
+                        reject(event.target.error);
+                    };
+                    
+                    request.onsuccess = function(event) {
+                        db = event.target.result;
+                        console.log('数据库已打开');
+                        resolve(db);
+                    };
+                    
+                    request.onupgradeneeded = function(event) {
+                        const db = event.target.result;
+                        
+                        // 创建项目存储
+                        if (!db.objectStoreNames.contains(PROJECT_STORE)) {
+                            const projectStore = db.createObjectStore(PROJECT_STORE, { 
+                                keyPath: 'id',
+                                autoIncrement: true 
+                            });
+                            projectStore.createIndex('name', 'name', { unique: false });
+                            projectStore.createIndex('createdAt', 'createdAt', { unique: false });
+                        }
+                        
+                        // 创建文件存储
+                        if (!db.objectStoreNames.contains(FILE_STORE)) {
+                            const fileStore = db.createObjectStore(FILE_STORE, { 
+                                keyPath: 'id',
+                                autoIncrement: true 
+                            });
+                            fileStore.createIndex('projectId', 'projectId', { unique: false });
+                            fileStore.createIndex('name', 'name', { unique: false });
+                        }
+                        
+                        // 创建资源存储
+                        if (!db.objectStoreNames.contains(RESOURCE_STORE)) {
+                            const resourceStore = db.createObjectStore(RESOURCE_STORE, { 
+                                keyPath: 'id',
+                                autoIncrement: true 
+                            });
+                            resourceStore.createIndex('projectId', 'projectId', { unique: false });
+                            resourceStore.createIndex('name', 'name', { unique: false });
+                        }
+                        
+                        console.log('数据库结构已创建');
+                    };
+                });
+            }
+            
+            // 初始化编辑器
+            const htmlEditor = CodeMirror.fromTextArea(document.getElementById('html-code'), {
+                mode: 'htmlmixed',
+                theme: 'material-darker',
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                autoCloseTags: true,
+                autoCloseBrackets: true,
+                matchTags: {bothTags: true},
+                matchBrackets: true,
+                lineWrapping: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Ctrl-/": "toggleComment",
+                    "Ctrl-Alt-L": function(cm) { formatCode(cm, 'html'); },
+                    "'<'": function(cm) { cm.closeTag(cm, '>'); },
+                    "Tab": "indentMore",
+                    "Shift-Tab": "indentLess"
+                }
+            });
+            
+            const cssEditor = CodeMirror.fromTextArea(document.getElementById('css-code'), {
+                mode: 'css',
+                theme: 'material-darker',
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                lineWrapping: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Ctrl-/": "toggleComment",
+                    "Ctrl-Alt-L": function(cm) { formatCode(cm, 'css'); },
+                    "Tab": "indentMore",
+                    "Shift-Tab": "indentLess"
+                }
+            });
+            
+            const jsEditor = CodeMirror.fromTextArea(document.getElementById('js-code'), {
+                mode: 'javascript',
+                theme: 'material-darker',
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                lineWrapping: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Ctrl-/": "toggleComment",
+                    "Ctrl-Alt-L": function(cm) { formatCode(cm, 'js'); },
+                    "Tab": "indentMore",
+                    "Shift-Tab": "indentLess"
+                }
+            });
+            
+            // 代码格式化函数
+            function formatCode(editor, type) {
+                const code = editor.getValue();
+                let formattedCode = code;
+                
+                try {
+                    if (type === 'html') {
+                        formattedCode = html_beautify(code, {
+                            indent_size: 4,
+                            indent_char: ' ',
+                            max_preserve_newlines: 2,
+                            preserve_newlines: true,
+                            keep_array_indentation: false,
+                            break_chained_methods: false,
+                            indent_scripts: 'normal',
+                            brace_style: 'collapse',
+                            space_before_conditional: true,
+                            unescape_strings: false,
+                            jslint_happy: false,
+                            end_with_newline: true,
+                            wrap_line_length: 0,
+                            indent_inner_html: true,
+                            comma_first: false,
+                            e4x: false,
+                            indent_empty_lines: false
+                        });
+                    } else if (type === 'css') {
+                        formattedCode = css_beautify(code, {
+                            indent_size: 4,
+                            indent_char: ' ',
+                            selector_separator_newline: true,
+                            newline_between_rules: true,
+                            preserve_newlines: true,
+                            end_with_newline: true
+                        });
+                    } else if (type === 'js') {
+                        formattedCode = js_beautify(code, {
+                            indent_size: 4,
+                            indent_char: ' ',
+                            max_preserve_newlines: 2,
+                            preserve_newlines: true,
+                            keep_array_indentation: false,
+                            break_chained_methods: false,
+                            indent_scripts: 'normal',
+                            brace_style: 'collapse',
+                            space_before_conditional: true,
+                            unescape_strings: false,
+                            jslint_happy: false,
+                            end_with_newline: true,
+                            wrap_line_length: 0,
+                            comma_first: false,
+                            e4x: false,
+                            indent_empty_lines: false
+                        });
+                    }
+                    
+                    editor.setValue(formattedCode);
+                    statusBar.textContent = '代码已格式化 - ' + new Date().toLocaleTimeString();
+                } catch (e) {
+                    console.error('格式化错误:', e);
+                    statusBar.textContent = '格式化错误: ' + e.message;
+                }
+            }
+            
+            // 标签切换功能
+            const tabs = document.querySelectorAll('.editor-tab');
+            const editors = [htmlEditor, cssEditor, jsEditor];
+            
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    editors.forEach(editor => editor.getWrapperElement().style.display = 'none');
+                    editors[index].getWrapperElement().style.display = 'block';
+                    editors[index].refresh();
+                });
+            });
+            
+            // 默认显示HTML编辑器
+            cssEditor.getWrapperElement().style.display = 'none';
+            jsEditor.getWrapperElement().style.display = 'none';
+            
+            // 运行按钮功能
+            const runBtn = document.getElementById('run-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const formatBtn = document.getElementById('format-btn');
+            const autoSaveBtn = document.getElementById('auto-save-btn');
+            const previewFrame = document.getElementById('preview-frame');
+            const statusBar = document.getElementById('status-message');
+
+            
+            // 存储导入的资源文件
+            const importedResources = {};
+            
+            function runCode() {
+                const html = htmlEditor.getValue();
+                const css = cssEditor.getValue();
+                const js = jsEditor.getValue();
+                
+                const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                
+                previewDoc.open();
+                previewDoc.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>${css}</style>
+                    </head>
+                    <body>
+                        ${html}
+                        <script>${js}<\/script>
+                    </body>
+                    </html>
+                `);
+                previewDoc.close();
+                
+                // 注入导入的资源文件
+                Object.keys(importedResources).forEach(filename => {
+                    if (filename.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
+                        // 图片资源
+                        const imgElements = previewDoc.querySelectorAll(`img[src="${filename}"]`);
+                        imgElements.forEach(img => {
+                            img.src = importedResources[filename];
+                        });
+                    } else if (filename.match(/\.(mp3|wav|ogg)$/i)) {
+                        // 音频资源
+                        const audioElements = previewDoc.querySelectorAll(`audio source[src="${filename}"], audio[src="${filename}"]`);
+                        audioElements.forEach(audio => {
+                            audio.src = importedResources[filename];
+                        });
+                    } else if (filename.match(/\.(mp4|webm|ogv)$/i)) {
+                        // 视频资源
+                        const videoElements = previewDoc.querySelectorAll(`video source[src="${filename}"], video[src="${filename}"]`);
+                        videoElements.forEach(video => {
+                            video.src = importedResources[filename];
+                        });
+                    }
+                });
+                
+                statusBar.textContent = '代码已执行 - ' + new Date().toLocaleTimeString();
+            }
+            
+            // 新添加的运行页面功能
+            function runInNewPage() {
+                const html = htmlEditor.getValue();
+                const css = cssEditor.getValue();
+                const js = jsEditor.getValue();
+                
+                // 创建新窗口
+                const newWindow = window.open('', '_blank');
+                
+                // 写入HTML内容
+                newWindow.document.open();
+                newWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>WebIDE 运行结果</title>
+                        <style>
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                margin: 0; 
+                                padding: 20px;
+                                background-color: #f5f5f5;
+                            }
+                            .header {
+                                background-color: #FF9AA2;
+                                color: white;
+                                padding: 10px;
+                                margin-bottom: 20px;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            }
+                            .close-btn {
+                                background-color: white;
+                                color: #FF9AA2;
+                                border: none;
+                                padding: 5px 10px;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            }
+                            ${css}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>WebIDE 运行结果</h2>
+                            <button class="close-btn" onclick="window.close()">关闭</button>
+                        </div>
+                        ${html}
+                        <script>${js}<\/script>
+                    </body>
+                    </html>
+                `);
+                newWindow.document.close();
+                
+                // 注入导入的资源文件
+                Object.keys(importedResources).forEach(filename => {
+                    if (filename.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
+                        // 图片资源
+                        const imgElements = newWindow.document.querySelectorAll(`img[src="${filename}"]`);
+                        imgElements.forEach(img => {
+                            img.src = importedResources[filename];
+                        });
+                    } else if (filename.match(/\.(mp3|wav|ogg)$/i)) {
+                        // 音频资源
+                        const audioElements = newWindow.document.querySelectorAll(`audio source[src="${filename}"], audio[src="${filename}"]`);
+                        audioElements.forEach(audio => {
+                            audio.src = importedResources[filename];
+                        });
+                    } else if (filename.match(/\.(mp4|webm|ogv)$/i)) {
+                        // 视频资源
+                        const videoElements = newWindow.document.querySelectorAll(`video source[src="${filename}"], video[src="${filename}"]`);
+                        videoElements.forEach(video => {
+                            video.src = importedResources[filename];
+                        });
+                    }
+                });
+                
+                statusBar.textContent = '代码已在新窗口运行 - ' + new Date().toLocaleTimeString();
+            }
+            
+            // 修改运行按钮事件监听器
+            runBtn.addEventListener('click', runInNewPage);
+            
+            // 格式化按钮功能
+            formatBtn.addEventListener('click', function() {
+                let activeEditor;
+                let type;
+                
+                if (htmlEditor.getWrapperElement().style.display !== 'none') {
+                    activeEditor = htmlEditor;
+                    type = 'html';
+                } else if (cssEditor.getWrapperElement().style.display !== 'none') {
+                    activeEditor = cssEditor;
+                    type = 'css';
+                } else {
+                    activeEditor = jsEditor;
+                    type = 'js';
+                }
+                
+                formatCode(activeEditor, type);
+            });
+            
+            // 自动保存功能
+            autoSaveBtn.addEventListener('click', function() {
+                autoSaveEnabled = !autoSaveEnabled;
+                
+                if (autoSaveEnabled) {
+                    autoSaveBtn.innerHTML = '<i class="fas fa-save"></i> 自动保存中';
+                    autoSaveBtn.style.backgroundColor = '#4CAF50';
+                    statusBar.textContent = '自动保存已启用';
+                    
+                    // 立即保存一次
+                    saveCurrentProject();
+                    
+                    // 设置定时保存
+                    autoSaveInterval = setInterval(saveCurrentProject, 30000); // 每30秒保存一次
+                } else {
+                    autoSaveBtn.innerHTML = '<i class="fas fa-save"></i> 自动保存';
+                    autoSaveBtn.style.backgroundColor = '';
+                    statusBar.textContent = '自动保存已禁用';
+                    clearInterval(autoSaveInterval);
+                }
+            });
+            
+            // 自动运行（可选）
+            let timeout;
+            [htmlEditor, cssEditor, jsEditor].forEach(editor => {
+                editor.on('change', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(runCode, 1000);
+                    statusBar.textContent = '代码已更改...';
+                    
+                    // 如果启用了自动保存，保存当前项目
+                    if (autoSaveEnabled) {
+                        saveCurrentProject();
+                    }
+                });
+            });
+            
+            // 文件夹功能
+            const folders = document.querySelectorAll('.folder-header');
+            folders.forEach(folder => {
+                folder.addEventListener('click', () => {
+                    const parentFolder = folder.parentElement;
+                    parentFolder.classList.toggle('open');
+                    
+                    const icon = folder.querySelector('.fa-chevron-right, .fa-chevron-down');
+                    if (icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    } else {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                });
+            });
+            
+            // 文件选择功能
+            const files = document.querySelectorAll('.file');
+            files.forEach(file => {
+                file.addEventListener('click', (e) => {
+                    // 防止点击操作按钮时触发
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'I') {
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.file').forEach(f => f.classList.remove('active'));
+                    file.classList.add('active');
+                    
+                    // 这里可以添加加载文件内容的逻辑
+                    statusBar.textContent = '已选择: ' + file.querySelector('.file-name').textContent;
+                });
+            });
+            
+            // 侧边栏切换
+            const toggleSidebar = document.getElementById('toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            
+            toggleSidebar.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+            
+            // 保存功能
+            const saveModal = document.getElementById('save-modal');
+            const closeSaveModal = document.getElementById('close-save-modal');
+            const cancelSave = document.getElementById('cancel-save');
+            const confirmSave = document.getElementById('confirm-save');
+            const filenameInput = document.getElementById('filename');
+            const filetypeSelect = document.getElementById('filetype');
+
+            // 新增导出项目按钮
+            const exportProjectBtn = document.createElement('button');
+            exportProjectBtn.className = 'project-btn';
+            exportProjectBtn.id = 'export-project-btn';
+            exportProjectBtn.innerHTML = '<i class="fas fa-folder-open"></i> 导出项目';
+            document.querySelector('.editor-actions').appendChild(exportProjectBtn);
+            
+            saveBtn.addEventListener('click', () => {
+                // 获取当前活动的编辑器内容
+                let activeEditor;
+                let defaultFilename = 'untitled';
+                let defaultType = 'html';
+                
+                if (htmlEditor.getWrapperElement().style.display !== 'none') {
+                    activeEditor = htmlEditor;
+                    defaultType = 'html';
+                } else if (cssEditor.getWrapperElement().style.display !== 'none') {
+                    activeEditor = cssEditor;
+                    defaultType = 'css';
+                } else {
+                    activeEditor = jsEditor;
+                    defaultType = 'js';
+                }
+                
+                // 设置默认文件名和类型
+                filenameInput.value = defaultFilename;
+                filetypeSelect.value = defaultType;
+                
+                saveModal.style.display = 'flex';
+            });
+
+            // 导出整个项目功能
+            exportProjectBtn.addEventListener('click', async () => {
+                if (!currentProjectId) {
+                    alert('请先保存项目！');
+                    return;
+                }
+
+                try {
+                    // 获取项目名称
+                    const project = await getProjectFromDB(currentProjectId);
+                    const projectName = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    
+                    // 获取项目所有文件
+                    const files = await getFilesFromDB(currentProjectId);
+                    const resources = await getResourcesFromDB(currentProjectId);
+                    
+                    // 创建JSZip实例
+                    const zip = new JSZip();
+                    
+                    // 添加文件到zip
+                    files.forEach(file => {
+                        zip.file(file.name, file.content);
+                    });
+                    
+                    // 添加资源文件到zip
+                    resources.forEach(resource => {
+                        // 从DataURL中提取Base64数据
+                        const base64Data = resource.content.split(',')[1];
+                        zip.file(resource.name, base64Data, {base64: true});
+                    });
+                    
+                    // 生成zip文件
+                    const content = await zip.generateAsync({type: 'blob'});
+                    
+                    // 创建下载链接
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(content);
+                    a.download = `${projectName}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    statusBar.textContent = `项目已导出: ${projectName}.zip - ${new Date().toLocaleTimeString()}`;
+                } catch (error) {
+                    console.error('导出项目失败:', error);
+                    statusBar.textContent = '导出项目失败: ' + error.message;
+                }
+            });
+            
+            closeSaveModal.addEventListener('click', () => {
+                saveModal.style.display = 'none';
+            });
+            
+            cancelSave.addEventListener('click', () => {
+                saveModal.style.display = 'none';
+            });
+            
+            confirmSave.addEventListener('click', () => {
+                const filename = filenameInput.value.trim();
+                const filetype = filetypeSelect.value;
+                
+                if (!filename) {
+                    alert('请输入有效的文件名！');
+                    return;
+                }
+                
+                // 获取当前活动编辑器的内容
+                let content;
+                if (filetype === 'html') {
+                    content = htmlEditor.getValue();
+                } else if (filetype === 'css') {
+                    content = cssEditor.getValue();
+                } else {
+                    content = jsEditor.getValue();
+                }
+                
+                // 创建完整的文件名
+                const fullFilename = filename + '.' + filetype;
+                
+                // 创建Blob对象
+                const blob = new Blob([content], { type: 'text/plain' });
+                
+                // 创建下载链接
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fullFilename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // 更新状态栏
+                statusBar.textContent = `文件已保存: ${fullFilename} - ${new Date().toLocaleTimeString()}`;
+                
+                // 关闭模态框
+                saveModal.style.display = 'none';
+                
+                // 添加到文件列表
+                addFileToExplorer(fullFilename, filetype);
+                
+                // 保存到数据库
+                if (currentProjectId) {
+                    saveFileToDB(currentProjectId, fullFilename, content, filetype);
+                }
+            });
+            
+            // 添加文件到资源管理器
+            function addFileToExplorer(filename, filetype) {
+                const fileExplorer = document.getElementById('file-explorer');
+                const firstFolder = fileExplorer.querySelector('.folder-contents');
+                
+                const fileElement = document.createElement('div');
+                fileElement.className = 'file';
+                fileElement.dataset.type = filetype;
+                
+                fileElement.innerHTML = `
+                    <i class="fas fa-file-code file-icon"></i>
+                    <span class="file-name">${filename}</span>
+                    <div class="file-actions">
+                        <button title="重命名"><i class="fas fa-pen"></i></button>
+                        <button title="删除"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                
+                firstFolder.appendChild(fileElement);
+                
+                // 文件点击事件
+                fileElement.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'I') {
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.file').forEach(f => f.classList.remove('active'));
+                    fileElement.classList.add('active');
+                    statusBar.textContent = '已选择: ' + filename;
+                });
+                
+                // 删除按钮事件
+                const deleteBtn = fileElement.querySelector('.file-actions button:last-child');
+                deleteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (confirm(`确定要删除文件 ${filename} 吗？`)) {
+                        fileElement.remove();
+                        if (currentProjectId) {
+                            deleteFileFromDB(currentProjectId, filename).then(() => {
+                                statusBar.textContent = `文件已删除: ${filename}`;
+                            }).catch(error => {
+                                console.error('删除文件失败:', error);
+                                statusBar.textContent = '删除文件失败: ' + error.message;
+                            });
+                        }
+                    }
+                });
+                
+                // 重命名按钮事件 (可选)
+                const renameBtn = fileElement.querySelector('.file-actions button:first-child');
+                renameBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const newName = prompt('输入新的文件名:', filename);
+                    if (newName && newName !== filename) {
+                        // 实现重命名逻辑
+                    }
+                });
+            }
+            
+            // 导入文件功能
+            const importBtn = document.getElementById('import-file-btn');
+            const importModal = document.getElementById('import-modal');
+            const closeImportModal = document.getElementById('close-import-modal');
+            const cancelImport = document.getElementById('cancel-import');
+            const confirmImport = document.getElementById('confirm-import');
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const importFolderSelect = document.getElementById('import-folder');
+            
+            let filesToImport = [];
+            
+            importBtn.addEventListener('click', () => {
+                filesToImport = [];
+                fileList.innerHTML = '<p style="text-align: center; color: #999;">暂无文件</p>';
+                importModal.style.display = 'flex';
+            });
+            
+            closeImportModal.addEventListener('click', () => {
+                importModal.style.display = 'none';
+            });
+            
+            cancelImport.addEventListener('click', () => {
+                importModal.style.display = 'none';
+            });
+            
+            // 处理文件拖放
+            fileDropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileDropArea.style.backgroundColor = 'rgba(181, 234, 215, 0.2)';
+            });
+            
+            fileDropArea.addEventListener('dragleave', () => {
+                fileDropArea.style.backgroundColor = '';
+            });
+            
+            fileDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileDropArea.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            fileDropArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFiles(fileInput.files);
+                }
+            });
+            
+            function handleFiles(files) {
+                filesToImport = Array.from(files);
+                updateFileList();
+            }
+            
+            function updateFileList() {
+                if (filesToImport.length === 0) {
+                    fileList.innerHTML = '<p style="text-align: center; color: #999;">暂无文件</p>';
+                    return;
+                }
+                
+                fileList.innerHTML = '';
+                
+                filesToImport.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    // 根据文件类型选择图标
+                    let iconClass = 'fa-file';
+                    if (file.type.startsWith('image/')) {
+                        iconClass = 'fa-file-image file-icon-img';
+                    } else if (file.type.startsWith('text/') || file.type === 'application/javascript' || file.type === 'text/css') {
+                        iconClass = 'fa-file-code';
+                    } else if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+                        iconClass = 'fa-file-video file-icon-media';
+                    } else if (file.type === 'application/pdf' || file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                        iconClass = 'fa-file-word file-icon-doc';
+                    } else if (file.type === 'application/zip' || file.type === 'application/x-rar-compressed') {
+                        iconClass = 'fa-file-archive file-icon-archive';
+                    } else {
+                        iconClass = 'fa-file file-icon-other';
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <i class="fas ${iconClass} file-item-icon"></i>
+                        <span class="file-item-name" title="${file.name}">${file.name}</span>
+                        <button class="file-item-remove" data-index="${index}"><i class="fas fa-times"></i></button>
+                    `;
+                    
+                    fileList.appendChild(fileItem);
+                });
+                
+                // 添加删除按钮事件
+                document.querySelectorAll('.file-item-remove').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.currentTarget.dataset.index);
+                        filesToImport.splice(index, 1);
+                        updateFileList();
+                    });
+                });
+            }
+            
+            confirmImport.addEventListener('click', () => {
+                if (filesToImport.length === 0) {
+                    alert('请先选择要导入的文件！');
+                    return;
+                }
+                
+                const folder = importFolderSelect.value;
+                const folderElement = folder === 'root' 
+                    ? document.querySelector('.folder-contents')
+                    : document.querySelectorAll('.folder-contents')[1];
+                
+                filesToImport.forEach(file => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const fileElement = document.createElement('div');
+                        fileElement.className = 'file';
+                        fileElement.dataset.type = getFileType(file.name);
+                        
+                        // 根据文件类型选择图标
+                        let iconClass = 'fa-file';
+                        if (file.type.startsWith('image/')) {
+                            iconClass = 'fa-file-image file-icon-img';
+                        } else if (file.type.startsWith('text/') || file.type === 'application/javascript' || file.type === 'text/css') {
+                            iconClass = 'fa-file-code';
+                        } else if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+                            iconClass = 'fa-file-video file-icon-media';
+                        } else if (file.type === 'application/pdf' || file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                            iconClass = 'fa-file-word file-icon-doc';
+                        } else if (file.type === 'application/zip' || file.type === 'application/x-rar-compressed') {
+                            iconClass = 'fa-file-archive file-icon-archive';
+                        } else {
+                            iconClass = 'fa-file file-icon-other';
+                        }
+                        
+                        fileElement.innerHTML = `
+                            <i class="fas ${iconClass} file-icon"></i>
+                            <span class="file-name">${file.name}</span>
+                            <div class="file-actions">
+                                <button title="重命名"><i class="fas fa-pen"></i></button>
+                                <button title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        
+                        folderElement.appendChild(fileElement);
+                        
+                        // 存储文件数据以便预览
+                        importedResources[file.name] = e.target.result;
+                        
+                        // 保存到数据库
+                        if (currentProjectId) {
+                            if (file.type.startsWith('text/') || file.type === 'application/javascript' || file.type === 'text/css') {
+                                // 文本文件
+                                saveFileToDB(currentProjectId, file.name, e.target.result, getFileType(file.name));
+                            } else {
+                                // 二进制文件
+                                saveResourceToDB(currentProjectId, file.name, e.target.result, file.type);
+                            }
+                        }
+                        
+                        // 添加点击事件
+                        fileElement.addEventListener('click', function(e) {
+                            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'I') {
+                                return;
+                            }
+                            
+                            document.querySelectorAll('.file').forEach(f => f.classList.remove('active'));
+                            fileElement.classList.add('active');
+                            
+                            // 如果是图片、视频或音频文件，在预览中显示
+                            if (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+                                const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                                previewDoc.open();
+                                previewDoc.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <style>
+                                            body { 
+                                                display: flex; 
+                                                justify-content: center; 
+                                                align-items: center; 
+                                                height: 100vh; 
+                                                margin: 0; 
+                                                background-color: #f5f5f5;
+                                            }
+                                            .preview-container {
+                                                text-align: center;
+                                                max-width: 90%;
+                                            }
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <div class="preview-container">
+                                            <h2>${file.name}</h2>
+                                            ${file.type.startsWith('image/') ? `<img src="${e.target.result}" style="max-width: 100%; max-height: 80vh;">` : ''}
+                                            ${file.type.startsWith('audio/') ? `<audio controls src="${e.target.result}"></audio>` : ''}
+                                            ${file.type.startsWith('video/') ? `<video controls src="${e.target.result}" style="max-width: 100%; max-height: 80vh;"></video>` : ''}
+                                        </div>
+                                    </body>
+                                    </html>
+                                `);
+                                previewDoc.close();
+                            }
+                            
+                            statusBar.textContent = '已选择: ' + file.name;
+                        });
+                    };
+                    
+                    if (file.type.startsWith('text/') || file.type === 'application/javascript' || file.type === 'text/css') {
+                        reader.readAsText(file);
+                    } else {
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                statusBar.textContent = `已导入 ${filesToImport.length} 个文件`;
+                importModal.style.display = 'none';
+                filesToImport = [];
+            });
+            
+            function getFileType(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                if (ext === 'html' || ext === 'htm') return 'html';
+                if (ext === 'css') return 'css';
+                if (ext === 'js') return 'js';
+                return 'other';
+            }
+            
+            // 保存项目功能
+            const saveProjectBtn = document.getElementById('save-project-btn');
+            const saveProjectModal = document.getElementById('save-project-modal');
+            const closeSaveProjectModal = document.getElementById('close-save-project-modal');
+            const cancelSaveProject = document.getElementById('cancel-save-project');
+            const confirmSaveProject = document.getElementById('confirm-save-project');
+            const projectNameInput = document.getElementById('project-name');
+            const projectDescriptionInput = document.getElementById('project-description');
+            
+            saveProjectBtn.addEventListener('click', () => {
+                projectNameInput.value = '我的项目';
+                projectDescriptionInput.value = '';
+                saveProjectModal.style.display = 'flex';
+            });
+            
+            closeSaveProjectModal.addEventListener('click', () => {
+                saveProjectModal.style.display = 'none';
+            });
+            
+            cancelSaveProject.addEventListener('click', () => {
+                saveProjectModal.style.display = 'none';
+            });
+            
+            confirmSaveProject.addEventListener('click', () => {
+                const projectName = projectNameInput.value.trim();
+                const projectDescription = projectDescriptionInput.value.trim();
+                
+                if (!projectName) {
+                    alert('请输入项目名称！');
+                    return;
+                }
+                
+                // 创建项目对象
+                const project = {
+                    name: projectName,
+                    description: projectDescription,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // 保存项目到数据库
+                saveProjectToDB(project).then(projectId => {
+                    currentProjectId = projectId;
+                    statusBar.textContent = `项目已保存: ${projectName} - ${new Date().toLocaleTimeString()}`;
+                    saveProjectModal.style.display = 'none';
+                    
+                    // 保存当前文件内容
+                    saveCurrentProject();
+                }).catch(error => {
+                    console.error('保存项目失败:', error);
+                    statusBar.textContent = '保存项目失败: ' + error.message;
+                });
+            });
+            
+            // 加载项目功能
+            const loadProjectBtn = document.getElementById('load-project-btn');
+            const loadProjectModal = document.getElementById('load-project-modal');
+            const closeLoadProjectModal = document.getElementById('close-load-project-modal');
+            const cancelLoadProject = document.getElementById('cancel-load-project');
+            const confirmLoadProject = document.getElementById('confirm-load-project');
+            const projectList = document.getElementById('project-list');
+            const projectInfo = document.getElementById('project-info');
+            const deleteProjectBtn = document.getElementById('delete-project-btn');
+            
+            loadProjectBtn.addEventListener('click', () => {
+                loadProjectModal.style.display = 'flex';
+                loadProjectsList();
+            });
+            
+            closeLoadProjectModal.addEventListener('click', () => {
+                loadProjectModal.style.display = 'none';
+            });
+            
+            cancelLoadProject.addEventListener('click', () => {
+                loadProjectModal.style.display = 'none';
+            });
+            
+            confirmLoadProject.addEventListener('click', () => {
+                const selectedProjectId = projectList.value;
+                
+                if (!selectedProjectId) {
+                    alert('请选择一个项目！');
+                    return;
+                }
+                
+                loadProjectFromDB(selectedProjectId).then(() => {
+                    loadProjectModal.style.display = 'none';
+                    statusBar.textContent = `项目已加载 - ${new Date().toLocaleTimeString()}`;
+                }).catch(error => {
+                    console.error('加载项目失败:', error);
+                    statusBar.textContent = '加载项目失败: ' + error.message;
+                });
+            });
+            
+            deleteProjectBtn.addEventListener('click', () => {
+                const selectedProjectId = projectList.value;
+                
+                if (!selectedProjectId) {
+                    alert('请选择一个项目！');
+                    return;
+                }
+                
+                if (confirm('确定要删除这个项目吗？此操作不可恢复！')) {
+                    deleteProjectFromDB(selectedProjectId).then(() => {
+                        statusBar.textContent = `项目已删除 - ${new Date().toLocaleTimeString()}`;
+                        loadProjectsList();
+                    }).catch(error => {
+                        console.error('删除项目失败:', error);
+                        statusBar.textContent = '删除项目失败: ' + error.message;
+                    });
+                }
+            });
+            
+            projectList.addEventListener('change', () => {
+                const selectedProjectId = projectList.value;
+                
+                if (selectedProjectId) {
+                    getProjectFromDB(selectedProjectId).then(project => {
+                        projectInfo.value = `名称: ${project.name}\n描述: ${project.description || '无'}\n创建时间: ${new Date(project.createdAt).toLocaleString()}\n更新时间: ${new Date(project.updatedAt).toLocaleString()}`;
+                    });
+                } else {
+                    projectInfo.value = '';
+                }
+            });
+            
+            // 刷新按钮功能
+            const refreshBtn = document.getElementById('refresh-btn');
+            
+            refreshBtn.addEventListener('click', () => {
+                if (currentProjectId) {
+                    loadProjectFromDB(currentProjectId).then(() => {
+                        statusBar.textContent = `项目已刷新 - ${new Date().toLocaleTimeString()}`;
+                    }).catch(error => {
+                        console.error('刷新项目失败:', error);
+                        statusBar.textContent = '刷新项目失败: ' + error.message;
+                    });
+                } else {
+                    statusBar.textContent = '没有当前项目可刷新';
+                }
+            });
+            
+            // IndexedDB操作函数
+            function saveProjectToDB(project) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([PROJECT_STORE], 'readwrite');
+                    const store = transaction.objectStore(PROJECT_STORE);
+                    
+                    const request = store.add(project);
+                    
+                    request.onsuccess = function(event) {
+                        resolve(event.target.result); // 返回项目ID
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function updateProjectInDB(projectId, project) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([PROJECT_STORE], 'readwrite');
+                    const store = transaction.objectStore(PROJECT_STORE);
+                    
+                    // 先获取项目，再更新
+                    const getRequest = store.get(projectId);
+                    
+                    getRequest.onsuccess = function() {
+                        const existingProject = getRequest.result;
+                        if (existingProject) {
+                            // 更新项目信息
+                            existingProject.name = project.name || existingProject.name;
+                            existingProject.description = project.description || existingProject.description;
+                            existingProject.updatedAt = new Date().toISOString();
+                            
+                            const updateRequest = store.put(existingProject);
+                            
+                            updateRequest.onsuccess = function() {
+                                resolve();
+                            };
+                            
+                            updateRequest.onerror = function(event) {
+                                reject(event.target.error);
+                            };
+                        } else {
+                            reject(new Error('项目不存在'));
+                        }
+                    };
+                    
+                    getRequest.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function getProjectFromDB(projectId) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([PROJECT_STORE], 'readonly');
+                    const store = transaction.objectStore(PROJECT_STORE);
+                    
+                    const request = store.get(projectId);
+                    
+                    request.onsuccess = function() {
+                        if (request.result) {
+                            resolve(request.result);
+                        } else {
+                            reject(new Error('项目不存在'));
+                        }
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function getAllProjectsFromDB() {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([PROJECT_STORE], 'readonly');
+                    const store = transaction.objectStore(PROJECT_STORE);
+                    
+                    const request = store.getAll();
+                    
+                    request.onsuccess = function() {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function deleteProjectFromDB(projectId) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([PROJECT_STORE, FILE_STORE, RESOURCE_STORE], 'readwrite');
+                    const projectStore = transaction.objectStore(PROJECT_STORE);
+                    const fileStore = transaction.objectStore(FILE_STORE);
+                    const resourceStore = transaction.objectStore(RESOURCE_STORE);
+                    
+                    // 删除项目
+                    const deleteProjectRequest = projectStore.delete(projectId);
+                    
+                    // 删除项目关联的文件
+                    const fileIndex = fileStore.index('projectId');
+                    const fileRequest = fileIndex.openCursor(IDBKeyRange.only(projectId));
+                    
+                    fileRequest.onsuccess = function(event) {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            cursor.delete();
+                            cursor.continue();
+                        }
+                    };
+                    
+                    // 删除项目关联的资源
+                    const resourceIndex = resourceStore.index('projectId');
+                    const resourceRequest = resourceIndex.openCursor(IDBKeyRange.only(projectId));
+                    
+                    resourceRequest.onsuccess = function(event) {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            cursor.delete();
+                            cursor.continue();
+                        }
+                    };
+                    
+                    transaction.oncomplete = function() {
+                        resolve();
+                    };
+                    
+                    transaction.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function saveFileToDB(projectId, filename, content, type) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([FILE_STORE], 'readwrite');
+                    const store = transaction.objectStore(FILE_STORE);
+                    
+                    // 先检查文件是否已存在
+                    const index = store.index('projectId');
+                    const request = index.openCursor(IDBKeyRange.only(projectId));
+                    
+                    let fileExists = false;
+                    let fileId = null;
+                    
+                    request.onsuccess = function(event) {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            if (cursor.value.name === filename) {
+                                fileExists = true;
+                                fileId = cursor.value.id;
+                            }
+                            cursor.continue();
+                        } else {
+                            // 遍历完成
+                            const fileData = {
+                                projectId: projectId,
+                                name: filename,
+                                content: content,
+                                type: type,
+                                updatedAt: new Date().toISOString()
+                            };
+                            
+                            if (fileExists) {
+                                // 更新现有文件
+                                fileData.id = fileId;
+                                const updateRequest = store.put(fileData);
+                                
+                                updateRequest.onsuccess = function() {
+                                    resolve();
+                                };
+                                
+                                updateRequest.onerror = function(event) {
+                                    reject(event.target.error);
+                                };
+                            } else {
+                                // 添加新文件
+                                const addRequest = store.add(fileData);
+                                
+                                addRequest.onsuccess = function() {
+                                    resolve();
+                                };
+                                
+                                addRequest.onerror = function(event) {
+                                    reject(event.target.error);
+                                };
+                            }
+                        }
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function saveResourceToDB(projectId, filename, content, type) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([RESOURCE_STORE], 'readwrite');
+                    const store = transaction.objectStore(RESOURCE_STORE);
+                    
+                    // 先检查资源是否已存在
+                    const index = store.index('projectId');
+                    const request = index.openCursor(IDBKeyRange.only(projectId));
+                    
+                    let resourceExists = false;
+                    let resourceId = null;
+                    
+                    request.onsuccess = function(event) {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            if (cursor.value.name === filename) {
+                                resourceExists = true;
+                                resourceId = cursor.value.id;
+                            }
+                            cursor.continue();
+                        } else {
+                            // 遍历完成
+                            const resourceData = {
+                                projectId: projectId,
+                                name: filename,
+                                content: content,
+                                type: type,
+                                updatedAt: new Date().toISOString()
+                            };
+                            
+                            if (resourceExists) {
+                                // 更新现有资源
+                                resourceData.id = resourceId;
+                                const updateRequest = store.put(resourceData);
+                                
+                                updateRequest.onsuccess = function() {
+                                    resolve();
+                                };
+                                
+                                updateRequest.onerror = function(event) {
+                                    reject(event.target.error);
+                                };
+                            } else {
+                                // 添加新资源
+                                const addRequest = store.add(resourceData);
+                                
+                                addRequest.onsuccess = function() {
+                                    resolve();
+                                };
+                                
+                                addRequest.onerror = function(event) {
+                                    reject(event.target.error);
+                                };
+                            }
+                        }
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function getFilesFromDB(projectId) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([FILE_STORE], 'readonly');
+                    const store = transaction.objectStore(FILE_STORE);
+                    
+                    const index = store.index('projectId');
+                    const request = index.getAll(IDBKeyRange.only(projectId));
+                    
+                    request.onsuccess = function() {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            function getResourcesFromDB(projectId) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([RESOURCE_STORE], 'readonly');
+                    const store = transaction.objectStore(RESOURCE_STORE);
+                    
+                    const index = store.index('projectId');
+                    const request = index.getAll(IDBKeyRange.only(projectId));
+                    
+                    request.onsuccess = function() {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            // 项目操作函数
+            function saveCurrentProject() {
+                if (!currentProjectId) return;
+                
+                // 保存HTML、CSS、JS文件内容
+                const htmlContent = htmlEditor.getValue();
+                const cssContent = cssEditor.getValue();
+                const jsContent = jsEditor.getValue();
+                
+                Promise.all([
+                    saveFileToDB(currentProjectId, 'index.html', htmlContent, 'html'),
+                    saveFileToDB(currentProjectId, 'style.css', cssContent, 'css'),
+                    saveFileToDB(currentProjectId, 'script.js', jsContent, 'js')
+                ]).then(() => {
+                    // 更新项目更新时间
+                    return getProjectFromDB(currentProjectId).then(project => {
+                        project.updatedAt = new Date().toISOString();
+                        return updateProjectInDB(currentProjectId, project);
+                    });
+                }).then(() => {
+                    console.log('项目已自动保存');
+                }).catch(error => {
+                    console.error('自动保存失败:', error);
+                });
+            }
+            
+            function loadProjectFromDB(projectId) {
+                return new Promise((resolve, reject) => {
+                    currentProjectId = projectId;
+                    
+                    // 获取项目文件
+                    getFilesFromDB(projectId).then(files => {
+                        // 清空当前文件资源管理器
+                        const fileExplorer = document.getElementById('file-explorer');
+                        const mainFolder = fileExplorer.querySelector('.folder-contents');
+                        const resourcesFolder = fileExplorer.querySelectorAll('.folder-contents')[1];
+                        
+                        mainFolder.innerHTML = '';
+                        resourcesFolder.innerHTML = '';
+                        
+                        // 加载文件
+                        let htmlLoaded = false;
+                        let cssLoaded = false;
+                        let jsLoaded = false;
+                        
+                        files.forEach(file => {
+                            // 添加到文件资源管理器
+                            const fileElement = document.createElement('div');
+                            fileElement.className = 'file';
+                            fileElement.dataset.type = file.type;
+                            
+                            fileElement.innerHTML = `
+                                <i class="fas fa-file-code file-icon"></i>
+                                <span class="file-name">${file.name}</span>
+                                <div class="file-actions">
+                                    <button title="重命名"><i class="fas fa-pen"></i></button>
+                                    <button title="删除"><i class="fas fa-trash"></i></button>
+                                </div>
+                            `;
+                            
+                            // 添加到主文件夹或资源文件夹
+                            if (file.name === 'index.html' || file.name === 'style.css' || file.name === 'script.js') {
+                                mainFolder.appendChild(fileElement);
+                                
+                                // 设置编辑器内容
+                                if (file.name === 'index.html') {
+                                    htmlEditor.setValue(file.content);
+                                    htmlLoaded = true;
+                                } else if (file.name === 'style.css') {
+                                    cssEditor.setValue(file.content);
+                                    cssLoaded = true;
+                                } else if (file.name === 'script.js') {
+                                    jsEditor.setValue(file.content);
+                                    jsLoaded = true;
+                                }
+                            } else {
+                                resourcesFolder.parentElement.parentElement.classList.add('open');
+                                resourcesFolder.appendChild(fileElement);
+                            }
+                            
+                            // 添加点击事件
+                            fileElement.addEventListener('click', function(e) {
+                                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'I') {
+                                    return;
+                                }
+                                
+                                document.querySelectorAll('.file').forEach(f => f.classList.remove('active'));
+                                fileElement.classList.add('active');
+                                
+                                // 如果是代码文件，加载到编辑器中
+                                if (file.type === 'html') {
+                                    htmlEditor.setValue(file.content);
+                                    tabs.forEach(t => t.classList.remove('active'));
+                                    tabs[0].classList.add('active');
+                                    editors.forEach(editor => editor.getWrapperElement().style.display = 'none');
+                                    htmlEditor.getWrapperElement().style.display = 'block';
+                                    htmlEditor.refresh();
+                                } else if (file.type === 'css') {
+                                    cssEditor.setValue(file.content);
+                                    tabs.forEach(t => t.classList.remove('active'));
+                                    tabs[1].classList.add('active');
+                                    editors.forEach(editor => editor.getWrapperElement().style.display = 'none');
+                                    cssEditor.getWrapperElement().style.display = 'block';
+                                    cssEditor.refresh();
+                                } else if (file.type === 'js') {
+                                    jsEditor.setValue(file.content);
+                                    tabs.forEach(t => t.classList.remove('active'));
+                                    tabs[2].classList.add('active');
+                                    editors.forEach(editor => editor.getWrapperElement().style.display = 'none');
+                                    jsEditor.getWrapperElement().style.display = 'block';
+                                    jsEditor.refresh();
+                                }
+                                
+                                statusBar.textContent = '已选择: ' + file.name;
+                            });
+                        });
+                        
+                        // 如果没有加载默认文件，设置默认内容
+                        if (!htmlLoaded) {
+                            htmlEditor.setValue('<!DOCTYPE html>\n<html>\n<head>\n    <title>新项目</title>\n</head>\n<body>\n    \n</body>\n</html>');
+                        }
+                        if (!cssLoaded) {
+                            cssEditor.setValue('/* 样式表 */');
+                        }
+                        if (!jsLoaded) {
+                            jsEditor.setValue('// JavaScript代码');
+                        }
+                        
+                        // 加载资源文件
+                        return getResourcesFromDB(projectId);
+                    }).then(resources => {
+                        // 清空导入的资源
+                        Object.keys(importedResources).forEach(key => {
+                            delete importedResources[key];
+                        });
+                        
+                        // 加载资源
+                        resources.forEach(resource => {
+                            importedResources[resource.name] = resource.content;
+                        });
+                        
+                        // 运行代码以更新预览
+                        runCode();
+                        
+                        resolve();
+                    }).catch(error => {
+                        reject(error);
+                    });
+                });
+            }
+            
+            function loadProjectsList() {
+                getAllProjectsFromDB().then(projects => {
+                    projectList.innerHTML = '';
+                    
+                    if (projects.length === 0) {
+                        projectList.innerHTML = '<option value="" disabled>没有找到项目</option>';
+                        return;
+                    }
+                    
+                    // 按更新时间降序排序
+                    projects.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+                    
+                    projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.name} (${new Date(project.updatedAt).toLocaleDateString()})`;
+                        projectList.appendChild(option);
+                    });
+                    
+                    // 默认选择第一个项目
+                    if (projects.length > 0) {
+                        projectList.value = projects[0].id;
+                        projectInfo.value = `名称: ${projects[0].name}\n描述: ${projects[0].description || '无'}\n创建时间: ${new Date(projects[0].createdAt).toLocaleString()}\n更新时间: ${new Date(projects[0].updatedAt).toLocaleString()}`;
+                    }
+                }).catch(error => {
+                    console.error('加载项目列表失败:', error);
+                    projectList.innerHTML = '<option value="" disabled>加载项目列表失败</option>';
+                });
+            }
+            
+            // 初始化数据库并加载默认项目
+            initDB().then(() => {
+                // 检查是否有项目，如果没有则创建一个默认项目
+                getAllProjectsFromDB().then(projects => {
+                    if (projects.length === 0) {
+                        // 创建默认项目
+                        const defaultProject = {
+                            name: '默认项目',
+                            description: '这是一个自动创建的默认项目',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                        
+                        saveProjectToDB(defaultProject).then(projectId => {
+                            currentProjectId = projectId;
+                            // 保存默认文件内容
+                            saveCurrentProject();
+                        });
+                    } else {
+                        // 加载最新的项目
+                        const latestProject = projects.reduce((prev, current) => {
+                            return (new Date(prev.updatedAt) > new Date(current.updatedAt)) ? prev : current;
+                        });
+                        
+                        currentProjectId = latestProject.id;
+                        loadProjectFromDB(latestProject.id);
+                    }
+                });
+
+                // 新建文件/文件夹功能
+                const newFileBtn = document.getElementById('new-file-btn');
+                const newFolderBtn = document.getElementById('new-folder-btn');
+                const newItemModal = document.getElementById('new-item-modal');
+                const closeNewItemModal = document.getElementById('close-new-item-modal');
+                const cancelNewItem = document.getElementById('cancel-new-item');
+                const confirmNewItem = document.getElementById('confirm-new-item');
+                const newItemName = document.getElementById('new-item-name');
+                const newItemType = document.getElementById('new-item-type');
+                const newItemTypeContainer = document.getElementById('new-item-type-container');
+                const newItemTitle = document.getElementById('new-item-title');
+                
+                let currentNewItemType = 'file'; // 'file' 或 'folder'
+                
+                newFileBtn.addEventListener('click', () => {
+                    currentNewItemType = 'file';
+                    newItemTitle.textContent = '新建文件';
+                    newItemTypeContainer.style.display = 'block';
+                    newItemModal.style.display = 'flex';
+                    newItemName.focus();
+                });
+                
+                closeNewItemModal.addEventListener('click', () => {
+                    newItemModal.style.display = 'none';
+                });
+                
+                cancelNewItem.addEventListener('click', () => {
+                    newItemModal.style.display = 'none';
+                });
+                
+                confirmNewItem.addEventListener('click', () => {
+                    const name = newItemName.value.trim();
+                    
+                    if (!name) {
+                        alert('请输入有效的名称！');
+                        return;
+                    }
+                    
+                    if (currentNewItemType === 'file') {
+                        const type = newItemType.value;
+                        const filename = name + '.' + type;
+                        
+                        // 创建新文件
+                        addFileToExplorer(filename, type);
+                        
+                        // 如果是当前类型的文件，清空编辑器
+                        if ((type === 'html' && htmlEditor.getWrapperElement().style.display !== 'none') ||
+                            (type === 'css' && cssEditor.getWrapperElement().style.display !== 'none') ||
+                            (type === 'js' && jsEditor.getWrapperElement().style.display !== 'none')) {
+                            
+                            if (type === 'html') {
+                                htmlEditor.setValue('<!DOCTYPE html>\n<html>\n<head>\n    <title>' + name + '</title>\n</head>\n<body>\n    \n</body>\n</html>');
+                            } else if (type === 'css') {
+                                cssEditor.setValue('/* ' + name + ' */');
+                            } else {
+                                jsEditor.setValue('// ' + name);
+                            }
+                        }
+                        
+                        statusBar.textContent = `已创建新文件: ${filename}`;
+                    } else {
+                        
+                        const folderElement = document.createElement('div');
+                        folderElement.className = 'folder';
+                        
+                        folderElement.innerHTML = `
+                            <div class="folder-header">
+                                <i class="fas fa-folder folder-icon"></i>
+                                <span class="folder-name">${name}</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                            <div class="folder-contents"></div>
+                        `;
+                        
+                        fileExplorer.insertBefore(folderElement, fileExplorer.querySelector('.add-btn'));
+                        
+                        // 添加文件夹点击事件
+                        const folderHeader = folderElement.querySelector('.folder-header');
+                        folderHeader.addEventListener('click', () => {
+                            const parentFolder = folderHeader.parentElement;
+                            parentFolder.classList.toggle('open');
+                            
+                            const icon = folderHeader.querySelector('.fa-chevron-right, .fa-chevron-down');
+                            if (icon.classList.contains('fa-chevron-right')) {
+                                icon.classList.remove('fa-chevron-right');
+                                icon.classList.add('fa-chevron-down');
+                            } else {
+                                icon.classList.remove('fa-chevron-down');
+                                icon.classList.add('fa-chevron-right');
+                            }
+                        });
+                    }
+                    
+                    newItemModal.style.display = 'none';
+                    newItemName.value = '';
+                });
+                
+                // 初始运行
+                runCode();
+                
+                // 移动端检测
+                function checkMobile() {
+                    return window.innerWidth <= 768;
+                }
+                
+                // 如果是移动端，默认关闭侧边栏
+                if (checkMobile()) {
+                    sidebar.classList.remove('open');
+                }
+                
+                // 窗口大小改变时检查
+                window.addEventListener('resize', () => {
+                    if (!checkMobile()) {
+                        sidebar.classList.add('open');
+                    }
+                });
+            }).catch(error => {
+                console.error('数据库初始化失败:', error);
+                statusBar.textContent = '数据库初始化失败: ' + error.message;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可爱科技风图片编辑器</title>
+    <style>
+        :root {
+            --primary-color: #6e8efb;
+            --primary-hover: #5a7df0;
+            --secondary-color: #a777e3;
+            --light-color: #f8f5ff;
+            --dark-color: #4a4e69;
+            --border-color: #e2d9ff;
+            --success-color: #77dd77;
+            --info-color: #84b6f4;
+            --warning-color: #ffd166;
+            --danger-color: #ff6b6b;
+            --box-shadow: 0 4px 12px rgba(110, 142, 251, 0.15);
+            --transition: all 0.3s ease;
+            --cute-pink: #ff9ff3;
+            --cute-blue: #1dd3b0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            margin: 0;
+            padding: 0;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 159, 243, 0.1) 0%, rgba(110, 142, 251, 0.1) 90%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 30px 30px, 60px 60px;
+            animation: float 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(50px, 50px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .app-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .app-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .editor-container {
+                flex-direction: row;
+            }
+        }
+
+        .tool-panel {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+            flex: 1;
+            max-width: 100%;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            order: 2;
+        }
+
+        @media (min-width: 768px) {
+            .tool-panel {
+                max-width: 280px;
+                order: 1;
+            }
+        }
+
+        .canvas-container {
+            flex: 3;
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            position: relative;
+            order: 1;
+        }
+
+        @media (min-width: 768px) {
+            .canvas-container {
+                order: 2;
+            }
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            background-color: white;
+            background-image: 
+                linear-gradient(45deg, #f5f5f5 25%, transparent 25%),
+                linear-gradient(-45deg, #f5f5f5 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f5f5f5 75%),
+                linear-gradient(-45deg, transparent 75%, #f5f5f5 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tool-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .tool-group-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .tool-group-title::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--cute-pink);
+            border-radius: 50%;
+        }
+
+        .tool-group-title i {
+            margin-right: 6px;
+            color: var(--primary-color);
+        }
+
+        button, .btn {
+            padding: 8px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-family: 'Comic Sans MS', sans-serif;
+            box-shadow: 0 2px 5px rgba(110, 142, 251, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after, .btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            transition: var(--transition);
+            opacity: 0;
+        }
+
+        button:hover::after, .btn:hover::after {
+            opacity: 1;
+            top: -20%;
+            left: -20%;
+        }
+
+        button:hover, .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled, .btn:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        button.secondary, .btn.secondary {
+            background-color: var(--secondary-color);
+        }
+
+        button.secondary:hover, .btn.secondary:hover {
+            background-color: #9b59b6;
+        }
+
+        button.danger, .btn.danger {
+            background-color: var(--danger-color);
+        }
+
+        button.danger:hover, .btn.danger:hover {
+            background-color: #ff5252;
+        }
+
+        button.success, .btn.success {
+            background-color: var(--success-color);
+        }
+
+        button.success:hover, .btn.success:hover {
+            background-color: #68c968;
+        }
+
+        button.info, .btn.info {
+            background-color: var(--info-color);
+        }
+
+        button.info:hover, .btn.info:hover {
+            background-color: #6aa8e9;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-btn {
+            background-color: var(--success-color);
+        }
+
+        .file-upload-btn:hover {
+            background-color: #68c968;
+        }
+
+        .history-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .history-buttons button {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--dark-color);
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            background-color: var(--light-color);
+            font-family: 'Comic Sans MS', sans-serif;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(110, 142, 251, 0.25);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .checkbox-group input {
+            margin-right: 6px;
+            accent-color: var(--primary-color);
+        }
+
+        .anchor-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .anchor-btn {
+            width: 100%;
+            height: 35px;
+            background-color: var(--light-color);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .anchor-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .anchor-btn.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .ratio-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .ratio-btn {
+            width: 100%;
+            height: 35px;
+            background-color: var(--light-color);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .ratio-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .ratio-btn.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .fill-color-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .fill-color-btn {
+            flex: 1;
+            height: 35px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .fill-color-btn.black {
+            background-color: #000;
+            color: white;
+        }
+
+        .fill-color-btn.white {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .fill-color-btn.selected {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 0 1px white inset;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--cute-pink), var(--cute-blue));
+            border-radius: 12px 12px 0 0;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .close {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close:hover {
+            color: var(--danger-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-bar {
+            margin-top: 15px;
+            padding: 8px;
+            background-color: var(--light-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 加载动画 */
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 576px) {
+            .app-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+            }
+            
+            button, .btn {
+                width: 100%;
+            }
+            
+            .history-buttons {
+                flex-direction: column;
+            }
+            
+            .ratio-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 可爱元素 */
+        .cute-corner {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: var(--cute-pink);
+            opacity: 0.3;
+        }
+
+        .corner-1 {
+            top: 8px;
+            left: 8px;
+        }
+
+        .corner-2 {
+            top: 8px;
+            right: 8px;
+        }
+
+        .corner-3 {
+            bottom: 8px;
+            left: 8px;
+        }
+
+        .corner-4 {
+            bottom: 8px;
+            right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>✨ 图片尺寸编辑器 ✨</h1>
+            <p>简单易用的图片编辑工具</p>
+            <div class="tech-circle"></div>
+            <div class="tech-line" style="width: 80px; top: 30%; left: -40px; transform: rotate(45deg);"></div>
+            <div class="tech-line" style="width: 60px; bottom: 20%; right: -30px; transform: rotate(-30deg);"></div>
+        </header>
+
+        <div class="editor-container">
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="imageCanvas"></canvas>
+                </div>
+                <div id="loader" class="loader"></div>
+            </div>
+
+            <div class="tool-panel">
+                <div class="cute-corner corner-1"></div>
+                <div class="cute-corner corner-2"></div>
+                <div class="cute-corner corner-3"></div>
+                <div class="cute-corner corner-4"></div>
+
+                <div class="tool-group">
+                    <div class="tool-group-title">
+                        <i>📁</i> 文件操作
+                    </div>
+                    <div class="toolbar">
+                        <label for="fileInput" class="btn file-upload-btn">
+                            <i>📤</i> 上传图片
+                        </label>
+                        <input type="file" id="fileInput" accept="image/*">
+                        <button id="clearImageBtn" class="danger">
+                            <i>🗑️</i> 删除图片
+                        </button>
+                        <button id="downloadBtn" class="success">
+                            <i>💾</i> 下载图片
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="tool-group-title">
+                        <i>⏪</i> 历史记录
+                    </div>
+                    <div class="history-buttons">
+                        <button id="undoBtn" disabled class="secondary">
+                            <i>↩️</i> 撤销
+                        </button>
+                        <button id="redoBtn" disabled class="secondary">
+                            <i>↪️</i> 重做
+                        </button>
+                    </div>
+                </div>
+
+                
+
+                <div class="tool-group">
+                    <div class="tool-group-title">
+                        <i>🖼️</i> 图片调整
+                    </div>
+                    <div class="toolbar">
+                        <button id="imageSizeBtn">
+                            <i>📏</i> 画像大小
+                        </button>
+                        <button id="canvasSizeBtn">
+                            <i>🖌️</i> 画布大小
+                        </button>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <span id="imageInfo">未加载图片</span>
+                    <span id="historyInfo">无历史记录</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 画像大小模态框 -->
+    <div id="imageSizeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">画像大小</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="imageWidth">宽度:</label>
+                <input type="number" id="imageWidth" min="1" step="1">
+            </div>
+            <div class="form-group">
+                <label for="imageHeight">高度:</label>
+                <input type="number" id="imageHeight" min="1" step="1">
+            </div>
+            <div class="form-group">
+                <label for="imageUnit">单位:</label>
+                <select id="imageUnit">
+                    <option value="px">像素</option>
+                    <option value="percent">百分比</option>
+                    <option value="cm">厘米</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="constrainProportions" checked>
+                <label for="constrainProportions">保持宽高比</label>
+            </div>
+            <div class="form-group">
+                <label>预设比例:</label>
+                <div class="ratio-controls">
+                    <div class="ratio-btn" data-ratio="1:1">1:1 (正方形)</div>
+                    <div class="ratio-btn" data-ratio="4:3">4:3 (传统)</div>
+                    <div class="ratio-btn" data-ratio="16:9">16:9 (宽屏)</div>
+                    <div class="ratio-btn" data-ratio="9:16">9:16 (竖屏)</div>
+                    <div class="ratio-btn" data-ratio="3:2">3:2 (照片)</div>
+                    <div class="ratio-btn" data-ratio="2:3">2:3 (肖像)</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" id="cancelImageSize">取消</button>
+                <button id="applyImageSize">应用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 画布大小模态框 -->
+    <div id="canvasSizeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">画布大小</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="canvasWidth">宽度:</label>
+                <input type="number" id="canvasWidth" min="1" step="1">
+            </div>
+            <div class="form-group">
+                <label for="canvasHeight">高度:</label>
+                <input type="number" id="canvasHeight" min="1" step="1">
+            </div>
+            <div class="form-group">
+                <label for="canvasUnit">单位:</label>
+                <select id="canvasUnit">
+                    <option value="px">像素</option>
+                    <option value="cm">厘米</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>预设比例:</label>
+                <div class="ratio-controls">
+                    <div class="ratio-btn" data-ratio="1:1">1:1 (正方形)</div>
+                    <div class="ratio-btn" data-ratio="4:3">4:3 (传统)</div>
+                    <div class="ratio-btn" data-ratio="16:9">16:9 (宽屏)</div>
+                    <div class="ratio-btn" data-ratio="9:16">9:16 (竖屏)</div>
+                    <div class="ratio-btn" data-ratio="3:2">3:2 (照片)</div>
+                    <div class="ratio-btn" data-ratio="2:3">2:3 (肖像)</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>定位:</label>
+                <div class="anchor-controls">
+                    <div class="anchor-btn" data-anchor="top-left">↖</div>
+                    <div class="anchor-btn" data-anchor="top-center">↑</div>
+                    <div class="anchor-btn" data-anchor="top-right">↗</div>
+                    <div class="anchor-btn" data-anchor="center-left">←</div>
+                    <div class="anchor-btn selected" data-anchor="center">中心</div>
+                    <div class="anchor-btn" data-anchor="center-right">→</div>
+                    <div class="anchor-btn" data-anchor="bottom-left">↙</div>
+                    <div class="anchor-btn" data-anchor="bottom-center">↓</div>
+                    <div class="anchor-btn" data-anchor="bottom-right">↘</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" id="cancelCanvasSize">取消</button>
+                <button id="applyCanvasSize">应用</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const imageSizeBtn = document.getElementById('imageSizeBtn');
+        const canvasSizeBtn = document.getElementById('canvasSizeBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const clearImageBtn = document.getElementById('clearImageBtn');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const ctx = imageCanvas.getContext('2d');
+        const loader = document.getElementById('loader');
+        const imageInfo = document.getElementById('imageInfo');
+        const historyInfo = document.getElementById('historyInfo');
+        
+        // 模态框相关元素
+        const imageSizeModal = document.getElementById('imageSizeModal');
+        const canvasSizeModal = document.getElementById('canvasSizeModal');
+        const closeButtons = document.querySelectorAll('.close');
+        const cancelImageSizeBtn = document.getElementById('cancelImageSize');
+        const cancelCanvasSizeBtn = document.getElementById('cancelCanvasSize');
+        
+        // 画像大小表单元素
+        const imageWidthInput = document.getElementById('imageWidth');
+        const imageHeightInput = document.getElementById('imageHeight');
+        const imageUnitSelect = document.getElementById('imageUnit');
+        const constrainProportions = document.getElementById('constrainProportions');
+        const applyImageSizeBtn = document.getElementById('applyImageSize');
+        
+        // 画布大小表单元素
+        const canvasWidthInput = document.getElementById('canvasWidth');
+        const canvasHeightInput = document.getElementById('canvasHeight');
+        const canvasUnitSelect = document.getElementById('canvasUnit');
+        const applyCanvasSizeBtn = document.getElementById('applyCanvasSize');
+        const anchorButtons = document.querySelectorAll('.anchor-btn');
+        
+        // 比例按钮
+        const ratioButtons = document.querySelectorAll('.ratio-btn');
+        
+        // 填充颜色按钮
+        const fillColorButtons = document.querySelectorAll('.fill-color-btn');
+        
+        // 当前图片和状态
+        let currentImage = null;
+        let originalWidth = 0;
+        let originalHeight = 0;
+        let currentAnchor = 'center';
+        let fillColor = 'black'; // 'black' 或 'white'
+        let canvasWrapper = document.querySelector('.canvas-wrapper');
+
+        // 历史记录相关
+        let historyStack = [];
+        let currentHistoryIndex = -1;
+        const MAX_HISTORY_STEPS = 20;
+
+        // 初始化
+        function init() {
+            // 设置事件监听器
+            fileInput.addEventListener('change', handleImageUpload);
+            imageSizeBtn.addEventListener('click', openImageSizeModal);
+            canvasSizeBtn.addEventListener('click', openCanvasSizeModal);
+            downloadBtn.addEventListener('click', downloadImage);
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            clearImageBtn.addEventListener('click', clearImage);
+            
+            // 关闭模态框按钮
+            closeButtons.forEach(button => {
+                button.addEventListener('click', closeAllModals);
+            });
+            
+            // 取消按钮
+            cancelImageSizeBtn.addEventListener('click', closeAllModals);
+            cancelCanvasSizeBtn.addEventListener('click', closeAllModals);
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                if (event.target === imageSizeModal || event.target === canvasSizeModal) {
+                    closeAllModals();
+                }
+            });
+            
+            // 画像大小表单提交
+            applyImageSizeBtn.addEventListener('click', applyImageSize);
+            
+            // 画布大小表单提交
+            applyCanvasSizeBtn.addEventListener('click', applyCanvasSize);
+            
+            // 宽高比锁定
+            imageWidthInput.addEventListener('input', updateHeightForAspectRatio);
+            imageHeightInput.addEventListener('input', updateWidthForAspectRatio);
+            
+            // 锚点选择
+            anchorButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    anchorButtons.forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    currentAnchor = button.dataset.anchor;
+                });
+            });
+            
+            // 比例选择
+            ratioButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const ratio = button.dataset.ratio;
+                    applyRatio(ratio);
+                });
+            });
+            
+            // 填充颜色选择
+            fillColorButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    fillColorButtons.forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    fillColor = button.dataset.color;
+                    
+                    // 重新绘制画布
+                    if (currentImage) {
+                        drawCanvas();
+                        addToHistory();
+                    }
+                });
+            });
+            
+            // 更新按钮状态
+            updateButtonStates();
+            updateStatusBar();
+        }
+        
+        // 应用比例
+        function applyRatio(ratio) {
+            if (!currentImage) return;
+            
+            const [widthRatio, heightRatio] = ratio.split(':').map(Number);
+            const aspectRatio = widthRatio / heightRatio;
+            
+            // 判断是在哪个模态框中
+            if (imageSizeModal.style.display === 'block') {
+                // 画像大小模态框
+                const currentWidth = parseFloat(imageWidthInput.value);
+                const currentHeight = parseFloat(imageHeightInput.value);
+                const currentAspectRatio = currentWidth / currentHeight;
+                
+                if (aspectRatio > currentAspectRatio) {
+                    // 新比例更宽，以高度为基准
+                    imageHeightInput.value = currentHeight;
+                    imageWidthInput.value = Math.round(currentHeight * aspectRatio);
+                } else {
+                    // 新比例更高或相同，以宽度为基准
+                    imageWidthInput.value = currentWidth;
+                    imageHeightInput.value = Math.round(currentWidth / aspectRatio);
+                }
+            } else if (canvasSizeModal.style.display === 'block') {
+                // 画布大小模态框
+                const currentWidth = parseFloat(canvasWidthInput.value);
+                const currentHeight = parseFloat(canvasHeightInput.value);
+                const currentAspectRatio = currentWidth / currentHeight;
+                
+                if (aspectRatio > currentAspectRatio) {
+                    // 新比例更宽，以高度为基准
+                    canvasHeightInput.value = currentHeight;
+                    canvasWidthInput.value = Math.round(currentHeight * aspectRatio);
+                } else {
+                    // 新比例更高或相同，以宽度为基准
+                    canvasWidthInput.value = currentWidth;
+                    canvasHeightInput.value = Math.round(currentWidth / aspectRatio);
+                }
+            }
+        }
+        
+        // 关闭所有模态框
+        function closeAllModals() {
+            imageSizeModal.style.display = 'none';
+            canvasSizeModal.style.display = 'none';
+        }
+        
+        // 处理图片上传
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            showLoader();
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImage = new Image();
+                currentImage.onload = () => {
+                    originalWidth = currentImage.width;
+                    originalHeight = currentImage.height;
+                    
+                    // 设置画布大小与图片相同
+                    resizeCanvas(currentImage.width, currentImage.height);
+                    
+                    // 调整画布包装器大小以适应图片
+                    adjustCanvasWrapper();
+                    
+                    drawCanvas();
+                    
+                    // 添加到历史记录
+                    addToHistory();
+                    
+                    hideLoader();
+                    updateStatusBar();
+                };
+                currentImage.onerror = () => {
+                    hideLoader();
+                    alert('图片加载失败');
+                };
+                currentImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // 调整画布包装器大小以适应图片
+        function adjustCanvasWrapper() {
+            if (!currentImage) return;
+            
+            const maxWidth = window.innerWidth * 0.9 - 40; // 考虑边距
+            const maxHeight = window.innerHeight * 0.6; // 限制高度
+            
+            let width = currentImage.width;
+            let height = currentImage.height;
+            
+            // 保持宽高比缩放
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width *= ratio;
+                height *= ratio;
+            }
+            
+            // 设置画布包装器大小
+            canvasWrapper.style.width = `${width}px`;
+            canvasWrapper.style.height = `${height}px`;
+            
+            // 设置画布显示尺寸（不改变实际像素尺寸）
+            imageCanvas.style.width = `${width}px`;
+            imageCanvas.style.height = `${height}px`;
+        }
+        
+        // 显示加载动画
+        function showLoader() {
+            loader.style.display = 'block';
+        }
+        
+        // 隐藏加载动画
+        function hideLoader() {
+            loader.style.display = 'none';
+        }
+        
+        // 调整画布大小（实际像素尺寸）
+        function resizeCanvas(width, height) {
+            imageCanvas.width = width;
+            imageCanvas.height = height;
+        }
+        
+        // 绘制画布（背景+图片）
+        function drawCanvas() {
+            if (!ctx) return;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+            
+            // 绘制背景（填充超出部分）
+            drawBackground();
+            
+            // 如果有当前图片，绘制图片
+            if (currentImage) {
+                ctx.drawImage(currentImage, 0, 0);
+            }
+        }
+        
+        // 绘制背景（填充超出部分）
+        function drawBackground() {
+            // 填充背景颜色
+            ctx.fillStyle = fillColor === 'black' ? '#000000' : '#ffffff';
+            ctx.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+        }
+        
+        // 打开画像大小模态框
+        function openImageSizeModal() {
+            if (!currentImage) {
+                alert('请先上传图片');
+                return;
+            }
+            
+            imageWidthInput.value = currentImage.width;
+            imageHeightInput.value = currentImage.height;
+            imageUnitSelect.value = 'px';
+            constrainProportions.checked = true;
+            
+            imageSizeModal.style.display = 'block';
+        }
+        
+        // 打开画布大小模态框
+        function openCanvasSizeModal() {
+            if (!currentImage) {
+                alert('请先上传图片');
+                return;
+            }
+            
+            canvasWidthInput.value = imageCanvas.width;
+            canvasHeightInput.value = imageCanvas.height;
+            canvasUnitSelect.value = 'px';
+            
+            canvasSizeModal.style.display = 'block';
+        }
+        
+        // 应用画像大小调整
+        function applyImageSize() {
+            const width = parseFloat(imageWidthInput.value);
+            const height = parseFloat(imageHeightInput.value);
+            const unit = imageUnitSelect.value;
+            
+            if (width <= 0 || height <= 0) {
+                alert('宽度和高度必须大于0');
+                return;
+            }
+            
+            let newWidth, newHeight;
+            
+            if (unit === 'percent') {
+                newWidth = (originalWidth * width) / 100;
+                newHeight = (originalHeight * height) / 100;
+            } else if (unit === 'cm') {
+                // 厘米转像素，假设96dpi (1英寸=2.54厘米)
+                const dpi = 96;
+                const inchesPerCm = 1 / 2.54;
+                newWidth = Math.round(width * dpi * inchesPerCm);
+                newHeight = Math.round(height * dpi * inchesPerCm);
+            } else {
+                newWidth = width;
+                newHeight = height;
+            }
+            
+            showLoader();
+            
+            // 创建临时canvas进行缩放
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = newWidth;
+            tempCanvas.height = newHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCtx.imageSmoothingQuality = 'high';
+            tempCtx.drawImage(currentImage, 0, 0, newWidth, newHeight);
+            
+            // 更新当前图片
+            currentImage = new Image();
+            currentImage.onload = () => {
+                originalWidth = newWidth;
+                originalHeight = newHeight;
+                resizeCanvas(newWidth, newHeight);
+                adjustCanvasWrapper();
+                drawCanvas();
+                
+                // 添加到历史记录
+                addToHistory();
+                
+                closeAllModals();
+                hideLoader();
+                updateStatusBar();
+            };
+            currentImage.onerror = () => {
+                hideLoader();
+                alert('图片处理失败');
+            };
+            currentImage.src = tempCanvas.toDataURL();
+        }
+        
+        // 应用画布大小调整
+        function applyCanvasSize() {
+            let newWidth = parseInt(canvasWidthInput.value);
+            let newHeight = parseInt(canvasHeightInput.value);
+            const unit = canvasUnitSelect.value;
+            
+            if (newWidth <= 0 || newHeight <= 0) {
+                alert('宽度和高度必须大于0');
+                return;
+            }
+            
+            // 如果是厘米单位，转换为像素
+            if (unit === 'cm') {
+                const dpi = 96;
+                const inchesPerCm = 1 / 2.54;
+                newWidth = Math.round(newWidth * dpi * inchesPerCm);
+                newHeight = Math.round(newHeight * dpi * inchesPerCm);
+            }
+            
+            showLoader();
+            
+            // 创建临时canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = newWidth;
+            tempCanvas.height = newHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // 填充背景
+            tempCtx.fillStyle = fillColor === 'black' ? '#000000' : '#ffffff';
+            tempCtx.fillRect(0, 0, newWidth, newHeight);
+            
+            // 计算图片在新画布中的位置
+            let x = 0, y = 0;
+            
+            switch (currentAnchor) {
+                case 'top-left':
+                    x = 0;
+                    y = 0;
+                    break;
+                case 'top-center':
+                    x = (newWidth - currentImage.width) / 2;
+                    y = 0;
+                    break;
+                case 'top-right':
+                    x = newWidth - currentImage.width;
+                    y = 0;
+                    break;
+                case 'center-left':
+                    x = 0;
+                    y = (newHeight - currentImage.height) / 2;
+                    break;
+                case 'center':
+                    x = (newWidth - currentImage.width) / 2;
+                    y = (newHeight - currentImage.height) / 2;
+                    break;
+                case 'center-right':
+                    x = newWidth - currentImage.width;
+                    y = (newHeight - currentImage.height) / 2;
+                    break;
+                case 'bottom-left':
+                    x = 0;
+                    y = newHeight - currentImage.height;
+                    break;
+                case 'bottom-center':
+                    x = (newWidth - currentImage.width) / 2;
+                    y = newHeight - currentImage.height;
+                    break;
+                case 'bottom-right':
+                    x = newWidth - currentImage.width;
+                    y = newHeight - currentImage.height;
+                    break;
+            }
+            
+            // 绘制原始图片到新画布
+            tempCtx.drawImage(currentImage, x, y);
+            
+            // 更新当前图片和画布
+            currentImage = new Image();
+            currentImage.onload = () => {
+                resizeCanvas(newWidth, newHeight);
+                adjustCanvasWrapper();
+                drawCanvas();
+                
+                // 添加到历史记录
+                addToHistory();
+                
+                closeAllModals();
+                hideLoader();
+                updateStatusBar();
+            };
+            currentImage.onerror = () => {
+                hideLoader();
+                alert('图片处理失败');
+            };
+            currentImage.src = tempCanvas.toDataURL();
+        }
+        
+        // 保持宽高比更新高度
+        function updateHeightForAspectRatio() {
+            if (constrainProportions.checked && currentImage) {
+                const ratio = currentImage.height / currentImage.width;
+                const newWidth = parseFloat(imageWidthInput.value);
+                const unit = imageUnitSelect.value;
+                
+                if (unit === 'percent') {
+                    imageHeightInput.value = newWidth;
+                } else {
+                    imageHeightInput.value = Math.round(newWidth * ratio);
+                }
+            }
+        }
+        
+        // 保持宽高比更新宽度
+        function updateWidthForAspectRatio() {
+            if (constrainProportions.checked && currentImage) {
+                const ratio = currentImage.width / currentImage.height;
+                const newHeight = parseFloat(imageHeightInput.value);
+                const unit = imageUnitSelect.value;
+                
+                if (unit === 'percent') {
+                    imageWidthInput.value = newHeight;
+                } else {
+                    imageWidthInput.value = Math.round(newHeight * ratio);
+                }
+            }
+        }
+        
+        // 下载图片
+        function downloadImage() {
+            if (!currentImage) {
+                alert('请先上传图片');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.download = 'edited-image.png';
+            link.href = imageCanvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 删除当前图片
+        function clearImage() {
+            if (!currentImage) {
+                alert('没有图片可删除');
+                return;
+            }
+            
+            if (confirm('确定要删除当前图片吗？')) {
+                currentImage = null;
+                resizeCanvas(0, 0);
+                canvasWrapper.style.width = 'auto';
+                canvasWrapper.style.height = 'auto';
+                imageCanvas.style.width = 'auto';
+                imageCanvas.style.height = 'auto';
+                drawCanvas();
+                addToHistory();
+                updateStatusBar();
+            }
+        }
+        
+        // ========== 历史记录功能 ==========
+        
+        // 添加到历史记录
+        function addToHistory() {
+            // 如果当前不是最新的历史记录，截断后面的记录
+            if (currentHistoryIndex < historyStack.length - 1) {
+                historyStack = historyStack.slice(0, currentHistoryIndex + 1);
+            }
+            
+            // 添加新记录
+            const imageData = imageCanvas.toDataURL();
+            historyStack.push(imageData);
+            
+            // 限制历史记录数量
+            if (historyStack.length > MAX_HISTORY_STEPS) {
+                historyStack.shift();
+            } else {
+                currentHistoryIndex = historyStack.length - 1;
+            }
+            
+            updateButtonStates();
+            updateStatusBar();
+        }
+        
+        // 撤销操作
+        function undo() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                restoreFromHistory();
+            }
+        }
+        
+        // 重做操作
+        function redo() {
+            if (currentHistoryIndex < historyStack.length - 1) {
+                currentHistoryIndex++;
+                restoreFromHistory();
+            }
+        }
+        
+        // 从历史记录恢复
+        function restoreFromHistory() {
+            const imageData = historyStack[currentHistoryIndex];
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                originalWidth = img.width;
+                originalHeight = img.height;
+                resizeCanvas(img.width, img.height);
+                adjustCanvasWrapper();
+                drawCanvas();
+                updateButtonStates();
+                updateStatusBar();
+            };
+            img.src = imageData;
+        }
+        
+        // 更新按钮状态
+        function updateButtonStates() {
+            undoBtn.disabled = currentHistoryIndex <= 0;
+            redoBtn.disabled = currentHistoryIndex >= historyStack.length - 1;
+            
+            const hasImage = currentImage !== null;
+            imageSizeBtn.disabled = !hasImage;
+            canvasSizeBtn.disabled = !hasImage;
+            downloadBtn.disabled = !hasImage;
+            clearImageBtn.disabled = !hasImage;
+        }
+        
+        // 更新状态栏
+        function updateStatusBar() {
+            if (currentImage) {
+                imageInfo.textContent = `${currentImage.width} × ${currentImage.height} 像素`;
+            } else {
+                imageInfo.textContent = '未加载图片';
+            }
+            
+            if (historyStack.length > 0) {
+                historyInfo.textContent = `历史记录: ${currentHistoryIndex + 1}/${historyStack.length}`;
+            } else {
+                historyInfo.textContent = '无历史记录';
+            }
+        }
+        
+        // 窗口大小改变时调整画布显示大小
+        window.addEventListener('resize', () => {
+            if (currentImage) {
+                adjustCanvasWrapper();
+            }
+        });
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>

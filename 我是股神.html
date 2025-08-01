@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我是股神 - 模拟投资交易平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff5f6d, #ffc371);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .account-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .account-balance {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff5f6d;
+        }
+        
+        .account-profit {
+            font-size: 14px;
+        }
+        
+        .profit-up {
+            color: #f44336;
+        }
+        
+        .profit-down {
+            color: #4CAF50;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .nav-tab.active {
+            color: #ff5f6d;
+            border-bottom: 2px solid #ff5f6d;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 10px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stock-list, .fund-list, .futures-list, .bond-list, .currency-list {
+            margin-bottom: 10px;
+        }
+        
+        .stock-item, .fund-item, .futures-item, .bond-item, .currency-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 10px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .stock-info, .fund-info, .futures-info, .bond-info, .currency-info {
+            flex: 1;
+        }
+        
+        .stock-name, .fund-name, .futures-name, .bond-name, .currency-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .stock-code, .fund-code, .futures-code, .bond-code, .currency-code {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .stock-price, .fund-price, .futures-price, .bond-price, .currency-price {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .stock-change, .fund-change, .futures-change, .bond-change, .currency-change {
+            text-align: right;
+            font-size: 12px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-buy {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-sell {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-long {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-short {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-loan {
+            background-color: #9C27B0;
+            color: white;
+        }
+        
+        .btn-repay {
+            background-color: #FF9800;
+            color: white;
+        }
+        
+        .task-item {
+            padding: 12px 10px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .task-desc {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .task-reward {
+            color: #ff5f6d;
+            font-weight: bold;
+        }
+        
+        .position-item {
+            padding: 12px 10px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .position-name {
+            font-weight: bold;
+        }
+        
+        .position-code {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .position-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .position-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+        }
+        
+        .position-actions .btn {
+            margin-left: 5px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #ff5f6d, #ffc371);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .modal-body {
+            padding: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-radio-group {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .form-radio-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .form-radio-item input {
+            margin-right: 5px;
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .footer-nav-item {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .footer-nav-item.active {
+            color: #ff5f6d;
+        }
+        
+        .footer-nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        
+        /* K线图样式 */
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chart-name {
+            font-weight: bold;
+        }
+        
+        .chart-period {
+            display: flex;
+        }
+        
+        .chart-period-btn {
+            padding: 4px 8px;
+            margin-left: 5px;
+            font-size: 12px;
+            background-color: #eee;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .chart-period-btn.active {
+            background-color: #ff5f6d;
+            color: white;
+        }
+        
+        .chart-canvas {
+            width: 100%;
+            height: calc(100% - 40px);
+        }
+        
+        .chart-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        
+        .chart-info-item span:first-child {
+            color: #999;
+            margin-right: 5px;
+        }
+        
+        /* 详情页样式 */
+        .detail-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #ff5f6d, #ffc371);
+            color: white;
+            position: relative;
+        }
+        
+        .detail-back {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .detail-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .detail-code {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .detail-price {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .detail-change {
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .detail-section {
+            margin: 15px 0;
+            padding: 0 10px;
+        }
+        
+        .detail-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .detail-actions .btn {
+            width: 48%;
+            padding: 10px;
+        }
+        
+        /* 里程碑样式 */
+        .milestone-item {
+            padding: 12px 10px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .milestone-info {
+            flex: 1;
+        }
+        
+        .milestone-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .milestone-desc {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .milestone-progress {
+            height: 5px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .milestone-progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #ff5f6d, #ffc371);
+            border-radius: 3px;
+        }
+        
+        .milestone-reward {
+            color: #ff5f6d;
+            font-weight: bold;
+        }
+        
+        /* 账户页样式 */
+        .account-section {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .account-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .account-loan-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .account-loan-amount {
+            font-weight: bold;
+            color: #9C27B0;
+        }
+        
+        @media (max-width: 375px) {
+            .stock-name, .fund-name, .futures-name, .bond-name, .currency-name {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-container">
+        <div class="header">
+            <h1>我是股神</h1>
+        </div>
+        
+        <div class="account-info">
+            <div>
+                <div>总资产</div>
+                <div class="account-balance" id="total-assets">¥10,000.00</div>
+            </div>
+            <div>
+                <div>今日盈亏</div>
+                <div class="account-profit profit-up" id="today-profit">+¥0.00 (0.00%)</div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="stocks">股票</div>
+            <div class="nav-tab" data-tab="funds">基金</div>
+            <div class="nav-tab" data-tab="futures">期货</div>
+            <div class="nav-tab" data-tab="bonds">国债</div>
+            <div class="nav-tab" data-tab="currency">货币</div>
+        </div>
+        
+        <div class="tab-content active" id="stocks-tab">
+            <div class="stock-list" id="stock-list">
+                <!-- 股票列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="funds-tab">
+            <div class="fund-list" id="fund-list">
+                <!-- 基金列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="futures-tab">
+            <div class="futures-list" id="futures-list">
+                <!-- 期货列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="bonds-tab">
+            <div class="bond-list" id="bond-list">
+                <!-- 国债列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="currency-tab">
+            <div class="currency-list" id="currency-list">
+                <!-- 货币列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="positions-tab">
+            <div class="position-list" id="position-list">
+                <!-- 持仓列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="tasks-tab">
+            <div class="task-list" id="task-list">
+                <!-- 任务列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="milestones-tab">
+            <div class="milestone-list" id="milestone-list">
+                <!-- 里程碑列表将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="account-tab">
+            <div class="account-section">
+                <div class="account-section-title">账户信息</div>
+                <div>可用资金: <span id="account-balance">¥10,000.00</span></div>
+                <div>总负债: <span id="account-debt">¥0.00</span></div>
+                <div>净资产: <span id="account-net-worth">¥10,000.00</span></div>
+            </div>
+            
+            <div class="account-section">
+                <div class="account-section-title">借贷管理</div>
+                <button class="btn btn-loan" id="btn-loan">申请贷款</button>
+                <button class="btn btn-repay" id="btn-repay">偿还贷款</button>
+            </div>
+            
+            <div class="account-section">
+                <div class="account-section-title">交易统计</div>
+                <div>总交易次数: <span id="total-trades">0</span></div>
+                <div>累计盈利: <span id="total-profit">¥0.00</span></div>
+            </div>
+        </div>
+        
+        <div class="footer-nav">
+            <div class="footer-nav-item active" data-tab="market">
+                <div class="footer-nav-icon">📈</div>
+                <div>行情</div>
+            </div>
+            <div class="footer-nav-item" data-tab="positions">
+                <div class="footer-nav-icon">💰</div>
+                <div>持仓</div>
+            </div>
+            <div class="footer-nav-item" data-tab="tasks">
+                <div class="footer-nav-icon">🎯</div>
+                <div>任务</div>
+            </div>
+            <div class="footer-nav-item" data-tab="milestones">
+                <div class="footer-nav-icon">🏆</div>
+                <div>里程碑</div>
+            </div>
+            <div class="footer-nav-item" data-tab="account">
+                <div class="footer-nav-icon">👤</div>
+                <div>我的</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 详情页容器 (初始隐藏) -->
+    <div class="container" id="detail-container" style="display: none;">
+        <div class="detail-header">
+            <div class="detail-back" id="detail-back">←</div>
+            <div class="detail-title" id="detail-title">贵州茅台</div>
+            <div class="detail-code" id="detail-code">SH600519</div>
+            <div class="detail-price" id="detail-price">1720.50</div>
+            <div class="detail-change profit-up" id="detail-change">+1.23 (0.07%)</div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-name">K线图</div>
+                <div class="chart-period">
+                    <button class="chart-period-btn active" data-period="1d">日线</button>
+                    <button class="chart-period-btn" data-period="1w">周线</button>
+                    <button class="chart-period-btn" data-period="1m">月线</button>
+                </div>
+            </div>
+            <canvas class="chart-canvas" id="kline-chart"></canvas>
+            <div class="chart-info">
+                <div class="chart-info-item">
+                    <span>开:</span><span id="chart-open">1720.50</span>
+                </div>
+                <div class="chart-info-item">
+                    <span>高:</span><span id="chart-high">1725.60</span>
+                </div>
+                <div class="chart-info-item">
+                    <span>低:</span><span id="chart-low">1718.30</span>
+                </div>
+                <div class="chart-info-item">
+                    <span>收:</span><span id="chart-close">1720.50</span>
+                </div>
+                <div class="chart-info-item">
+                    <span>涨:</span><span id="chart-up" style="color:#f44336">0</span>
+                </div>
+                <div class="chart-info-item">
+                    <span>跌:</span><span id="chart-down" style="color:#4CAF50">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <div class="detail-section-title">基本信息</div>
+            <div id="detail-info">贵州茅台酒股份有限公司主要业务是茅台酒及系列酒的生产与销售。主导产品"贵州茅台酒"是世界三大蒸馏名酒之一。</div>
+        </div>
+        
+        <div class="detail-actions">
+            <button class="btn btn-long" id="detail-buy-long">买涨</button>
+            <button class="btn btn-short" id="detail-buy-short">买跌</button>
+            <button class="btn btn-sell" id="detail-sell">卖出</button>
+        </div>
+    </div>
+    
+    <!-- 交易模态框 -->
+    <div class="modal" id="trade-modal">
+        <div class="modal-content">
+            <div class="modal-header" id="trade-modal-title">买入股票</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="trade-name">名称</label>
+                    <input type="text" class="form-control" id="trade-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="trade-code">代码</label>
+                    <input type="text" class="form-control" id="trade-code" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="trade-price">价格</label>
+                    <input type="text" class="form-control" id="trade-price" readonly>
+                </div>
+                <div class="form-radio-group" id="trade-direction-group">
+                    <div class="form-radio-item">
+                        <input type="radio" id="trade-direction-long" name="trade-direction" value="long" checked>
+                        <label for="trade-direction-long">买涨</label>
+                    </div>
+                    <div class="form-radio-item">
+                        <input type="radio" id="trade-direction-short" name="trade-direction" value="short">
+                        <label for="trade-direction-short">买跌</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="trade-amount">数量</label>
+                    <input type="number" class="form-control" id="trade-amount" min="1" value="100">
+                </div>
+                <div class="form-group">
+                    <label for="trade-total">总价</label>
+                    <input type="text" class="form-control" id="trade-total" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="trade-cancel">取消</button>
+                <button class="btn btn-buy" id="trade-confirm">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 贷款模态框 -->
+    <div class="modal" id="loan-modal">
+        <div class="modal-content">
+            <div class="modal-header">申请贷款</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="loan-amount">贷款金额</label>
+                    <input type="number" class="form-control" id="loan-amount" min="1" value="1000">
+                </div>
+                <div class="form-group">
+                    <label for="loan-interest">利率 (每日 0.1%)</label>
+                    <input type="text" class="form-control" id="loan-interest" value="0.1%" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="loan-cancel">取消</button>
+                <button class="btn btn-loan" id="loan-confirm">确认贷款</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 还款模态框 -->
+    <div class="modal" id="repay-modal">
+        <div class="modal-content">
+            <div class="modal-header">偿还贷款</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="repay-amount">还款金额 (最大: <span id="max-repay">0</span>)</label>
+                    <input type="number" class="form-control" id="repay-amount" min="1" value="0">
+                </div>
+                <div class="account-loan-info">
+                    当前贷款总额: <span class="account-loan-amount" id="current-loan">¥0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="repay-cancel">取消</button>
+                <button class="btn btn-repay" id="repay-confirm">确认还款</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 任务奖励模态框 -->
+    <div class="modal" id="reward-modal">
+        <div class="modal-content">
+            <div class="modal-header">任务完成</div>
+            <div class="modal-body">
+                <p id="reward-message">恭喜您完成任务，获得奖励 ¥1000</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="reward-close">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 里程碑奖励模态框 -->
+    <div class="modal" id="milestone-modal">
+        <div class="modal-content">
+            <div class="modal-header">里程碑达成</div>
+            <div class="modal-body">
+                <p id="milestone-message">恭喜您达成里程碑，获得奖励 ¥10000</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="milestone-close">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 资产重置模态框 -->
+    <div class="modal" id="reset-modal">
+        <div class="modal-content">
+            <div class="modal-header">资产重置</div>
+            <div class="modal-body">
+                <p id="reset-message">您的负债已超过1亿元，系统已将您的资产重置为初始状态。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="reset-close">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 数据库名称和版本
+        const DB_NAME = 'StockGodDB';
+        const DB_VERSION = 1;
+        
+        // 对象存储名称
+        const STORES = {
+            USER_DATA: 'user_data',
+            MARKET_DATA: 'market_data',
+            PRICE_HISTORY: 'price_history'
+        };
+        
+        // 初始数据
+        const defaultUserData = {
+            balance: 10000,
+            debt: 0,
+            positions: [],
+            completedTasks: [],
+            completedMilestones: [],
+            todayProfit: 0,
+            totalTrades: 0,
+            totalProfit: 0,
+            lastUpdate: new Date().getTime()
+        };
+        
+        // 初始市场数据
+        const defaultMarketData = {
+            stocks: [
+                { code: "SH600519", name: "贵州茅台", price: 1720.50, change: 1.23, changePercent: 0.07, info: "贵州茅台酒股份有限公司主要业务是茅台酒及系列酒的生产与销售。主导产品'贵州茅台酒'是世界三大蒸馏名酒之一。" },
+                { code: "SZ000858", name: "五粮液", price: 156.80, change: -2.30, changePercent: -1.45, info: "宜宾五粮液股份有限公司是以五粮液及其系列酒的生产、销售为主要产业的公司。" },
+                { code: "SH601318", name: "中国平安", price: 48.25, change: 0.45, changePercent: 0.94, info: "中国平安保险(集团)股份有限公司是中国第一家股份制保险企业，已发展成为金融保险、银行、投资等金融业务为一体的综合金融服务集团。" },
+                { code: "SZ000333", name: "美的集团", price: 56.70, change: 1.20, changePercent: 2.16, info: "美的集团股份有限公司是一家集消费电器、暖通空调、机器人与自动化系统、智能供应链、芯片产业、电梯产业的科技集团。" },
+                { code: "SH600036", name: "招商银行", price: 32.15, change: -0.25, changePercent: -0.77, info: "招商银行股份有限公司是中国第一家完全由企业法人持股的股份制商业银行，也是国家从体制外推动银行业改革的第一家试点银行。" }
+            ],
+            funds: [
+                { code: "110011", name: "易方达中小盘", price: 5.23, change: 0.05, changePercent: 0.96, info: "易方达中小盘混合型证券投资基金主要投资于具有竞争优势和较高成长性的中小盘股票。" },
+                { code: "000311", name: "景顺长城沪深300", price: 1.85, change: -0.02, changePercent: -1.07, info: "景顺长城沪深300指数增强型证券投资基金采用指数增强投资策略，以沪深300指数为基准。" },
+                { code: "001875", name: "前海开源沪港深", price: 2.67, change: 0.03, changePercent: 1.14, info: "前海开源沪港深优势精选灵活配置混合型证券投资基金可同时投资于沪港深三地市场。" },
+                { code: "005827", name: "易方达蓝筹精选", price: 2.15, change: 0.01, changePercent: 0.47, info: "易方达蓝筹精选混合型证券投资基金主要投资于具有行业地位和竞争优势的蓝筹企业。" },
+                { code: "161005", name: "富国天惠成长", price: 3.42, change: -0.04, changePercent: -1.16, info: "富国天惠精选成长混合型证券投资基金主要投资于具有良好成长性且合理定价的股票。" }
+            ],
+            futures: [
+                { code: "IF2109", name: "沪深2109", price: 4852.6, change: 12.4, changePercent: 0.26, info: "沪深300指数期货2109合约，以沪深300指数为标的的金融期货合约。" },
+                { code: "IC2109", name: "中证2109", price: 6821.0, change: -23.6, changePercent: -0.34, info: "中证500指数期货2109合约，以中证500指数为标的的金融期货合约。" },
+                { code: "IH2109", name: "上证2109", price: 3205.8, change: 5.2, changePercent: 0.16, info: "上证50指数期货2109合约，以上证50指数为标的的金融期货合约。" },
+                { code: "CU2110", name: "沪铜2110", price: 68790, change: 320, changePercent: 0.47, info: "上海期货交易所铜期货2110合约，以铜为标的的商品期货合约。" },
+                { code: "AU2112", name: "沪金2112", price: 376.32, change: -1.28, changePercent: -0.34, info: "上海期货交易所黄金期货2112合约，以黄金为标的的商品期货合约。" }
+            ],
+            bonds: [
+                { code: "019547", name: "20国债07", price: 101.35, change: 0.05, changePercent: 0.05, info: "2020年记账式附息(七期)国债，票面利率2.68%，期限10年。" },
+                { code: "019641", name: "21国债01", price: 100.82, change: -0.03, changePercent: -0.03, info: "2021年记账式附息(一期)国债，票面利率2.85%，期限5年。" },
+                { code: "019627", name: "20国债12", price: 102.17, change: 0.08, changePercent: 0.08, info: "2020年记账式附息(十二期)国债，票面利率3.14%，期限30年。" },
+                { code: "019628", name: "20国债13", price: 101.95, change: 0.02, changePercent: 0.02, info: "2020年记账式附息(十三期)国债，票面利率3.05%，期限20年。" },
+                { code: "019640", name: "21国债00", price: 100.50, change: 0.10, changePercent: 0.10, info: "2021年记账式附息(测试)国债，票面利率3.00%，期限10年。" }
+            ],
+            currency: [
+                { code: "USDCNY", name: "美元/人民币", price: 6.4652, change: -0.0023, changePercent: -0.04, info: "美元兑人民币汇率，反映美元与人民币之间的兑换比率。" },
+                { code: "EURCNY", name: "欧元/人民币", price: 7.6325, change: 0.0125, changePercent: 0.16, info: "欧元兑人民币汇率，反映欧元与人民币之间的兑换比率。" },
+                { code: "GBPCNY", name: "英镑/人民币", price: 8.8921, change: -0.0231, changePercent: -0.26, info: "英镑兑人民币汇率，反映英镑与人民币之间的兑换比率。" },
+                { code: "JPYCNY", name: "日元/人民币", price: 0.0589, change: 0.0001, changePercent: 0.17, info: "日元兑人民币汇率，反映日元与人民币之间的兑换比率。" },
+                { code: "HKDCNY", name: "港币/人民币", price: 0.8312, change: -0.0005, changePercent: -0.06, info: "港币兑人民币汇率，反映港币与人民币之间的兑换比率。" },
+                { code: "BTCUSD", name: "比特币/美元", price: 45032.50, change: 1250.75, changePercent: 2.86, info: "比特币兑美元汇率，反映比特币与美元之间的兑换比率。" }
+            ],
+            tasks: [
+                { id: 1, name: "首次登录", description: "首次登录应用", reward: 1000, completed: false },
+                { id: 2, name: "完成第一笔交易", description: "完成任意一笔买入或卖出交易", reward: 2000, completed: false },
+                { id: 3, name: "持有3种资产", description: "同时持有3种不同类型的资产", reward: 3000, completed: false },
+                { id: 4, name: "日盈利5%", description: "单日盈利达到总资产的5%", reward: 5000, completed: false },
+                { id: 5, name: "周盈利10%", description: "单周盈利达到总资产的10%", reward: 10000, completed: false },
+                { id: 6, name: "完成5笔交易", description: "累计完成5笔买入或卖出交易", reward: 5000, completed: false },
+                { id: 7, name: "买涨盈利", description: "通过买涨获得盈利", reward: 3000, completed: false },
+                { id: 8, name: "买跌盈利", description: "通过买跌获得盈利", reward: 3000, completed: false },
+                { id: 9, name: "总盈利1万元", description: "累计盈利达到1万元", reward: 10000, completed: false },
+                { id: 10, name: "投资所有市场", description: "在所有市场类型中都有投资", reward: 8000, completed: false }
+            ],
+            milestones: [
+                { id: 1, name: "初级投资者", description: "总资产达到5万元", reward: 10000, target: 50000, progress: 0, completed: false },
+                { id: 2, name: "中级投资者", description: "总资产达到10万元", reward: 20000, target: 100000, progress: 0, completed: false },
+                { id: 3, name: "高级投资者", description: "总资产达到50万元", reward: 50000, target: 500000, progress: 0, completed: false },
+                { id: 4, name: "资深投资者", description: "总资产达到100万元", reward: 100000, target: 1000000, progress: 0, completed: false },
+                { id: 5, name: "交易达人", description: "完成100笔交易", reward: 20000, target: 100, progress: 0, completed: false },
+                { id: 6, name: "盈利高手", description: "累计盈利达到10万元", reward: 30000, target: 100000, progress: 0, completed: false }
+            ]
+        };
+        
+        // 当前交易信息
+        let currentTrade = {
+            type: "", // "buy" or "sell"
+            direction: "long", // "long" or "short"
+            market: "", // "stocks", "funds", etc.
+            index: -1, // index in the market data array
+            positionIndex: -1 // index in the positions array (for sell)
+        };
+        
+        // 当前查看的详情项
+        let currentDetailItem = null;
+        
+        // 数据库引用
+        let db;
+        
+        // DOM元素
+        const elements = {
+            mainContainer: document.getElementById("main-container"),
+            detailContainer: document.getElementById("detail-container"),
+            totalAssets: document.getElementById("total-assets"),
+            todayProfit: document.getElementById("today-profit"),
+            stockList: document.getElementById("stock-list"),
+            fundList: document.getElementById("fund-list"),
+            futuresList: document.getElementById("futures-list"),
+            bondList: document.getElementById("bond-list"),
+            currencyList: document.getElementById("currency-list"),
+            positionList: document.getElementById("position-list"),
+            taskList: document.getElementById("task-list"),
+            milestoneList: document.getElementById("milestone-list"),
+            accountBalance: document.getElementById("account-balance"),
+            accountDebt: document.getElementById("account-debt"),
+            accountNetWorth: document.getElementById("account-net-worth"),
+            totalTrades: document.getElementById("total-trades"),
+            totalProfit: document.getElementById("total-profit"),
+            btnLoan: document.getElementById("btn-loan"),
+            btnRepay: document.getElementById("btn-repay"),
+            navTabs: document.querySelectorAll(".nav-tab"),
+            tabContents: document.querySelectorAll(".tab-content"),
+            footerNavItems: document.querySelectorAll(".footer-nav-item"),
+            tradeModal: document.getElementById("trade-modal"),
+            tradeModalTitle: document.getElementById("trade-modal-title"),
+            tradeName: document.getElementById("trade-name"),
+            tradeCode: document.getElementById("trade-code"),
+            tradePrice: document.getElementById("trade-price"),
+            tradeAmount: document.getElementById("trade-amount"),
+            tradeTotal: document.getElementById("trade-total"),
+            tradeDirectionGroup: document.getElementById("trade-direction-group"),
+            tradeCancel: document.getElementById("trade-cancel"),
+            tradeConfirm: document.getElementById("trade-confirm"),
+            loanModal: document.getElementById("loan-modal"),
+            loanAmount: document.getElementById("loan-amount"),
+            loanCancel: document.getElementById("loan-cancel"),
+            loanConfirm: document.getElementById("loan-confirm"),
+            repayModal: document.getElementById("repay-modal"),
+            repayAmount: document.getElementById("repay-amount"),
+            maxRepay: document.getElementById("max-repay"),
+            currentLoan: document.getElementById("current-loan"),
+            repayCancel: document.getElementById("repay-cancel"),
+            repayConfirm: document.getElementById("repay-confirm"),
+            rewardModal: document.getElementById("reward-modal"),
+            rewardMessage: document.getElementById("reward-message"),
+            rewardClose: document.getElementById("reward-close"),
+            milestoneModal: document.getElementById("milestone-modal"),
+            milestoneMessage: document.getElementById("milestone-message"),
+            milestoneClose: document.getElementById("milestone-close"),
+            resetModal: document.getElementById("reset-modal"),
+            resetClose: document.getElementById("reset-close"),
+            detailBack: document.getElementById("detail-back"),
+            detailTitle: document.getElementById("detail-title"),
+            detailCode: document.getElementById("detail-code"),
+            detailPrice: document.getElementById("detail-price"),
+            detailChange: document.getElementById("detail-change"),
+            detailInfo: document.getElementById("detail-info"),
+            detailBuyLong: document.getElementById("detail-buy-long"),
+            detailBuyShort: document.getElementById("detail-buy-short"),
+            detailSell: document.getElementById("detail-sell"),
+            klineChart: document.getElementById("kline-chart"),
+            chartOpen: document.getElementById("chart-open"),
+            chartHigh: document.getElementById("chart-high"),
+            chartLow: document.getElementById("chart-low"),
+            chartClose: document.getElementById("chart-close"),
+            chartUp: document.getElementById("chart-up"),
+            chartDown: document.getElementById("chart-down"),
+            periodButtons: document.querySelectorAll(".chart-period-btn")
+        };
+        
+        // 初始化数据库
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    // 创建用户数据存储
+                    if (!db.objectStoreNames.contains(STORES.USER_DATA)) {
+                        const userStore = db.createObjectStore(STORES.USER_DATA, { keyPath: 'id' });
+                        userStore.createIndex('balance', 'balance', { unique: false });
+                    }
+                    
+                    // 创建市场数据存储
+                    if (!db.objectStoreNames.contains(STORES.MARKET_DATA)) {
+                        const marketStore = db.createObjectStore(STORES.MARKET_DATA, { keyPath: 'market' });
+                    }
+                    
+                    // 创建价格历史存储
+                    if (!db.objectStoreNames.contains(STORES.PRICE_HISTORY)) {
+                        const historyStore = db.createObjectStore(STORES.PRICE_HISTORY, { keyPath: ['market', 'code', 'timestamp'] });
+                        historyStore.createIndex('market_code', ['market', 'code'], { unique: false });
+                    }
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("数据库初始化成功");
+                    
+                    // 检查是否有初始数据
+                    checkInitialData().then(() => {
+                        resolve();
+                    }).catch(error => {
+                        console.error("检查初始数据失败:", error);
+                        reject(error);
+                    });
+                };
+                
+                request.onerror = (event) => {
+                    console.error("数据库初始化失败:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 检查并初始化数据
+        function checkInitialData() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.USER_DATA, STORES.MARKET_DATA], 'readwrite');
+                
+                // 检查用户数据
+                const userStore = transaction.objectStore(STORES.USER_DATA);
+                const userRequest = userStore.get(1);
+                
+                userRequest.onsuccess = () => {
+                    if (!userRequest.result) {
+                        // 没有用户数据，初始化
+                        const newUserRequest = userStore.put({ 
+                            id: 1, 
+                            ...defaultUserData 
+                        });
+                        
+                        newUserRequest.onsuccess = () => {
+                            console.log("用户数据初始化成功");
+                        };
+                        
+                        newUserRequest.onerror = (event) => {
+                            console.error("用户数据初始化失败:", event.target.error);
+                        };
+                    }
+                };
+                
+                // 检查市场数据
+                const marketStore = transaction.objectStore(STORES.MARKET_DATA);
+                
+                Object.keys(defaultMarketData).forEach(market => {
+                    const marketRequest = marketStore.get(market);
+                    
+                    marketRequest.onsuccess = () => {
+                        if (!marketRequest.result) {
+                            // 没有市场数据，初始化
+                            const newMarketRequest = marketStore.put({
+                                market: market,
+                                data: defaultMarketData[market]
+                            });
+                            
+                            newMarketRequest.onsuccess = () => {
+                                console.log(`市场数据 ${market} 初始化成功`);
+                            };
+                            
+                            newMarketRequest.onerror = (event) => {
+                                console.error(`市场数据 ${market} 初始化失败:`, event.target.error);
+                            };
+                        }
+                    };
+                });
+                
+                transaction.oncomplete = () => {
+                    resolve();
+                };
+                
+                transaction.onerror = (event) => {
+                    console.error("事务错误:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 获取用户数据
+        function getUserData() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.USER_DATA], 'readonly');
+                const store = transaction.objectStore(STORES.USER_DATA);
+                const request = store.get(1);
+                
+                request.onsuccess = () => {
+                    resolve(request.result || { ...defaultUserData });
+                };
+                
+                request.onerror = (event) => {
+                    console.error("获取用户数据失败:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 更新用户数据
+        function updateUserData(data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.USER_DATA], 'readwrite');
+                const store = transaction.objectStore(STORES.USER_DATA);
+                
+                // 添加最后更新时间
+                data.lastUpdate = new Date().getTime();
+                
+                const request = store.put(data);
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    console.error("更新用户数据失败:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 获取市场数据
+        function getMarketData(market) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.MARKET_DATA], 'readonly');
+                const store = transaction.objectStore(STORES.MARKET_DATA);
+                const request = store.get(market);
+                
+                request.onsuccess = () => {
+                    resolve(request.result ? request.result.data : []);
+                };
+                
+                request.onerror = (event) => {
+                    console.error(`获取市场数据 ${market} 失败:`, event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 更新市场数据
+        function updateMarketData(market, data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.MARKET_DATA], 'readwrite');
+                const store = transaction.objectStore(STORES.MARKET_DATA);
+                
+                const request = store.put({
+                    market: market,
+                    data: data
+                });
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    console.error(`更新市场数据 ${market} 失败:`, event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 获取价格历史
+        function getPriceHistory(market, code, period = '1d', limit = 30) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.PRICE_HISTORY], 'readonly');
+                const store = transaction.objectStore(STORES.PRICE_HISTORY);
+                const index = store.index('market_code');
+                
+                // 计算时间范围
+                const now = new Date();
+                let fromTime;
+                
+                switch (period) {
+                    case '1d':
+                        fromTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - limit).getTime();
+                        break;
+                    case '1w':
+                        fromTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - limit * 7).getTime();
+                        break;
+                    case '1m':
+                        fromTime = new Date(now.getFullYear(), now.getMonth() - limit, now.getDate()).getTime();
+                        break;
+                    default:
+                        fromTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - limit).getTime();
+                }
+                
+                const range = IDBKeyRange.bound([market, code, fromTime], [market, code, now.getTime()]);
+                const request = index.getAll(range);
+                
+                request.onsuccess = () => {
+                    // 按时间排序
+                    const history = request.result.sort((a, b) => a.timestamp - b.timestamp);
+                    resolve(history);
+                };
+                
+                request.onerror = (event) => {
+                    console.error(`获取价格历史 ${market}-${code} 失败:`, event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 记录价格历史
+        function recordPriceHistory(market, code, priceData) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.PRICE_HISTORY], 'readwrite');
+                const store = transaction.objectStore(STORES.PRICE_HISTORY);
+                
+                const now = new Date();
+                const timestamp = now.getTime();
+                
+                // 生成K线数据
+                const klineData = {
+                    market: market,
+                    code: code,
+                    timestamp: timestamp,
+                    open: priceData.open || priceData.price,
+                    high: priceData.high || priceData.price,
+                    low: priceData.low || priceData.price,
+                    close: priceData.price,
+                    volume: priceData.volume || Math.floor(Math.random() * 10000) + 1000
+                };
+                
+                const request = store.put(klineData);
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    console.error(`记录价格历史 ${market}-${code} 失败:`, event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // 初始化应用
+        function initApp() {
+            initDB().then(() => {
+                return Promise.all([
+                    getUserData(),
+                    getMarketData('stocks'),
+                    getMarketData('funds'),
+                    getMarketData('futures'),
+                    getMarketData('bonds'),
+                    getMarketData('currency'),
+                    getMarketData('tasks'),
+                    getMarketData('milestones')
+                ]);
+            }).then(([userData, stocks, funds, futures, bonds, currency, tasks, milestones]) => {
+                // 初始化数据
+                window.userData = userData;
+                window.marketData = {
+                    stocks: stocks,
+                    funds: funds,
+                    futures: futures,
+                    bonds: bonds,
+                    currency: currency,
+                    tasks: tasks,
+                    milestones: milestones
+                };
+                
+                // 渲染界面
+                renderMarketData();
+                renderPositions();
+                renderTasks();
+                renderMilestones();
+                updateAccountInfo();
+                bindEvents();
+                
+                // 检查首次登录任务
+                checkFirstLoginTask();
+                
+                // 开始价格波动模拟
+                setInterval(simulatePriceChanges, 5000);
+            }).catch(error => {
+                console.error("应用初始化失败:", error);
+                alert("应用初始化失败，请刷新页面重试");
+            });
+        }
+        
+        // 渲染市场数据
+        function renderMarketData() {
+            renderStockList();
+            renderFundList();
+            renderFuturesList();
+            renderBondList();
+            renderCurrencyList();
+        }
+        
+        function renderStockList() {
+            elements.stockList.innerHTML = "";
+            marketData.stocks.forEach((stock, index) => {
+                const changeClass = stock.change >= 0 ? "profit-up" : "profit-down";
+                const changeSign = stock.change >= 0 ? "+" : "";
+                
+                const stockItem = document.createElement("div");
+                stockItem.className = "stock-item";
+                stockItem.innerHTML = `
+                    <div class="stock-info" data-market="stocks" data-index="${index}" style="flex: 2;">
+                        <div class="stock-name">${stock.name}</div>
+                        <div class="stock-code">${stock.code}</div>
+                    </div>
+                    <div class="stock-price">${stock.price.toFixed(2)}</div>
+                    <div class="stock-change ${changeClass}">${changeSign}${stock.change.toFixed(2)} (${changeSign}${stock.changePercent.toFixed(2)}%)</div>
+                    <button class="btn btn-buy" data-market="stocks" data-index="${index}">买</button>
+                `;
+                elements.stockList.appendChild(stockItem);
+            });
+        }
+        
+        function renderFundList() {
+            elements.fundList.innerHTML = "";
+            marketData.funds.forEach((fund, index) => {
+                const changeClass = fund.change >= 0 ? "profit-up" : "profit-down";
+                const changeSign = fund.change >= 0 ? "+" : "";
+                
+                const fundItem = document.createElement("div");
+                fundItem.className = "fund-item";
+                fundItem.innerHTML = `
+                    <div class="fund-info" data-market="funds" data-index="${index}" style="flex: 2;">
+                        <div class="fund-name">${fund.name}</div>
+                        <div class="fund-code">${fund.code}</div>
+                    </div>
+                    <div class="fund-price">${fund.price.toFixed(2)}</div>
+                    <div class="fund-change ${changeClass}">${changeSign}${fund.change.toFixed(2)} (${changeSign}${fund.changePercent.toFixed(2)}%)</div>
+                    <button class="btn btn-buy" data-market="funds" data-index="${index}">买</button>
+                `;
+                elements.fundList.appendChild(fundItem);
+            });
+        }
+        
+        function renderFuturesList() {
+            elements.futuresList.innerHTML = "";
+            marketData.futures.forEach((future, index) => {
+                const changeClass = future.change >= 0 ? "profit-up" : "profit-down";
+                const changeSign = future.change >= 0 ? "+" : "";
+                
+                const futuresItem = document.createElement("div");
+                futuresItem.className = "futures-item";
+                futuresItem.innerHTML = `
+                    <div class="futures-info" data-market="futures" data-index="${index}" style="flex: 2;">
+                        <div class="futures-name">${future.name}</div>
+                        <div class="futures-code">${future.code}</div>
+                    </div>
+                    <div class="futures-price">${future.price.toFixed(future.price > 100 ? 1 : 2)}</div>
+                    <div class="futures-change ${changeClass}">${changeSign}${future.change.toFixed(2)} (${changeSign}${future.changePercent.toFixed(2)}%)</div>
+                    <button class="btn btn-buy" data-market="futures" data-index="${index}">买</button>
+                `;
+                elements.futuresList.appendChild(futuresItem);
+            });
+        }
+        
+        function renderBondList() {
+            elements.bondList.innerHTML = "";
+            marketData.bonds.forEach((bond, index) => {
+                const changeClass = bond.change >= 0 ? "profit-up" : "profit-down";
+                const changeSign = bond.change >= 0 ? "+" : "";
+                
+                const bondItem = document.createElement("div");
+                bondItem.className = "bond-item";
+                bondItem.innerHTML = `
+                    <div class="bond-info" data-market="bonds" data-index="${index}" style="flex: 2;">
+                        <div class="bond-name">${bond.name}</div>
+                        <div class="bond-code">${bond.code}</div>
+                    </div>
+                    <div class="bond-price">${bond.price.toFixed(2)}</div>
+                    <div class="bond-change ${changeClass}">${changeSign}${bond.change.toFixed(2)} (${changeSign}${bond.changePercent.toFixed(2)}%)</div>
+                    <button class="btn btn-buy" data-market="bonds" data-index="${index}">买</button>
+                `;
+                elements.bondList.appendChild(bondItem);
+            });
+        }
+        
+        function renderCurrencyList() {
+            elements.currencyList.innerHTML = "";
+            marketData.currency.forEach((currency, index) => {
+                const changeClass = currency.change >= 0 ? "profit-up" : "profit-down";
+                const changeSign = currency.change >= 0 ? "+" : "";
+                
+                const currencyItem = document.createElement("div");
+                currencyItem.className = "currency-item";
+                currencyItem.innerHTML = `
+                    <div class="currency-info" data-market="currency" data-index="${index}" style="flex: 2;">
+                        <div class="currency-name">${currency.name}</div>
+                        <div class="currency-code">${currency.code}</div>
+                    </div>
+                    <div class="currency-price">${currency.code === 'BTCUSD' ? currency.price.toFixed(2) : currency.price.toFixed(4)}</div>
+                    <div class="currency-change ${changeClass}">${changeSign}${currency.code === 'BTCUSD' ? currency.change.toFixed(2) : currency.change.toFixed(4)} (${changeSign}${currency.changePercent.toFixed(2)}%)</div>
+                    <button class="btn btn-buy" data-market="currency" data-index="${index}">买</button>
+                `;
+                elements.currencyList.appendChild(currencyItem);
+            });
+        }
+        
+        // 渲染持仓列表
+        function renderPositions() {
+            elements.positionList.innerHTML = "";
+            
+            if (userData.positions.length === 0) {
+                const emptyMsg = document.createElement("div");
+                emptyMsg.className = "position-item";
+                emptyMsg.textContent = "暂无持仓";
+                elements.positionList.appendChild(emptyMsg);
+                return;
+            }
+            
+            userData.positions.forEach((position, index) => {
+                const currentPrice = getCurrentPrice(position.market, position.code);
+                let profit = 0;
+                
+                if (position.direction === 'short') {
+                    // 买跌的盈利计算方式不同
+                    profit = (position.price - currentPrice) * position.amount;
+                } else {
+                    // 买涨的盈利计算
+                    profit = (currentPrice - position.price) * position.amount;
+                }
+                
+                const profitPercent = (profit / (position.price * position.amount)) * 100;
+                const profitClass = profit >= 0 ? "profit-up" : "profit-down";
+                const profitSign = profit >= 0 ? "+" : "";
+                
+                const positionItem = document.createElement("div");
+                positionItem.className = "position-item";
+                positionItem.innerHTML = `
+                    <div class="position-header">
+                        <div class="position-name" data-market="${position.market}" data-code="${position.code}" style="cursor: pointer;">${position.name} ${position.direction === 'short' ? '(买跌)' : ''}</div>
+                        <div class="position-code">${position.code}</div>
+                    </div>
+                    <div class="position-details">
+                        <div>持仓: ${position.amount}</div>
+                        <div>成本: ${position.price.toFixed(2)}</div>
+                        <div>现价: ${currentPrice.toFixed(2)}</div>
+                    </div>
+                    <div class="position-details">
+                        <div>方向: ${position.direction === 'short' ? '买跌' : '买涨'}</div>
+                        <div>盈亏: <span class="${profitClass}">${profitSign}${profit.toFixed(2)} (${profitSign}${profitPercent.toFixed(2)}%)</span></div>
+                    </div>
+                    <div class="position-details">
+                        <div>市值: ${(currentPrice * position.amount).toFixed(2)}</div>
+                    </div>
+                    <div class="position-actions">
+                        <button class="btn btn-buy" data-action="buy-more" data-market="${position.market}" data-code="${position.code}">加仓</button>
+                        <button class="btn btn-sell" data-action="sell" data-index="${index}">卖出</button>
+                    </div>
+                `;
+                elements.positionList.appendChild(positionItem);
+            });
+        }
+        
+        // 渲染任务列表
+        function renderTasks() {
+            elements.taskList.innerHTML = "";
+            
+            marketData.tasks.forEach(task => {
+                const taskItem = document.createElement("div");
+                taskItem.className = "task-item";
+                
+                const completed = userData.completedTasks.includes(task.id);
+                const btnClass = completed ? "btn" : "btn btn-buy";
+                const btnText = completed ? "已完成" : "领取";
+                const btnDisabled = completed ? "disabled" : "";
+                
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-desc">${task.description}</div>
+                    </div>
+                    <div class="task-reward">+¥${task.reward}</div>
+                    <button class="${btnClass}" data-task-id="${task.id}" ${btnDisabled}>${btnText}</button>
+                `;
+                elements.taskList.appendChild(taskItem);
+            });
+        }
+        
+        // 渲染里程碑列表
+        function renderMilestones() {
+            elements.milestoneList.innerHTML = "";
+            
+            marketData.milestones.forEach(milestone => {
+                const completed = userData.completedMilestones.includes(milestone.id);
+                const btnClass = completed ? "btn" : "btn btn-buy";
+                const btnText = completed ? "已完成" : "";
+                const btnDisabled = completed ? "disabled" : "";
+                
+                // 计算进度
+                let progress = 0;
+                if (milestone.id <= 4) {
+                    // 资产里程碑
+                    let totalValue = userData.balance;
+                    userData.positions.forEach(position => {
+                        const currentPrice = getCurrentPrice(position.market, position.code);
+                        totalValue += currentPrice * position.amount;
+                    });
+                    progress = Math.min(100, (totalValue / milestone.target) * 100);
+                } else if (milestone.id === 5) {
+                    // 交易次数里程碑
+                    progress = Math.min(100, (userData.totalTrades / milestone.target) * 100);
+                } else if (milestone.id === 6) {
+                    // 盈利里程碑
+                    progress = Math.min(100, (userData.totalProfit / milestone.target) * 100);
+                }
+                
+                const milestoneItem = document.createElement("div");
+                milestoneItem.className = "milestone-item";
+                milestoneItem.innerHTML = `
+                    <div class="milestone-info">
+                        <div class="milestone-name">${milestone.name}</div>
+                        <div class="milestone-desc">${milestone.description}</div>
+                        <div class="milestone-progress">
+                            <div class="milestone-progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="milestone-reward">+¥${milestone.reward}</div>
+                    <button class="${btnClass}" data-milestone-id="${milestone.id}" ${btnDisabled}>${btnText}</button>
+                `;
+                elements.milestoneList.appendChild(milestoneItem);
+            });
+        }
+        
+        // 更新账户信息
+        function updateAccountInfo() {
+            // 计算总资产
+            let totalValue = userData.balance;
+            userData.positions.forEach(position => {
+                const currentPrice = getCurrentPrice(position.market, position.code);
+                totalValue += currentPrice * position.amount;
+            });
+            
+            // 检查负债是否超过1亿，如果是则重置
+            if (totalValue < -100000000) {
+                resetAccount();
+                return;
+            }
+            
+            // 更新总资产显示
+            elements.totalAssets.textContent = `¥${totalValue.toFixed(2)}`;
+            
+            // 更新今日盈亏显示
+            const profitSign = userData.todayProfit >= 0 ? "+" : "";
+            const profitClass = userData.todayProfit >= 0 ? "profit-up" : "profit-down";
+            elements.todayProfit.textContent = `${profitSign}¥${Math.abs(userData.todayProfit).toFixed(2)} (${profitSign}${(userData.todayProfit / (totalValue - userData.todayProfit) * 100).toFixed(2)}%)`;
+            elements.todayProfit.className = `account-profit ${profitClass}`;
+            
+            // 更新账户页信息
+            elements.accountBalance.textContent = `¥${userData.balance.toFixed(2)}`;
+            elements.accountDebt.textContent = `¥${userData.debt.toFixed(2)}`;
+            elements.accountNetWorth.textContent = `¥${(userData.balance - userData.debt).toFixed(2)}`;
+            elements.totalTrades.textContent = userData.totalTrades;
+            elements.totalProfit.textContent = `¥${userData.totalProfit.toFixed(2)}`;
+            
+            // 检查里程碑
+            checkMilestones();
+            
+            // 保存到数据库
+            updateUserData(userData).catch(error => {
+                console.error("保存用户数据失败:", error);
+            });
+        }
+        
+        // 重置账户
+        function resetAccount() {
+            // 重置用户数据
+            userData = {
+                ...defaultUserData,
+                // 保留已完成的任务和里程碑
+                completedTasks: [...userData.completedTasks],
+                completedMilestones: [...userData.completedMilestones]
+            };
+            
+            // 更新界面
+            updateAccountInfo();
+            renderPositions();
+            renderTasks();
+            renderMilestones();
+            
+            // 显示重置提示
+            elements.resetModal.style.display = "flex";
+        }
+        
+        // 获取当前价格
+        function getCurrentPrice(market, code) {
+            const items = marketData[market];
+            if (!items) return 0;
+            
+            const item = items.find(item => item.code === code);
+            return item ? item.price : 0;
+        }
+        
+        // 绑定事件
+        function bindEvents() {
+            // 导航标签切换
+            elements.navTabs.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    elements.navTabs.forEach(t => t.classList.remove("active"));
+                    tab.classList.add("active");
+                    
+                    const tabId = `${tab.dataset.tab}-tab`;
+                    elements.tabContents.forEach(content => content.classList.remove("active"));
+                    document.getElementById(tabId).classList.add("active");
+                });
+            });
+            
+            // 底部导航切换
+            elements.footerNavItems.forEach(item => {
+                item.addEventListener("click", () => {
+                    if (item.classList.contains("active")) return;
+                    
+                    elements.footerNavItems.forEach(i => i.classList.remove("active"));
+                    item.classList.add("active");
+                    
+                    const tabId = item.dataset.tab;
+                    if (tabId === "market") {
+                        // 显示行情标签
+                        elements.tabContents.forEach(content => content.classList.remove("active"));
+                        document.getElementById("stocks-tab").classList.add("active");
+                        elements.navTabs.forEach(t => t.classList.remove("active"));
+                        elements.navTabs[0].classList.add("active");
+                    } else if (tabId === "positions") {
+                        // 显示持仓
+                        elements.tabContents.forEach(content => content.classList.remove("active"));
+                        document.getElementById("positions-tab").classList.add("active");
+                    } else if (tabId === "tasks") {
+                        // 显示任务
+                        elements.tabContents.forEach(content => content.classList.remove("active"));
+                        document.getElementById("tasks-tab").classList.add("active");
+                    } else if (tabId === "milestones") {
+                        // 显示里程碑
+                        elements.tabContents.forEach(content => content.classList.remove("active"));
+                        document.getElementById("milestones-tab").classList.add("active");
+                    } else if (tabId === "account") {
+                        // 显示账户
+                        elements.tabContents.forEach(content => content.classList.remove("active"));
+                        document.getElementById("account-tab").classList.add("active");
+                    }
+                });
+            });
+            
+            // 买入按钮
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("btn-buy") && !e.target.dataset.action) {
+                    const market = e.target.dataset.market;
+                    const index = parseInt(e.target.dataset.index);
+                    
+                    openTradeModal("buy", market, index);
+                }
+            });
+            
+            // 加仓按钮
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("btn-buy") && e.target.dataset.action === "buy-more") {
+                    const market = e.target.dataset.market;
+                    const code = e.target.dataset.code;
+                    
+                    // 找到对应的市场数据索引
+                    const items = marketData[market];
+                    const index = items.findIndex(item => item.code === code);
+                    
+                    if (index !== -1) {
+                        openTradeModal("buy", market, index);
+                    }
+                }
+            });
+            
+            // 卖出按钮
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("btn-sell")) {
+                    const positionIndex = parseInt(e.target.dataset.index);
+                    const position = userData.positions[positionIndex];
+                    
+                    // 找到对应的市场数据索引
+                    const items = marketData[position.market];
+                    const marketIndex = items.findIndex(item => item.code === position.code);
+                    
+                    if (marketIndex !== -1) {
+                        openTradeModal("sell", position.market, marketIndex, positionIndex);
+                    }
+                }
+            });
+            
+            // 交易数量变化
+            elements.tradeAmount.addEventListener("input", () => {
+                updateTradeTotal();
+            });
+            
+            // 取消交易
+            elements.tradeCancel.addEventListener("click", () => {
+                closeTradeModal();
+            });
+            
+            // 确认交易
+            elements.tradeConfirm.addEventListener("click", () => {
+                executeTrade();
+            });
+            
+            // 领取任务奖励
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("btn-buy") && e.target.dataset.taskId) {
+                    const taskId = parseInt(e.target.dataset.taskId);
+                    claimTaskReward(taskId);
+                }
+            });
+            
+            // 领取里程碑奖励
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("btn-buy") && e.target.dataset.milestoneId) {
+                    const milestoneId = parseInt(e.target.dataset.milestoneId);
+                    claimMilestoneReward(milestoneId);
+                }
+            });
+            
+            // 关闭奖励弹窗
+            elements.rewardClose.addEventListener("click", () => {
+                elements.rewardModal.style.display = "none";
+            });
+            
+            // 关闭里程碑弹窗
+            elements.milestoneClose.addEventListener("click", () => {
+                elements.milestoneModal.style.display = "none";
+            });
+            
+            // 关闭重置弹窗
+            elements.resetClose.addEventListener("click", () => {
+                elements.resetModal.style.display = "none";
+            });
+            
+            // 返回按钮
+            elements.detailBack.addEventListener("click", () => {
+                showMainView();
+            });
+            
+            // 详情页买涨按钮
+            elements.detailBuyLong.addEventListener("click", () => {
+                if (currentDetailItem) {
+                    const market = currentDetailItem.market;
+                    const items = marketData[market];
+                    const index = items.findIndex(item => item.code === currentDetailItem.code);
+                    
+                    if (index !== -1) {
+                        openTradeModal("buy", market, index);
+                    }
+                }
+            });
+            
+            // 详情页买跌按钮
+            elements.detailBuyShort.addEventListener("click", () => {
+                if (currentDetailItem) {
+                    const market = currentDetailItem.market;
+                    const items = marketData[market];
+                    const index = items.findIndex(item => item.code === currentDetailItem.code);
+                    
+                    if (index !== -1) {
+                        openTradeModal("buy", market, index);
+                        // 设置方向为买跌
+                        document.getElementById("trade-direction-short").checked = true;
+                    }
+                }
+            });
+            
+            // 详情页卖出按钮
+            elements.detailSell.addEventListener("click", () => {
+                if (currentDetailItem) {
+                    const positionIndex = userData.positions.findIndex(
+                        p => p.market === currentDetailItem.market && p.code === currentDetailItem.code
+                    );
+                    
+                    if (positionIndex !== -1) {
+                        const market = currentDetailItem.market;
+                        const items = marketData[market];
+                        const marketIndex = items.findIndex(item => item.code === currentDetailItem.code);
+                        
+                        if (marketIndex !== -1) {
+                            openTradeModal("sell", market, marketIndex, positionIndex);
+                        }
+                    } else {
+                        alert("您没有该资产的持仓");
+                    }
+                }
+            });
+            
+            // K线图周期切换
+            elements.periodButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    elements.periodButtons.forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    
+                    if (currentDetailItem) {
+                        renderKlineChart(currentDetailItem.market, currentDetailItem.code, btn.dataset.period);
+                    }
+                });
+            });
+            
+            // 点击项目名称进入详情页
+            document.addEventListener("click", (e) => {
+                if (e.target.classList.contains("stock-name") || 
+                    e.target.classList.contains("fund-name") || 
+                    e.target.classList.contains("futures-name") || 
+                    e.target.classList.contains("bond-name") || 
+                    e.target.classList.contains("currency-name") ||
+                    e.target.classList.contains("position-name")) {
+                    
+                    let market, code;
+                    
+                    if (e.target.classList.contains("position-name")) {
+                        market = e.target.dataset.market;
+                        code = e.target.dataset.code;
+                    } else {
+                        const infoElement = e.target.closest(".stock-info, .fund-info, .futures-info, .bond-info, .currency-info");
+                        if (infoElement) {
+                            market = infoElement.dataset.market;
+                            const index = parseInt(infoElement.dataset.index);
+                            code = marketData[market][index].code;
+                        }
+                    }
+                    
+                    if (market && code) {
+                        showDetailView(market, code);
+                    }
+                }
+            });
+            
+            // 贷款按钮
+            elements.btnLoan.addEventListener("click", () => {
+                openLoanModal();
+            });
+            
+            // 还款按钮
+            elements.btnRepay.addEventListener("click", () => {
+                openRepayModal();
+            });
+            
+            // 贷款金额变化
+            elements.loanAmount.addEventListener("input", () => {
+                const amount = parseInt(elements.loanAmount.value) || 0;
+                if (amount < 1) {
+                    elements.loanAmount.value = "1";
+                }
+            });
+            
+            // 还款金额变化
+            elements.repayAmount.addEventListener("input", () => {
+                const amount = parseInt(elements.repayAmount.value) || 0;
+                const maxRepay = parseInt(elements.maxRepay.textContent);
+                
+                if (amount < 1) {
+                    elements.repayAmount.value = "1";
+                } else if (amount > maxRepay) {
+                    elements.repayAmount.value = maxRepay;
+                }
+            });
+            
+            // 取消贷款
+            elements.loanCancel.addEventListener("click", () => {
+                elements.loanModal.style.display = "none";
+            });
+            
+            // 确认贷款
+            elements.loanConfirm.addEventListener("click", () => {
+                const amount = parseInt(elements.loanAmount.value) || 0;
+                if (amount > 0) {
+                    userData.balance += amount;
+                    userData.debt += amount;
+                    updateAccountInfo();
+                    elements.loanModal.style.display = "none";
+                }
+            });
+            
+            // 取消还款
+            elements.repayCancel.addEventListener("click", () => {
+                elements.repayModal.style.display = "none";
+            });
+            
+            // 确认还款
+            elements.repayConfirm.addEventListener("click", () => {
+                const amount = parseInt(elements.repayAmount.value) || 0;
+                const maxRepay = Math.min(userData.balance, userData.debt);
+                
+                if (amount > 0 && amount <= maxRepay) {
+                    userData.balance -= amount;
+                    userData.debt -= amount;
+                    updateAccountInfo();
+                    elements.repayModal.style.display = "none";
+                }
+            });
+        }
+        
+        // 打开贷款模态框
+        function openLoanModal() {
+            elements.loanAmount.value = "1000";
+            elements.loanModal.style.display = "flex";
+        }
+        
+        // 打开还款模态框
+        function openRepayModal() {
+            const maxRepay = Math.min(userData.balance, userData.debt);
+            elements.maxRepay.textContent = maxRepay;
+            elements.currentLoan.textContent = `¥${userData.debt.toFixed(2)}`;
+            elements.repayAmount.value = maxRepay > 0 ? "1" : "0";
+            elements.repayAmount.max = maxRepay;
+            elements.repayModal.style.display = "flex";
+        }
+        
+        // 显示详情页
+        function showDetailView(market, code) {
+            const items = marketData[market];
+            const item = items.find(item => item.code === code);
+            
+            if (!item) return;
+            
+            currentDetailItem = {
+                market: market,
+                code: code,
+                name: item.name
+            };
+            
+            // 更新详情页信息
+            elements.detailTitle.textContent = item.name;
+            elements.detailCode.textContent = code;
+            elements.detailPrice.textContent = item.price.toFixed(item.price > 100 ? 2 : 4);
+            
+            const changeClass = item.change >= 0 ? "profit-up" : "profit-down";
+            const changeSign = item.change >= 0 ? "+" : "";
+            elements.detailChange.textContent = `${changeSign}${item.change.toFixed(2)} (${changeSign}${item.changePercent.toFixed(2)}%)`;
+            elements.detailChange.className = `detail-change ${changeClass}`;
+            
+            elements.detailInfo.textContent = item.info || "暂无详细信息";
+            
+            // 检查是否有持仓
+            const hasPosition = userData.positions.some(p => p.market === market && p.code === code);
+            elements.detailSell.style.display = hasPosition ? "block" : "none";
+            
+            // 渲染K线图
+            renderKlineChart(market, code, '1d');
+            
+            // 切换视图
+            elements.mainContainer.style.display = "none";
+            elements.detailContainer.style.display = "block";
+        }
+        
+        // 显示主视图
+        function showMainView() {
+            elements.mainContainer.style.display = "block";
+            elements.detailContainer.style.display = "none";
+            currentDetailItem = null;
+        }
+        
+        // 渲染K线图
+        function renderKlineChart(market, code, period = '1d') {
+            getPriceHistory(market, code, period).then(history => {
+                if (history.length === 0) {
+                    // 如果没有历史数据，生成一些模拟数据
+                    const now = new Date();
+                    const item = marketData[market].find(item => item.code === code);
+                    const basePrice = item.price;
+                    
+                    history = [];
+                    
+                    for (let i = 30; i >= 0; i--) {
+                        const date = new Date(now);
+                        
+                        if (period === '1d') {
+                            date.setDate(date.getDate() - i);
+                        } else if (period === '1w') {
+                            date.setDate(date.getDate() - i * 7);
+                        } else if (period === '1m') {
+                            date.setMonth(date.getMonth() - i);
+                        }
+                        
+                        const fluctuation = (Math.random() - 0.5) * 0.1;
+                        const price = basePrice * (1 + fluctuation);
+                        const open = price * (1 + (Math.random() - 0.5) * 0.02);
+                        const close = price * (1 + (Math.random() - 0.5) * 0.02);
+                        const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+                        const low = Math.min(open, close) * (1 - Math.random() * 0.01);
+                        
+                        history.push({
+                            timestamp: date.getTime(),
+                            open: open,
+                            high: high,
+                            low: low,
+                            close: close,
+                            volume: Math.floor(Math.random() * 10000) + 1000
+                        });
+                    }
+                    
+                    // 保存模拟数据
+                    const savePromises = history.map(item => {
+                        return recordPriceHistory(market, code, {
+                            price: item.close,
+                            open: item.open,
+                            high: item.high,
+                            low: item.low,
+                            volume: item.volume
+                        });
+                    });
+                    
+                    Promise.all(savePromises).catch(error => {
+                        console.error("保存模拟价格历史失败:", error);
+                    });
+                }
+                
+                // 更新K线图信息
+                const latest = history[history.length - 1];
+                elements.chartOpen.textContent = latest.open.toFixed(4);
+                elements.chartHigh.textContent = latest.high.toFixed(4);
+                elements.chartLow.textContent = latest.low.toFixed(4);
+                elements.chartClose.textContent = latest.close.toFixed(4);
+                
+                // 计算涨跌次数
+                let upCount = 0;
+                let downCount = 0;
+                
+                for (let i = 1; i < history.length; i++) {
+                    if (history[i].close > history[i-1].close) {
+                        upCount++;
+                    } else if (history[i].close < history[i-1].close) {
+                        downCount++;
+                    }
+                }
+                
+                elements.chartUp.textContent = upCount;
+                elements.chartDown.textContent = downCount;
+                
+                // 绘制K线图
+                drawKlineChart(history);
+            }).catch(error => {
+                console.error("获取价格历史失败:", error);
+            });
+        }
+        
+        // 绘制K线图
+        function drawKlineChart(data) {
+            const canvas = elements.klineChart;
+            const ctx = canvas.getContext('2d');
+            
+            // 设置canvas尺寸
+            canvas.width = canvas.offsetWidth * 2;
+            canvas.height = canvas.offsetHeight * 2;
+            ctx.scale(2, 2);
+            
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 计算价格范围
+            let minPrice = Infinity;
+            let maxPrice = -Infinity;
+            
+            data.forEach(item => {
+                minPrice = Math.min(minPrice, item.low);
+                maxPrice = Math.max(maxPrice, item.high);
+            });
+            
+            // 添加一些边距
+            const priceRange = maxPrice - minPrice;
+            minPrice -= priceRange * 0.1;
+            maxPrice += priceRange * 0.1;
+            
+            // 计算时间范围
+            const minTime = data[0].timestamp;
+            const maxTime = data[data.length - 1].timestamp;
+            
+            // 绘制网格和坐标轴
+            const padding = { top: 20, right: 30, bottom: 30, left: 50 };
+            const width = canvas.offsetWidth - padding.left - padding.right;
+            const height = canvas.offsetHeight - padding.top - padding.bottom;
+            
+            // 绘制背景
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+            
+            // 绘制网格线
+            ctx.strokeStyle = '#eee';
+            ctx.lineWidth = 1;
+            
+            // 水平网格线
+            const horizontalLines = 5;
+            for (let i = 0; i <= horizontalLines; i++) {
+                const y = padding.top + (height - (height / horizontalLines) * i);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(padding.left + width, y);
+                ctx.stroke();
+                
+                // 价格标签
+                const price = minPrice + (maxPrice - minPrice) * (i / horizontalLines);
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(price.toFixed(2), padding.left - 5, y + 4);
+            }
+            
+            // 垂直网格线
+            const verticalLines = Math.min(10, data.length);
+            const step = Math.floor(data.length / verticalLines);
+            for (let i = 0; i < data.length; i += step) {
+                const x = padding.left + (width * (i / (data.length - 1)));
+                ctx.beginPath();
+                ctx.moveTo(x, padding.top);
+                ctx.lineTo(x, padding.top + height);
+                ctx.stroke();
+                
+                // 时间标签
+                const date = new Date(data[i].timestamp);
+                let timeStr;
+                
+                if (data.length <= 30) {
+                    // 日线显示日期
+                    timeStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                } else {
+                    // 周线或月线显示月份
+                    timeStr = `${date.getFullYear()}/${date.getMonth() + 1}`;
+                }
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(timeStr, x, padding.top + height + 15);
+            }
+            
+            // 绘制K线
+            const candleWidth = (width / data.length) * 0.8;
+            
+            for (let i = 0; i < data.length; i++) {
+                const item = data[i];
+                const x = padding.left + (width * (i / (data.length - 1)));
+                const yOpen = padding.top + height - ((item.open - minPrice) / (maxPrice - minPrice)) * height;
+                const yClose = padding.top + height - ((item.close - minPrice) / (maxPrice - minPrice)) * height;
+                const yHigh = padding.top + height - ((item.high - minPrice) / (maxPrice - minPrice)) * height;
+                const yLow = padding.top + height - ((item.low - minPrice) / (maxPrice - minPrice)) * height;
+                
+                // 判断涨跌
+                const isUp = item.close >= item.open;
+                
+                // 绘制影线
+                ctx.strokeStyle = isUp ? '#f44336' : '#4CAF50';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, yHigh);
+                ctx.lineTo(x, yLow);
+                ctx.stroke();
+                
+                // 绘制实体
+                ctx.fillStyle = isUp ? '#f44336' : '#4CAF50';
+                const candleHeight = Math.max(1, Math.abs(yOpen - yClose));
+                const candleY = Math.min(yOpen, yClose);
+                ctx.fillRect(x - candleWidth / 2, candleY, candleWidth, candleHeight);
+                
+                // 移除了连接K线的细线代码
+            }
+        }
+        
+        // 打开交易模态框
+        function openTradeModal(type, market, index, positionIndex = -1) {
+            currentTrade.type = type;
+            currentTrade.market = market;
+            currentTrade.index = index;
+            currentTrade.positionIndex = positionIndex;
+            
+            const item = marketData[market][index];
+            
+            elements.tradeModalTitle.textContent = type === "buy" ? `买入${getMarketName(market)}` : `卖出${getMarketName(market)}`;
+            elements.tradeName.value = item.name;
+            elements.tradeCode.value = item.code;
+            elements.tradePrice.value = item.price.toFixed(2);
+            elements.tradeAmount.value = type === "buy" ? "100" : userData.positions[positionIndex].amount.toString();
+            elements.tradeConfirm.className = type === "buy" ? "btn btn-buy" : "btn btn-sell";
+            elements.tradeConfirm.textContent = type === "buy" ? "买入" : "卖出";
+            
+            // 如果是卖出操作，隐藏方向选择
+            if (type === "sell") {
+                elements.tradeDirectionGroup.style.display = "none";
+            } else {
+                elements.tradeDirectionGroup.style.display = "flex";
+            }
+            
+            updateTradeTotal();
+            elements.tradeModal.style.display = "flex";
+        }
+        
+        // 获取市场名称
+        function getMarketName(market) {
+            const names = {
+                stocks: "股票",
+                funds: "基金",
+                futures: "期货",
+                bonds: "国债",
+                currency: "货币"
+            };
+            return names[market] || "";
+        }
+        
+        // 更新交易总价
+        function updateTradeTotal() {
+            const price = parseFloat(elements.tradePrice.value);
+            const amount = parseInt(elements.tradeAmount.value) || 0;
+            const total = price * amount;
+            
+            elements.tradeTotal.value = total.toFixed(2);
+        }
+        
+        // 关闭交易模态框
+        function closeTradeModal() {
+            elements.tradeModal.style.display = "none";
+        }
+        
+        // 执行交易
+        function executeTrade() {
+            const price = parseFloat(elements.tradePrice.value);
+            const amount = parseInt(elements.tradeAmount.value);
+            const total = price * amount;
+            const item = marketData[currentTrade.market][currentTrade.index];
+            const direction = document.getElementById("trade-direction-long").checked ? "long" : "short";
+            
+            if (currentTrade.type === "buy") {
+                // 买入逻辑
+                if (total > userData.balance + userData.debt) {
+                    alert("资金不足");
+                    return;
+                }
+                
+                userData.balance -= total;
+                userData.totalTrades++;
+                
+                // 检查是否已有该持仓
+                const existingPositionIndex = userData.positions.findIndex(
+                    p => p.market === currentTrade.market && p.code === item.code && p.direction === direction
+                );
+                
+                if (existingPositionIndex !== -1) {
+                    // 已有持仓，更新持仓
+                    const position = userData.positions[existingPositionIndex];
+                    const totalAmount = position.amount + amount;
+                    const avgPrice = (position.price * position.amount + price * amount) / totalAmount;
+                    
+                    userData.positions[existingPositionIndex] = {
+                        ...position,
+                        amount: totalAmount,
+                        price: avgPrice
+                    };
+                } else {
+                    // 新建持仓
+                    userData.positions.push({
+                        market: currentTrade.market,
+                        code: item.code,
+                        name: item.name,
+                        price: price,
+                        amount: amount,
+                        direction: direction
+                    });
+                }
+                
+                // 检查"完成第一笔交易"任务
+                checkFirstTradeTask();
+                
+            } else {
+                // 卖出逻辑
+                const position = userData.positions[currentTrade.positionIndex];
+                
+                if (amount > position.amount) {
+                    alert("持仓不足");
+                    return;
+                }
+                
+                userData.balance += total;
+                userData.totalTrades++;
+                
+                // 计算盈亏
+                let profit = 0;
+                if (position.direction === 'short') {
+                    // 买跌的盈利计算
+                    profit = (position.price - price) * amount;
+                } else {
+                    // 买涨的盈利计算
+                    profit = (price - position.price) * amount;
+                }
+                
+                userData.todayProfit += profit;
+                userData.totalProfit += profit;
+                
+                if (amount === position.amount) {
+                    // 全部卖出，移除持仓
+                    userData.positions.splice(currentTrade.positionIndex, 1);
+                } else {
+                    // 部分卖出，更新持仓
+                    userData.positions[currentTrade.positionIndex].amount -= amount;
+                }
+                
+                // 检查买涨/买跌盈利任务
+                if (profit > 0) {
+                    if (position.direction === 'long') {
+                        checkLongProfitTask();
+                    } else {
+                        checkShortProfitTask();
+                    }
+                }
+            }
+            
+            // 更新界面
+            updateAccountInfo();
+            renderPositions();
+            closeTradeModal();
+            
+            // 检查"持有3种资产"任务
+            checkDiversifiedPortfolioTask();
+            
+            // 检查"投资所有市场"任务
+            checkAllMarketsTask();
+            
+            // 检查"总盈利1万元"任务
+            checkTotalProfitTask();
+        }
+        
+        // 模拟价格波动
+        function simulatePriceChanges() {
+            // 更新股票价格
+            marketData.stocks.forEach(stock => {
+                const change = (Math.random() - 0.5) * 4;
+                const newPrice = Math.max(0.01, stock.price + change);
+                
+                // 记录价格历史
+                recordPriceHistory('stocks', stock.code, {
+                    price: newPrice,
+                    open: stock.price,
+                    high: Math.max(stock.price, newPrice),
+                    low: Math.min(stock.price, newPrice)
+                }).catch(error => {
+                    console.error("记录股票价格历史失败:", error);
+                });
+                
+                stock.change += change;
+                stock.price = newPrice;
+                stock.changePercent = (stock.change / (stock.price - stock.change)) * 100;
+            });
+            
+            // 更新基金价格
+            marketData.funds.forEach(fund => {
+                const change = (Math.random() - 0.5) * 0.2;
+                const newPrice = Math.max(0.01, fund.price + change);
+                
+                recordPriceHistory('funds', fund.code, {
+                    price: newPrice,
+                    open: fund.price,
+                    high: Math.max(fund.price, newPrice),
+                    low: Math.min(fund.price, newPrice)
+                }).catch(error => {
+                    console.error("记录基金价格历史失败:", error);
+                });
+                
+                fund.change += change;
+                fund.price = newPrice;
+                fund.changePercent = (fund.change / (fund.price - fund.change)) * 100;
+            });
+            
+            // 更新期货价格
+            marketData.futures.forEach(future => {
+                const change = (Math.random() - 0.5) * (future.price > 100 ? 10 : 2);
+                const newPrice = Math.max(0.01, future.price + change);
+                
+                recordPriceHistory('futures', future.code, {
+                    price: newPrice,
+                    open: future.price,
+                    high: Math.max(future.price, newPrice),
+                    low: Math.min(future.price, newPrice)
+                }).catch(error => {
+                    console.error("记录期货价格历史失败:", error);
+                });
+                
+                future.change += change;
+                future.price = newPrice;
+                future.changePercent = (future.change / (future.price - future.change)) * 100;
+            });
+            
+            // 更新国债价格
+            marketData.bonds.forEach(bond => {
+                const change = (Math.random() - 0.5) * 0.1;
+                const newPrice = Math.max(0.01, bond.price + change);
+                
+                recordPriceHistory('bonds', bond.code, {
+                    price: newPrice,
+                    open: bond.price,
+                    high: Math.max(bond.price, newPrice),
+                    low: Math.min(bond.price, newPrice)
+                }).catch(error => {
+                    console.error("记录国债价格历史失败:", error);
+                });
+                
+                bond.change += change;
+                bond.price = newPrice;
+                bond.changePercent = (bond.change / (bond.price - bond.change)) * 100;
+            });
+            
+            // 更新货币价格
+            marketData.currency.forEach(currency => {
+                const change = (Math.random() - 0.5) * (currency.code === 'BTCUSD' ? 500 : 0.01);
+                const newPrice = currency.code === 'BTCUSD' ? Math.max(100, currency.price + change) : Math.max(0.0001, currency.price + change);
+                
+                recordPriceHistory('currency', currency.code, {
+                    price: newPrice,
+                    open: currency.price,
+                    high: Math.max(currency.price, newPrice),
+                    low: Math.min(currency.price, newPrice)
+                }).catch(error => {
+                    console.error("记录货币价格历史失败:", error);
+                });
+                
+                currency.change += change;
+                currency.price = newPrice;
+                currency.changePercent = (currency.change / (currency.price - currency.change)) * 100;
+            });
+            
+            // 保存市场数据
+            Object.keys(marketData).forEach(market => {
+                if (market !== 'tasks' && market !== 'milestones') {
+                    updateMarketData(market, marketData[market]).catch(error => {
+                        console.error(`保存市场数据 ${market} 失败:`, error);
+                    });
+                }
+            });
+            
+            // 重新渲染市场数据
+            renderMarketData();
+            
+            // 更新持仓显示
+            renderPositions();
+            
+            // 更新账户信息
+            updateAccountInfo();
+            
+            // 检查"日盈利5%"任务
+            checkDailyProfitTask();
+            
+            // 检查"周盈利10%"任务
+            checkWeeklyProfitTask();
+            
+            // 如果当前在详情页，更新详情页
+            if (currentDetailItem) {
+                const item = marketData[currentDetailItem.market].find(
+                    item => item.code === currentDetailItem.code
+                );
+                
+                if (item) {
+                    elements.detailPrice.textContent = item.price.toFixed(item.price > 100 ? 2 : 4);
+                    
+                    const changeClass = item.change >= 0 ? "profit-up" : "profit-down";
+                    const changeSign = item.change >= 0 ? "+" : "";
+                    elements.detailChange.textContent = `${changeSign}${item.change.toFixed(2)} (${changeSign}${item.changePercent.toFixed(2)}%)`;
+                    elements.detailChange.className = `detail-change ${changeClass}`;
+                    
+                    // 更新K线图最新数据
+                    const chartInfo = {
+                        open: item.price,
+                        high: item.price,
+                        low: item.price,
+                        close: item.price
+                    };
+                    
+                    elements.chartOpen.textContent = chartInfo.open.toFixed(4);
+                    elements.chartHigh.textContent = chartInfo.high.toFixed(4);
+                    elements.chartLow.textContent = chartInfo.low.toFixed(4);
+                    elements.chartClose.textContent = chartInfo.close.toFixed(4);
+                }
+            }
+        }
+        
+        // 检查首次登录任务
+        function checkFirstLoginTask() {
+            const task = marketData.tasks.find(t => t.id === 1);
+            if (task && !userData.completedTasks.includes(1)) {
+                completeTask(1);
+            }
+        }
+        
+        // 检查第一笔交易任务
+        function checkFirstTradeTask() {
+            const task = marketData.tasks.find(t => t.id === 2);
+            if (task && !userData.completedTasks.includes(2) && userData.totalTrades > 0) {
+                completeTask(2);
+            }
+        }
+        
+        // 检查交易次数任务
+        function checkTradeCountTask() {
+            const task = marketData.tasks.find(t => t.id === 6);
+            if (task && !userData.completedTasks.includes(6) && userData.totalTrades >= 5) {
+                completeTask(6);
+            }
+        }
+        
+        // 检查买涨盈利任务
+        function checkLongProfitTask() {
+            const task = marketData.tasks.find(t => t.id === 7);
+            if (task && !userData.completedTasks.includes(7)) {
+                // 检查是否有通过买涨盈利的交易
+                const hasLongProfit = userData.positions.some(p => 
+                    p.direction === 'long' && 
+                    (getCurrentPrice(p.market, p.code) - p.price) * p.amount > 0
+                );
+                
+                if (hasLongProfit) {
+                    completeTask(7);
+                }
+            }
+        }
+        
+        // 检查买跌盈利任务
+        function checkShortProfitTask() {
+            const task = marketData.tasks.find(t => t.id === 8);
+            if (task && !userData.completedTasks.includes(8)) {
+                // 检查是否有通过买跌盈利的交易
+                const hasShortProfit = userData.positions.some(p => 
+                    p.direction === 'short' && 
+                    (p.price - getCurrentPrice(p.market, p.code)) * p.amount > 0
+                );
+                
+                if (hasShortProfit) {
+                    completeTask(8);
+                }
+            }
+        }
+        
+        // 检查总盈利任务
+        function checkTotalProfitTask() {
+            const task = marketData.tasks.find(t => t.id === 9);
+            if (task && !userData.completedTasks.includes(9) && userData.totalProfit >= 10000) {
+                completeTask(9);
+            }
+        }
+        
+        // 检查多样化投资任务
+        function checkDiversifiedPortfolioTask() {
+            const task = marketData.tasks.find(t => t.id === 3);
+            if (task && !userData.completedTasks.includes(3)) {
+                // 统计不同类型的资产
+                const markets = new Set();
+                userData.positions.forEach(p => markets.add(p.market));
+                
+                if (markets.size >= 3) {
+                    completeTask(3);
+                }
+            }
+        }
+        
+        // 检查投资所有市场任务
+        function checkAllMarketsTask() {
+            const task = marketData.tasks.find(t => t.id === 10);
+            if (task && !userData.completedTasks.includes(10)) {
+                // 统计不同类型的资产
+                const markets = new Set();
+                userData.positions.forEach(p => markets.add(p.market));
+                
+                // 检查是否投资了所有市场类型
+                const allMarkets = ['stocks', 'funds', 'futures', 'bonds', 'currency'];
+                const investedAll = allMarkets.every(market => markets.has(market));
+                
+                if (investedAll) {
+                    completeTask(10);
+                }
+            }
+        }
+        
+        // 检查日盈利任务
+        function checkDailyProfitTask() {
+            const task = marketData.tasks.find(t => t.id === 4);
+            if (task && !userData.completedTasks.includes(4)) {
+                // 计算总资产
+                let totalValue = userData.balance;
+                userData.positions.forEach(position => {
+                    const currentPrice = getCurrentPrice(position.market, position.code);
+                    totalValue += currentPrice * position.amount;
+                });
+                
+                // 计算盈利百分比
+                const profitPercentage = (userData.todayProfit / (totalValue - userData.todayProfit)) * 100;
+                
+                if (profitPercentage >= 5) {
+                    completeTask(4);
+                }
+            }
+        }
+        
+        // 检查周盈利任务
+        function checkWeeklyProfitTask() {
+            const task = marketData.tasks.find(t => t.id === 5);
+            if (task && !userData.completedTasks.includes(5)) {
+                // 计算总资产
+                let totalValue = userData.balance;
+                userData.positions.forEach(position => {
+                    const currentPrice = getCurrentPrice(position.market, position.code);
+                    totalValue += currentPrice * position.amount;
+                });
+                
+                // 计算盈利百分比 (简化处理，实际应该计算一周的盈利)
+                const profitPercentage = (userData.todayProfit / (totalValue - userData.todayProfit)) * 100;
+                
+                if (profitPercentage >= 10) {
+                    completeTask(5);
+                }
+            }
+        }
+        
+        // 检查里程碑
+        function checkMilestones() {
+            marketData.milestones.forEach(milestone => {
+                if (!userData.completedMilestones.includes(milestone.id)) {
+                    let completed = false;
+                    
+                    if (milestone.id <= 4) {
+                        // 资产里程碑
+                        let totalValue = userData.balance;
+                        userData.positions.forEach(position => {
+                            const currentPrice = getCurrentPrice(position.market, position.code);
+                            totalValue += currentPrice * position.amount;
+                        });
+                        
+                        completed = totalValue >= milestone.target;
+                    } else if (milestone.id === 5) {
+                        // 交易次数里程碑
+                        completed = userData.totalTrades >= milestone.target;
+                    } else if (milestone.id === 6) {
+                        // 盈利里程碑
+                        completed = userData.totalProfit >= milestone.target;
+                    }
+                    
+                    if (completed) {
+                        completeMilestone(milestone.id);
+                    }
+                }
+            });
+        }
+        
+        // 完成任务
+        function completeTask(taskId) {
+            const task = marketData.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            userData.completedTasks.push(taskId);
+            userData.balance += task.reward;
+            
+            // 更新任务状态
+            const taskIndex = marketData.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                marketData.tasks[taskIndex].completed = true;
+                
+                // 更新数据库中的任务数据
+                updateMarketData('tasks', marketData.tasks).catch(error => {
+                    console.error("更新任务数据失败:", error);
+                });
+            }
+            
+            // 更新界面
+            updateAccountInfo();
+            renderTasks();
+            
+            // 显示奖励弹窗
+            elements.rewardMessage.textContent = `恭喜您完成任务【${task.name}】，获得奖励 ¥${task.reward}`;
+            elements.rewardModal.style.display = "flex";
+        }
+        
+        // 完成里程碑
+        function completeMilestone(milestoneId) {
+            const milestone = marketData.milestones.find(m => m.id === milestoneId);
+            if (!milestone) return;
+            
+            userData.completedMilestones.push(milestoneId);
+            userData.balance += milestone.reward;
+            
+            // 更新里程碑状态
+            const milestoneIndex = marketData.milestones.findIndex(m => m.id === milestoneId);
+            if (milestoneIndex !== -1) {
+                marketData.milestones[milestoneIndex].completed = true;
+                
+                // 更新数据库中的里程碑数据
+                updateMarketData('milestones', marketData.milestones).catch(error => {
+                    console.error("更新里程碑数据失败:", error);
+                });
+            }
+            
+            // 更新界面
+            updateAccountInfo();
+            renderMilestones();
+            
+            // 显示里程碑弹窗
+            elements.milestoneMessage.textContent = `恭喜您达成里程碑【${milestone.name}】，获得奖励 ¥${milestone.reward}`;
+            elements.milestoneModal.style.display = "flex";
+        }
+        
+        // 领取任务奖励
+        function claimTaskReward(taskId) {
+            if (!userData.completedTasks.includes(taskId)) {
+                completeTask(taskId);
+            }
+        }
+        
+        // 领取里程碑奖励
+        function claimMilestoneReward(milestoneId) {
+            if (!userData.completedMilestones.includes(milestoneId)) {
+                completeMilestone(milestoneId);
+            }
+        }
+        
+        // 初始化应用
+        window.onload = initApp;
+    </script>
+</body>
+</html>

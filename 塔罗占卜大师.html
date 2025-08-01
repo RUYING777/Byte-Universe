@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>神秘塔罗占卜</title>
+    <style>
+        :root {
+            --primary-color: #8b4513;
+            --secondary-color: #d4a76a;
+            --background-color: #f5e9dc;
+            --card-back-color: #333;
+            --text-color: #333;
+            --light-text: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --love-color: #e91e63;
+            --career-color: #3f51b5;
+            --health-color: #4caf50;
+            --spiritual-color: #9c27b0;
+            --finance-color: #ff9800;
+            --family-color: #2196f3;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 10px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px var(--shadow-color);
+        }
+        
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+        
+        .question-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: none;
+            min-height: 80px;
+        }
+        
+        .category-selector {
+            margin-bottom: 15px;
+        }
+        
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .category-btn {
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: none;
+            background-color: #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .category-btn.active {
+            color: white;
+        }
+        
+        .category-btn.love {
+            background-color: var(--love-color);
+        }
+        
+        .category-btn.career {
+            background-color: var(--career-color);
+        }
+        
+        .category-btn.health {
+            background-color: var(--health-color);
+        }
+        
+        .category-btn.spiritual {
+            background-color: var(--spiritual-color);
+        }
+        
+        .category-btn.finance {
+            background-color: var(--finance-color);
+        }
+        
+        .category-btn.family {
+            background-color: var(--family-color);
+        }
+        
+        .spread-selector {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .spread-option {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            width: 30%;
+            min-width: 100px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        
+        .spread-option:hover, .spread-option.selected {
+            background-color: var(--secondary-color);
+            color: var(--light-text);
+            transform: translateY(-3px);
+        }
+        
+        .spread-option h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .spread-option p {
+            font-size: 0.8rem;
+        }
+        
+        .divination-area {
+            min-height: 300px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .card-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .card {
+            width: 100px;
+            height: 160px;
+            background-color: var(--card-back-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.5s, box-shadow 0.3s;
+            position: relative;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            margin: 5px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px var(--shadow-color);
+        }
+        
+        .card.reversed {
+            transform: rotate(180deg);
+        }
+        
+        .card.face-down {
+            background-color: var(--card-back-color);
+            color: var(--card-back-color);
+        }
+        
+        .card.face-up {
+            background-color: #fff;
+            color: var(--text-color);
+            border: 1px solid var(--secondary-color);
+        }
+        
+        .card-image {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+            display: none;
+            border-radius: 5px;
+        }
+        
+        .card.face-up .card-image {
+            display: block;
+        }
+        
+        .card.face-up .card-text {
+            display: none;
+        }
+        
+        .card-position {
+            position: absolute;
+            top: -20px;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            background-color: var(--background-color);
+            padding: 2px 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 10;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        
+        .btn:hover {
+            background-color: #a05c2c;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        .btn-daily {
+            background-color: var(--spiritual-color);
+        }
+        
+        .btn-custom {
+            background-color: var(--finance-color);
+        }
+        
+        .result {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+        
+        .result h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+        
+        .result p {
+            margin-bottom: 10px;
+        }
+        
+        .interpretation {
+            font-style: italic;
+            color: #666;
+            background-color: #f9f9f9;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        
+        .card-result {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .card-result:last-child {
+            border-bottom: none;
+        }
+        
+        .combination-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .card-details {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fffaf0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .card-details h4 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .card-symbolism {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .symbol-item {
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .history {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .history-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .history-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .history-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .history-item p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .history-date {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: right;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .tab-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+            padding: 10px;
+            background-color: #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        
+        .tab:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .save-form {
+            margin-top: 20px;
+        }
+        
+        .save-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 60px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .daily-horoscope {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .daily-card {
+            display: inline-block;
+            margin: 10px;
+            vertical-align: top;
+        }
+        
+        .advice {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fffaf0;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .custom-spread {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .custom-positions {
+            margin-top: 10px;
+        }
+        
+        .custom-position {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .custom-position input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .custom-add-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .card-library {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .card-library-item {
+            display: inline-block;
+            width: 80px;
+            margin: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .card-library-item img {
+            width: 60px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .card-library-item p {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .timeline {
+            margin-top: 20px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-date {
+            width: 80px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .timeline-content {
+            flex: 1;
+            padding-left: 15px;
+            border-left: 2px solid var(--secondary-color);
+        }
+        
+        /* 暗黑模式 */
+        body.dark-mode {
+            --primary-color: #d4a76a;
+            --secondary-color: #8b4513;
+            --background-color: #2a2a2a;
+            --card-back-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --light-text: #f0f0f0;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        body.dark-mode .spread-option {
+            background-color: #333;
+        }
+        
+        body.dark-mode .result,
+        body.dark-mode .history-item {
+            background-color: #333;
+            color: var(--text-color);
+        }
+        
+        body.dark-mode .interpretation {
+            color: #ccc;
+            background-color: #3a3a3a;
+        }
+        
+        body.dark-mode .question-input {
+            background-color: #333;
+            color: var(--text-color);
+            border-color: var(--secondary-color);
+        }
+        
+        body.dark-mode .tab {
+            background-color: #444;
+            color: var(--text-color);
+        }
+        
+        body.dark-mode .tab.active {
+            background-color: var(--primary-color);
+        }
+        
+        body.dark-mode .combination-analysis {
+            background-color: #1a2a3a;
+            border-left-color: var(--secondary-color);
+        }
+        
+        body.dark-mode .advice {
+            background-color: #3a2a1a;
+            border-left-color: var(--secondary-color);
+        }
+        
+        body.dark-mode .card-details {
+            background-color: #3a3a3a;
+        }
+        
+        body.dark-mode .symbol-item {
+            background-color: #2a2a2a;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                width: 80px;
+                height: 130px;
+                font-size: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .spread-option {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .spread-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .category-buttons {
+                justify-content: center;
+            }
+            
+            .category-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .tab {
+                min-width: 70px;
+                padding: 8px 5px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="theme-toggle" id="theme-toggle">🌓</button>
+            <h1>神秘塔罗占卜</h1>
+            <p class="description">静心提问，塔罗将为你揭示答案</p>
+        </header>
+        
+        <div class="tab-container">
+            <div class="tab active" data-tab="divination">占卜</div>
+            <div class="tab" data-tab="daily">每日运势</div>
+            <div class="tab" data-tab="custom">自定义牌阵</div>
+            <div class="tab" data-tab="library">牌库</div>
+            <div class="tab" data-tab="history">历史记录</div>
+            <div class="tab" data-tab="timeline">时间线</div>
+            <div class="tab" data-tab="about">关于</div>
+        </div>
+        
+        <div class="tab-content active" id="divination-tab">
+            <textarea class="question-input" id="question-input" placeholder="在此输入你的问题或关注点...（可选）"></textarea>
+            
+            <div class="category-selector">
+                <h3>选择占卜类别</h3>
+                <div class="category-buttons">
+                    <button class="category-btn" data-category="general">通用</button>
+                    <button class="category-btn love" data-category="love">爱情</button>
+                    <button class="category-btn career" data-category="career">事业</button>
+                    <button class="category-btn health" data-category="health">健康</button>
+                    <button class="category-btn spiritual" data-category="spiritual">心灵</button>
+                    <button class="category-btn finance" data-category="finance">财务</button>
+                    <button class="category-btn family" data-category="family">家庭</button>
+                </div>
+            </div>
+            
+            <h3>选择牌阵</h3>
+            <div class="spread-selector">
+                <div class="spread-option" data-spread="single">
+                    <h3>单牌阵</h3>
+                    <p>简单问题快速指引</p>
+                </div>
+                <div class="spread-option" data-spread="three">
+                    <h3>三牌阵</h3>
+                    <p>过去-现在-未来</p>
+                </div>
+                <div class="spread-option" data-spread="five">
+                    <h3>五牌阵</h3>
+                    <p>全面分析问题</p>
+                </div>
+                <div class="spread-option" data-spread="celtic">
+                    <h3>凯尔特十字</h3>
+                    <p>深入复杂问题</p>
+                </div>
+                <div class="spread-option" data-spread="love">
+                    <h3>爱情牌阵</h3>
+                    <p>感情关系分析</p>
+                </div>
+                <div class="spread-option" data-spread="career">
+                    <h3>事业牌阵</h3>
+                    <p>职业发展指引</p>
+                </div>
+                <div class="spread-option" data-spread="finance">
+                    <h3>财务牌阵</h3>
+                    <p>金钱财务分析</p>
+                </div>
+                <div class="spread-option" data-spread="family">
+                    <h3>家庭牌阵</h3>
+                    <p>家庭关系分析</p>
+                </div>
+            </div>
+            
+            <div class="divination-area">
+                <div class="card-container" id="card-container">
+                    <!-- 牌将在这里动态生成 -->
+                </div>
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <p>塔罗正在连接宇宙能量...</p>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="draw-btn">开始占卜</button>
+                <button class="btn" id="reset-btn" disabled>重新开始</button>
+            </div>
+            
+            <div class="result" id="result">
+                <!-- 结果将在这里显示 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="daily-tab">
+            <div class="daily-horoscope">
+                <h2>今日塔罗运势</h2>
+                <p>点击下方按钮获取今天的塔罗指引</p>
+                <button class="btn btn-daily" id="daily-btn">获取今日运势</button>
+                
+                <div id="daily-result" style="display: none;">
+                    <div class="daily-card">
+                        <div class="card" id="daily-card">
+                            <!-- 每日牌将在这里显示 -->
+                        </div>
+                    </div>
+                    
+                    <div class="result" id="daily-interpretation">
+                        <!-- 每日牌解释将在这里显示 -->
+                    </div>
+                    
+                    <div class="notes-input-container">
+                        <textarea class="notes-input" id="daily-notes" placeholder="记录今日观察或感悟..."></textarea>
+                        <button class="btn" id="save-daily-notes">保存笔记</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="custom-tab">
+            <h2>自定义牌阵</h2>
+            <p>创建你自己的塔罗牌阵，定义每张牌的位置含义</p>
+            
+            <div class="btn-group">
+                <button class="btn btn-custom" id="create-spread-btn">创建新牌阵</button>
+            </div>
+            
+            <div class="custom-spread" id="custom-spread">
+                <input type="text" id="spread-name" class="save-input" placeholder="输入牌阵名称">
+                <p>定义牌的位置含义：</p>
+                <div class="custom-positions" id="custom-positions">
+                    <!-- 自定义位置将在这里添加 -->
+                </div>
+                <button class="custom-add-btn" id="add-position-btn">添加位置</button>
+                
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button class="btn" id="save-custom-btn">保存牌阵</button>
+                    <button class="btn" id="use-custom-btn">使用此牌阵</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="library-tab">
+            <h2>塔罗牌库</h2>
+            <p>探索78张塔罗牌的含义和象征</p>
+            
+            <div class="category-buttons">
+                <button class="category-btn" data-arcana="all">全部</button>
+                <button class="category-btn" data-arcana="major">大阿卡纳</button>
+                <button class="category-btn" data-arcana="minor">小阿卡纳</button>
+                <button class="category-btn" data-suit="wands">权杖</button>
+                <button class="category-btn" data-suit="cups">圣杯</button>
+                <button class="category-btn" data-suit="swords">宝剑</button>
+                <button class="category-btn" data-suit="pentacles">星币</button>
+            </div>
+            
+            <div class="card-library" id="card-library">
+                <!-- 牌库将在这里显示 -->
+            </div>
+            
+            <div class="result" id="card-detail" style="display: none;">
+                <!-- 单张牌详情将在这里显示 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="history-tab">
+            <h2>历史记录</h2>
+            <div class="category-buttons">
+                <button class="category-btn" data-history="all">全部</button>
+                <button class="category-btn love" data-history="love">爱情</button>
+                <button class="category-btn career" data-history="career">事业</button>
+                <button class="category-btn health" data-history="health">健康</button>
+                <button class="category-btn spiritual" data-history="spiritual">心灵</button>
+                <button class="category-btn finance" data-history="finance">财务</button>
+                <button class="category-btn family" data-history="family">家庭</button>
+            </div>
+            
+            <div class="history" id="history">
+                <!-- 历史记录将在这里显示 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="timeline-tab">
+            <h2>占卜时间线</h2>
+            <p>查看你的占卜历程和变化</p>
+            
+            <div class="timeline" id="timeline">
+                <!-- 时间线将在这里显示 -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="about-tab">
+            <div class="result">
+                <h3>关于神秘塔罗</h3>
+                <p>塔罗牌是一种古老的占卜工具，由78张牌组成，分为22张大阿卡纳和56张小阿卡纳。</p>
+                
+                <h4>牌阵说明：</h4>
+                <ul>
+                    <li><strong>单牌阵</strong>：简单问题的快速指引</li>
+                    <li><strong>三牌阵</strong>：过去、现在、未来的时间线解读</li>
+                    <li><strong>五牌阵</strong>：现状、挑战、潜意识、外在影响和可能结果</li>
+                    <li><strong>凯尔特十字</strong>：10张牌的深入分析，适合复杂问题</li>
+                    <li><strong>爱情牌阵</strong>：专门分析感情关系的7张牌阵</li>
+                    <li><strong>事业牌阵</strong>：职业发展和工作问题的6张牌阵</li>
+                    <li><strong>财务牌阵</strong>：金钱和财务问题的5张牌阵</li>
+                    <li><strong>家庭牌阵</strong>：家庭关系和家庭事务的6张牌阵</li>
+                </ul>
+                
+                <div class="advice">
+                    <h4>使用建议：</h4>
+                    <ol>
+                        <li>占卜前静心思考你的问题</li>
+                        <li>选择与问题相关的牌阵</li>
+                        <li>保持开放的心态接受指引</li>
+                        <li>记录重要的占卜结果</li>
+                        <li>同一问题建议间隔一段时间再占卜</li>
+                        <li>使用时间线功能追踪变化</li>
+                        <li>探索牌库深入了解每张牌的含义</li>
+                    </ol>
+                </div>
+                
+                <p>版本: 4.0.0</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 塔罗牌数据 - 包含大阿卡纳和小阿卡纳
+        const tarotCards = [
+            // 大阿卡纳
+            { name: "0. 愚者", meaning: "新的开始,冒险,天真", reversed: "鲁莽,风险,犹豫不决", image: "https://i.imgur.com/JjZkQ9a.jpg", arcana: "major", element: "风", astrology: "天王星", numerology: 0, keywords: ["自由", "冒险", "天真"] },
+            { name: "I. 魔术师", meaning: "技能,创造力,意志力", reversed: "操纵,欺骗,未实现的才能", image: "https://i.imgur.com/XsZlW9F.jpg", arcana: "major", element: "水星", astrology: "水星", numerology: 1, keywords: ["能力", "专注", "技巧"] },
+            // ...其他大阿卡纳牌...
+            
+            // 小阿卡纳 - 权杖
+            { name: "权杖一", meaning: "新的创意,能量开始", reversed: "延迟,缺乏动力", image: "https://i.imgur.com/abc123.jpg", arcana: "minor", suit: "wands", element: "火", keywords: ["灵感", "开始", "能量"] },
+            { name: "权杖二", meaning: "规划未来,做出决定", reversed: "恐惧改变,犹豫不决", image: "https://i.imgur.com/def456.jpg", arcana: "minor", suit: "wands", element: "火", keywords: ["计划", "决定", "展望"] },
+            // ...其他权杖牌...
+            
+            // 小阿卡纳 - 圣杯
+            { name: "圣杯一", meaning: "新的情感,爱,直觉", reversed: "情感空虚,不安全感", image: "https://i.imgur.com/ghi789.jpg", arcana: "minor", suit: "cups", element: "水", keywords: ["爱", "直觉", "情感"] },
+            // ...其他圣杯牌...
+            
+            // 小阿卡纳 - 宝剑
+            { name: "宝剑一", meaning: "心智突破,新想法", reversed: "混乱,思维不清", image: "https://i.imgur.com/jkl012.jpg", arcana: "minor", suit: "swords", element: "风", keywords: ["思想", "突破", "清晰"] },
+            // ...其他宝剑牌...
+            
+            // 小阿卡纳 - 星币
+            { name: "星币一", meaning: "新的财务机会,物质开始", reversed: "财务损失,错失机会", image: "https://i.imgur.com/mno345.jpg", arcana: "minor", suit: "pentacles", element: "土", keywords: ["财富", "机会", "物质"] }
+            // ...其他星币牌...
+        ];
+        
+        // 牌阵解释
+        const spreadMeanings = {
+            single: ["当前情况或问题的核心"],
+            three: ["过去的影响", "当前状况", "可能的未来"],
+            five: ["现状", "挑战", "潜意识影响", "外在影响", "可能的结果"],
+            celtic: ["现状", "挑战", "潜意识", "过去", "目标", "未来", "自我", "环境", "希望与恐惧", "最终结果"],
+            love: ["你的感受", "对方的感受", "你们的关系现状", "阻碍", "潜在发展", "建议", "未来可能"],
+            career: ["当前工作状态", "你的优势", "你的不足", "机会", "建议", "未来发展"],
+            finance: ["当前财务状况", "收入来源", "支出问题", "投资机会", "长期财务前景"],
+            family: ["家庭现状", "家庭成员关系", "家庭挑战", "家庭优势", "未来家庭发展", "建议"]
+        };
+        
+        // 自定义牌阵存储
+        let customSpreads = JSON.parse(localStorage.getItem('customSpreads')) || {};
+        
+        // 主题特定的解释
+        const themeInterpretations = {
+            love: {
+                "愚者": "新的浪漫开始，随性而为",
+                "魔术师": "运用魅力吸引伴侣",
+                "女祭司": "倾听直觉关于感情",
+                // 其他牌的解释...
+            },
+            // 其他主题...
+        };
+        
+        // DOM元素
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const spreadOptions = document.querySelectorAll('.spread-option');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const cardContainer = document.getElementById('card-container');
+        const drawBtn = document.getElementById('draw-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const resultDiv = document.getElementById('result');
+        const historyDiv = document.getElementById('history');
+        const questionInput = document.getElementById('question-input');
+        const loadingDiv = document.getElementById('loading');
+        const themeToggle = document.getElementById('theme-toggle');
+        const dailyBtn = document.getElementById('daily-btn');
+        const dailyResult = document.getElementById('daily-result');
+        const dailyCard = document.getElementById('daily-card');
+        const dailyInterpretation = document.getElementById('daily-interpretation');
+        const createSpreadBtn = document.getElementById('create-spread-btn');
+        const customSpreadDiv = document.getElementById('custom-spread');
+        const customPositions = document.getElementById('custom-positions');
+        const addPositionBtn = document.getElementById('add-position-btn');
+        const saveCustomBtn = document.getElementById('save-custom-btn');
+        const useCustomBtn = document.getElementById('use-custom-btn');
+        const spreadNameInput = document.getElementById('spread-name');
+        const cardLibrary = document.getElementById('card-library');
+        const cardDetail = document.getElementById('card-detail');
+        const timeline = document.getElementById('timeline');
+        const dailyNotes = document.getElementById('daily-notes');
+        const saveDailyNotesBtn = document.getElementById('save-daily-notes');
+        
+        // 当前状态
+        let selectedSpread = null;
+        let selectedCategory = 'general';
+        let drawnCards = [];
+        let readingHistory = JSON.parse(localStorage.getItem('tarotHistory')) || [];
+        let todayCard = localStorage.getItem('todayCard');
+        let todayDate = new Date().toDateString();
+        let currentCustomSpread = null;
+        
+        // 初始化
+        function init() {
+            updateHistoryDisplay();
+            checkDarkModePreference();
+            loadCardLibrary();
+            
+            // 检查是否已经获取今日运势
+            if (todayCard && localStorage.getItem('todayDate') === todayDate) {
+                showDailyCard(JSON.parse(todayCard));
+                const savedNotes = localStorage.getItem('dailyNotes_' + new Date().toDateString());
+                if (savedNotes) {
+                    dailyNotes.value = savedNotes;
+                }
+            }
+            
+            // 加载时间线
+            updateTimeline();
+        }
+        
+        // 检查用户是否偏好暗黑模式
+        function checkDarkModePreference() {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // 切换标签页
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab + '-tab';
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // 特殊标签页处理
+                if (tab.dataset.tab === 'library') {
+                    loadCardLibrary();
+                }
+            });
+        });
+        
+        // 选择类别
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.dataset.category;
+                const arcana = btn.dataset.arcana;
+                const suit = btn.dataset.suit;
+                const history = btn.dataset.history;
+                
+                if (category) {
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedCategory = category;
+                } else if (arcana || suit) {
+                    // 牌库分类
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterCardLibrary(arcana, suit);
+                } else if (history) {
+                    // 历史记录分类
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterHistory(history);
+                }
+            });
+        });
+        
+        // 选择牌阵
+        spreadOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                spreadOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedSpread = option.dataset.spread;
+                resetBtn.disabled = true;
+                drawBtn.disabled = false;
+            });
+        });
+        
+        // 开始占卜
+        drawBtn.addEventListener('click', () => {
+            if (!selectedSpread) {
+                alert('请先选择一个牌阵');
+                return;
+            }
+            
+            drawBtn.disabled = true;
+            resetBtn.disabled = false;
+            resultDiv.style.display = 'none';
+            cardContainer.innerHTML = '';
+            drawnCards = [];
+            
+            // 显示加载动画
+            loadingDiv.style.display = 'block';
+            
+            // 模拟加载时间
+            setTimeout(() => {
+                loadingDiv.style.display = 'none';
+                createCards();
+            }, 1500);
+        });
+        
+        // 创建牌
+        function createCards() {
+            // 根据牌阵创建牌
+            let cardCount = 1;
+            let spreadPositions = [];
+            
+            if (selectedSpread === 'custom' && currentCustomSpread) {
+                cardCount = currentCustomSpread.positions.length;
+                spreadPositions = currentCustomSpread.positions;
+            } else {
+                cardCount = spreadMeanings[selectedSpread].length;
+                spreadPositions = spreadMeanings[selectedSpread];
+            }
+            
+            // 洗牌
+            const shuffledDeck = [...tarotCards].sort(() => Math.random() - 0.5);
+            
+            for (let i = 0; i < cardCount; i++) {
+                const card = document.createElement('div');
+                card.className = 'card face-down';
+                card.dataset.index = i;
+                card.dataset.cardName = shuffledDeck[i].name;
+                card.dataset.meaning = shuffledDeck[i].meaning;
+                card.dataset.reversedMeaning = shuffledDeck[i].reversed;
+                card.dataset.isReversed = Math.random() > 0.5;
+                
+                // 添加牌文本
+                const cardText = document.createElement('div');
+                cardText.className = 'card-text';
+                cardText.textContent = '?';
+                card.appendChild(cardText);
+                
+                // 添加牌图像
+                const cardImage = document.createElement('img');
+                cardImage.className = 'card-image';
+                cardImage.src = shuffledDeck[i].image;
+                cardImage.alt = shuffledDeck[i].name;
+                card.appendChild(cardImage);
+                
+                // 添加牌位置标签
+                const positionLabel = document.createElement('div');
+                positionLabel.className = 'card-position';
+                positionLabel.textContent = spreadPositions[i];
+                card.appendChild(positionLabel);
+                
+                card.addEventListener('click', revealCard);
+                cardContainer.appendChild(card);
+                drawnCards.push(card);
+            }
+        }
+        
+        // 揭示牌
+        function revealCard() {
+            if (this.classList.contains('face-down')) {
+                this.classList.remove('face-down');
+                this.classList.add('face-up');
+                
+                // 如果是逆位，添加逆位类
+                if (this.dataset.isReversed === 'true') {
+                    this.classList.add('reversed');
+                }
+                
+                // 检查是否所有牌都已翻开
+                checkAllRevealed();
+            }
+        }
+        
+        // 检查是否所有牌都已翻开
+        function checkAllRevealed() {
+            const allRevealed = [...drawnCards].every(card => card.classList.contains('face-up'));
+            if (allRevealed) {
+                showResult();
+            }
+        }
+        
+        // 显示结果
+        function showResult() {
+            const question = questionInput.value.trim() || "未指定问题";
+            const date = new Date().toLocaleString();
+            const cards = [];
+            
+            resultDiv.innerHTML = '<h3>占卜结果</h3>';
+            resultDiv.innerHTML += `<p><strong>类别:</strong> ${getCategoryName(selectedCategory)}</p>`;
+            resultDiv.innerHTML += `<p><strong>问题:</strong> ${question}</p>`;
+            resultDiv.innerHTML += `<p><strong>时间:</strong> ${date}</p>`;
+            resultDiv.innerHTML += `<p><strong>牌阵:</strong> ${getSpreadName(selectedSpread)}</p>`;
+            
+            drawnCards.forEach((card, index) => {
+                let position = "";
+                if (selectedSpread === 'custom' && currentCustomSpread) {
+                    position = currentCustomSpread.positions[index];
+                } else {
+                    position = spreadMeanings[selectedSpread][index];
+                }
+                
+                const isReversed = card.dataset.isReversed === 'true';
+                let meaning = isReversed ? card.dataset.reversedMeaning : card.dataset.meaning;
+                
+                // 添加主题特定的解释
+                if (selectedCategory !== 'general' && themeInterpretations[selectedCategory] && themeInterpretations[selectedCategory][card.dataset.cardName]) {
+                    const themeMeaning = isReversed ? 
+                        (themeInterpretations[selectedCategory][card.dataset.cardName + ' reversed'] || themeInterpretations[selectedCategory][card.dataset.cardName]) : 
+                        themeInterpretations[selectedCategory][card.dataset.cardName];
+                    if (themeMeaning) {
+                        meaning += ` (${selectedCategory}方面: ${themeMeaning})`;
+                    }
+                }
+                
+                resultDiv.innerHTML += `
+                    <div class="card-result">
+                        <p><strong>${position}: ${card.dataset.cardName}${isReversed ? ' (逆位)' : ''}</strong></p>
+                        <p class="interpretation">${meaning}</p>
+                        <button class="btn view-details-btn" data-card="${card.dataset.cardName}" style="padding: 5px 10px; font-size: 0.8rem; margin-top: 5px;">查看牌面详情</button>
+                    </div>
+                `;
+                
+                cards.push({
+                    name: card.dataset.cardName,
+                    position: position,
+                    isReversed: isReversed,
+                    meaning: meaning
+                });
+            });
+            
+            // 添加组合分析
+            if (drawnCards.length > 1) {
+                const combinationAnalysis = analyzeCombination(cards);
+                if (combinationAnalysis) {
+                    resultDiv.innerHTML += `
+                        <div class="combination-analysis">
+                            <h4>牌面组合分析</h4>
+                            <p>${combinationAnalysis}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 添加建议
+            const advice = getAdviceBasedOnReading(cards, selectedCategory);
+            if (advice) {
+                resultDiv.innerHTML += `
+                    <div class="advice">
+                        <h4>建议</h4>
+                        <p>${advice}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加保存按钮和笔记
+            resultDiv.innerHTML += `
+                <div class="save-form">
+                    <input type="text" class="save-input" id="reading-title" placeholder="为这次占卜添加标题（可选）">
+                    <textarea class="notes-input" id="reading-notes" placeholder="记录你的解读或感悟..."></textarea>
+                    <button class="btn" id="save-btn">保存记录</button>
+                </div>
+            `;
+            
+            // 添加保存按钮事件
+            document.getElementById('save-btn').addEventListener('click', () => {
+                saveReading(question, date, cards);
+            });
+            
+            // 添加查看详情按钮事件
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cardName = this.dataset.card;
+                    showCardDetails(cardName);
+                });
+            });
+            
+            resultDiv.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 获取类别名称
+        function getCategoryName(category) {
+            switch(category) {
+                case 'general': return '通用';
+                case 'love': return '爱情';
+                case 'career': return '事业';
+                case 'health': return '健康';
+                case 'spiritual': return '心灵';
+                case 'finance': return '财务';
+                case 'family': return '家庭';
+                default: return '通用';
+            }
+        }
+        
+        // 获取牌阵名称
+        function getSpreadName(spread) {
+            switch(spread) {
+                case 'single': return '单牌阵';
+                case 'three': return '三牌阵（过去-现在-未来）';
+                case 'five': return '五牌阵';
+                case 'celtic': return '凯尔特十字';
+                case 'love': return '爱情牌阵';
+                case 'career': return '事业牌阵';
+                case 'finance': return '财务牌阵';
+                case 'family': return '家庭牌阵';
+                default: 
+                    if (spread in customSpreads) {
+                        return customSpreads[spread].name;
+                    }
+                    return '自定义牌阵';
+            }
+        }
+        
+        // 分析牌面组合
+        function analyzeCombination(cards) {
+            const cardNames = cards.map(c => c.name);
+            const reversedCount = cards.filter(c => c.isReversed).length;
+            
+            // 检查是否有特定牌组合
+            if (cardNames.includes("死神") && cardNames.includes("塔")) {
+                return "死神与塔的组合预示着重大转变和突然变化，这可能是一个艰难的时期，但也是彻底转变和新开始的契机。";
+            }
+            
+            if (cardNames.includes("星星") && cardNames.includes("太阳")) {
+                return "星星与太阳的组合是非常积极的信号，预示着希望、成功和光明未来的到来。";
+            }
+            
+            if (cardNames.includes("女祭司") && cardNames.includes("隐士")) {
+                return "女祭司与隐士的组合强调需要内省和倾听内在声音，现在是关注内在智慧的时机。";
+            }
+            
+            // 检查逆位牌数量
+            if (reversedCount > cards.length / 2) {
+                return "多数牌为逆位，表明当前情况可能存在阻碍或内在冲突，需要特别关注这些挑战。";
+            }
+            
+            // 根据牌阵类型提供分析
+            if (selectedSpread === 'three') {
+                const past = cards[0];
+                const present = cards[1];
+                const future = cards[2];
+                
+                if (past.isReversed && !present.isReversed && !future.isReversed) {
+                    return "从过去的困难(逆位)到现在的正位和未来的正位，显示你正在从挑战中走出，未来会更加顺利。";
+                }
+            }
+            
+            if (selectedSpread === 'love') {
+                const yourFeelings = cards[0];
+                const theirFeelings = cards[1];
+                
+                if (!yourFeelings.isReversed && theirFeelings.isReversed) {
+                    return "你对此关系的态度是明确的，但对方可能存在犹豫或未表达的感受，需要更多沟通。";
+                }
+            }
+            
+            return "牌面组合显示出多样化的能量，每张牌的位置和相互关系都需要被仔细考虑。";
+        }
+        
+        // 根据占卜结果提供建议
+        function getAdviceBasedOnReading(cards, category) {
+            const majorArcana = ["愚者", "魔术师", "女祭司", "皇后", "皇帝", "教皇", "恋人", 
+                               "战车", "力量", "隐士", "命运之轮", "正义", "倒吊人", "死神", 
+                               "节制", "恶魔", "塔", "星星", "月亮", "太阳", "审判", "世界"];
+            
+            const majorCount = cards.filter(c => majorArcana.some(m => c.name.includes(m))).length;
+            const reversedCount = cards.filter(c => c.isReversed).length;
+            
+            let advice = "";
+            
+            // 根据大阿卡纳数量提供建议
+            if (majorCount > cards.length / 2) {
+                advice += "多数牌为大阿卡纳，表明这是一个重要的生命课题或转折点。";
+            }
+            
+            // 根据逆位牌数量提供建议
+            if (reversedCount > 0) {
+                advice += `有${reversedCount}张逆位牌，提示需要注意这些方面的阻碍或内在冲突。`;
+            }
+            
+            // 根据类别提供特定建议
+            switch(category) {
+                case 'love':
+                    advice += "在感情方面，建议保持开放沟通，真诚表达你的感受和需求。";
+                    if (cards.some(c => c.name.includes("恋人"))) {
+                        advice += "恋人牌的出现强调关系中的和谐与选择的重要性。";
+                    }
+                    break;
+                case 'career':
+                    advice += "在事业方面，建议专注于你的长期目标，同时保持灵活性以适应变化。";
+                    if (cards.some(c => c.name.includes("战车"))) {
+                        advice += "战车牌提示你需要意志力和决心来克服职业挑战。";
+                    }
+                    break;
+                case 'health':
+                    advice += "在健康方面，建议倾听身体的信号，保持平衡的生活方式。";
+                    if (cards.some(c => c.name.includes("力量"))) {
+                        advice += "力量牌提示你有内在的韧性来改善健康状况。";
+                    }
+                    break;
+                case 'spiritual':
+                    advice += "在心灵成长方面，建议留出时间进行冥想或反思，关注内在智慧。";
+                    if (cards.some(c => c.name.includes("隐士"))) {
+                        advice += "隐士牌的出现表明现在是内省和寻求真理的有利时机。";
+                    }
+                    break;
+                case 'finance':
+                    advice += "在财务方面，建议谨慎管理资金，避免冲动消费或投资。";
+                    if (cards.some(c => c.name.includes("星币"))) {
+                        advice += "星币牌提示你需要关注实际的财务规划和管理。";
+                    }
+                    break;
+                case 'family':
+                    advice += "在家庭方面，建议加强家庭成员间的沟通和理解。";
+                    if (cards.some(c => c.name.includes("皇后"))) {
+                        advice += "皇后牌的出现强调家庭中的养育和关怀的重要性。";
+                    }
+                    break;
+                default:
+                    advice += "建议保持开放心态，从多个角度考虑当前情况。";
+            }
+            
+            return advice;
+        }
+        
+        // 保存占卜记录
+        function saveReading(question, date, cards) {
+            const title = document.getElementById('reading-title').value.trim() || `占卜记录 ${readingHistory.length + 1}`;
+            const notes = document.getElementById('reading-notes').value.trim();
+            
+            const reading = {
+                title: title,
+                question: question,
+                date: date,
+                category: selectedCategory,
+                spread: selectedSpread,
+                cards: cards,
+                notes: notes
+            };
+            
+            readingHistory.unshift(reading);
+            localStorage.setItem('tarotHistory', JSON.stringify(readingHistory));
+            
+            alert('占卜记录已保存！');
+            updateHistoryDisplay();
+            updateTimeline();
+        }
+        
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            if (readingHistory.length === 0) {
+                historyDiv.innerHTML = '<p>暂无历史记录</p>';
+                return;
+            }
+            
+            historyDiv.innerHTML = '';
+            readingHistory.forEach((reading, index) => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.dataset.category = reading.category;
+                item.innerHTML = `
+                    <h4>${reading.title}</h4>
+                    <p><strong>类别:</strong> ${getCategoryName(reading.category)}</p>
+                    <p><strong>问题:</strong> ${reading.question}</p>
+                    <p><strong>牌阵:</strong> ${getSpreadName(reading.spread)}</p>
+                    <p class="history-date">${reading.date}</p>
+                `;
+                
+                item.addEventListener('click', () => {
+                    showHistoryReading(reading);
+                });
+                
+                historyDiv.appendChild(item);
+            });
+            
+            historyDiv.style.display = 'block';
+        }
+        
+        // 过滤历史记录
+        function filterHistory(category) {
+            const items = historyDiv.querySelectorAll('.history-item');
+            items.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // 显示历史占卜记录
+        function showHistoryReading(reading) {
+            // 切换到占卜标签
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="divination"]').classList.add('active');
+            document.getElementById('divination-tab').classList.add('active');
+            
+            // 显示结果
+            resultDiv.innerHTML = '<h3>历史占卜记录</h3>';
+            resultDiv.innerHTML += `<p><strong>标题:</strong> ${reading.title}</p>`;
+            resultDiv.innerHTML += `<p><strong>类别:</strong> ${getCategoryName(reading.category)}</p>`;
+            resultDiv.innerHTML += `<p><strong>问题:</strong> ${reading.question}</p>`;
+            resultDiv.innerHTML += `<p><strong>时间:</strong> ${reading.date}</p>`;
+            resultDiv.innerHTML += `<p><strong>牌阵:</strong> ${getSpreadName(reading.spread)}</p>`;
+            
+            reading.cards.forEach(card => {
+                resultDiv.innerHTML += `
+                    <div class="card-result">
+                        <p><strong>${card.position}: ${card.name}${card.isReversed ? ' (逆位)' : ''}</strong></p>
+                        <p class="interpretation">${card.meaning}</p>
+                        <button class="btn view-details-btn" data-card="${card.name.split('. ')[1] || card.name}" style="padding: 5px 10px; font-size: 0.8rem; margin-top: 5px;">查看牌面详情</button>
+                    </div>
+                `;
+            });
+            
+            // 添加组合分析
+            if (reading.cards.length > 1) {
+                const combinationAnalysis = analyzeCombination(reading.cards);
+                if (combinationAnalysis) {
+                    resultDiv.innerHTML += `
+                        <div class="combination-analysis">
+                            <h4>牌面组合分析</h4>
+                            <p>${combinationAnalysis}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 添加建议
+            const advice = getAdviceBasedOnReading(reading.cards, reading.category);
+            if (advice) {
+                resultDiv.innerHTML += `
+                    <div class="advice">
+                        <h4>建议</h4>
+                        <p>${advice}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加笔记
+            if (reading.notes) {
+                resultDiv.innerHTML += `
+                    <div class="advice">
+                        <h4>你的笔记</h4>
+                        <p>${reading.notes}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加查看详情按钮事件
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cardName = this.dataset.card;
+                    showCardDetails(cardName);
+                });
+            });
+            
+            resultDiv.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 重置
+        resetBtn.addEventListener('click', () => {
+            cardContainer.innerHTML = '';
+            resultDiv.style.display = 'none';
+            drawBtn.disabled = false;
+            resetBtn.disabled = true;
+            drawnCards = [];
+            questionInput.value = '';
+        });
+        
+        // 获取每日运势
+        dailyBtn.addEventListener('click', () => {
+            dailyBtn.disabled = true;
+            
+            // 随机选择一张牌
+            const randomCard = tarotCards[Math.floor(Math.random() * tarotCards.length)];
+            const isReversed = Math.random() > 0.5;
+            
+            const dailyCardData = {
+                name: randomCard.name,
+                meaning: isReversed ? randomCard.reversedMeaning : randomCard.meaning,
+                isReversed: isReversed,
+                image: randomCard.image
+            };
+            
+            // 保存今日牌
+            todayCard = JSON.stringify(dailyCardData);
+            localStorage.setItem('todayCard', todayCard);
+            localStorage.setItem('todayDate', todayDate);
+            
+            // 显示每日牌
+            showDailyCard(dailyCardData);
+        });
+        
+        // 显示每日牌
+        function showDailyCard(cardData) {
+            dailyResult.style.display = 'block';
+            dailyCard.innerHTML = '';
+            
+            // 创建牌元素
+            const card = document.createElement('div');
+            card.className = `card face-up ${cardData.isReversed ? 'reversed' : ''}`;
+            
+            // 添加牌图像
+            const cardImage = document.createElement('img');
+            cardImage.className = 'card-image';
+            cardImage.src = cardData.image;
+            cardImage.alt = cardData.name;
+            card.appendChild(cardImage);
+            
+            // 添加牌位置标签
+            const positionLabel = document.createElement('div');
+            positionLabel.className = 'card-position';
+            positionLabel.textContent = '今日运势';
+            card.appendChild(positionLabel);
+            
+            dailyCard.appendChild(card);
+            
+            // 显示解释
+            dailyInterpretation.innerHTML = `
+                <h3>${cardData.name} ${cardData.isReversed ? '(逆位)' : ''}</h3>
+                <p class="interpretation">${cardData.meaning}</p>
+                <div class="advice">
+                    <h4>今日建议</h4>
+                    <p>${getDailyAdvice(cardData)}</p>
+                </div>
+            `;
+            
+            // 滚动到结果区域
+            dailyResult.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 保存每日笔记
+        saveDailyNotesBtn.addEventListener('click', () => {
+            const notes = dailyNotes.value.trim();
+            localStorage.setItem('dailyNotes_' + new Date().toDateString(), notes);
+            alert('每日笔记已保存！');
+        });
+        
+        // 获取每日建议
+        function getDailyAdvice(cardData) {
+            const cardName = cardData.name.split('. ')[1] || cardData.name;
+            const isReversed = cardData.isReversed;
+            
+            switch(cardName) {
+                case "愚者":
+                    return isReversed ? "今天要谨慎行事，避免冲动决定" : "今天是尝试新事物的好时机，保持开放心态";
+                case "魔术师":
+                    return isReversed ? "注意不要过度自信或操纵他人" : "运用你的技能和创造力解决问题";
+                case "女祭司":
+                    return isReversed ? "不要忽视你的直觉信号" : "倾听你的内在智慧，关注潜意识信息";
+                case "皇后":
+                    return isReversed ? "避免过度放纵或依赖他人" : "培养耐心和关怀，关注生活中的美好";
+                case "皇帝":
+                    return isReversed ? "不要过于专制或控制" : "展现领导力，建立结构和秩序";
+                case "恋人":
+                    return isReversed ? "注意关系中的不平衡或冲突" : "关注和谐的关系，做出明智选择";
+                case "战车":
+                    return isReversed ? "今天可能需要重新评估方向" : "用意志力和决心克服挑战";
+                case "力量":
+                    return isReversed ? "你可能低估了自己的内在力量" : "用勇气和耐心面对挑战";
+                case "隐士":
+                    return isReversed ? "不要孤立自己，必要时寻求帮助" : "花时间独处和内省";
+                case "死神":
+                    return isReversed ? "抗拒改变只会延长痛苦" : "接受结束和转变，为新开始做准备";
+                // 其他牌的建议...
+                default:
+                    return "今天保持平衡和适度是关键";
+            }
+        }
+        
+        // 自定义牌阵功能
+        createSpreadBtn.addEventListener('click', () => {
+            customSpreadDiv.style.display = 'block';
+            currentCustomSpread = {
+                name: "",
+                positions: []
+            };
+            customPositions.innerHTML = '';
+        });
+        
+        addPositionBtn.addEventListener('click', () => {
+            const positionDiv = document.createElement('div');
+            positionDiv.className = 'custom-position';
+            positionDiv.innerHTML = `
+                <input type="text" placeholder="输入位置含义" class="position-input">
+            `;
+            customPositions.appendChild(positionDiv);
+        });
+        
+        saveCustomBtn.addEventListener('click', () => {
+            const name = spreadNameInput.value.trim();
+            if (!name) {
+                alert('请输入牌阵名称');
+                return;
+            }
+            
+            const positions = [];
+            const inputs = customPositions.querySelectorAll('.position-input');
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    positions.push(input.value.trim());
+                }
+            });
+            
+            if (positions.length === 0) {
+                alert('请至少添加一个位置含义');
+                return;
+            }
+            
+            const spreadId = 'custom_' + Date.now();
+            customSpreads[spreadId] = {
+                name: name,
+                positions: positions
+            };
+            
+            localStorage.setItem('customSpreads', JSON.stringify(customSpreads));
+            alert('自定义牌阵已保存！');
+        });
+        
+        useCustomBtn.addEventListener('click', () => {
+            const name = spreadNameInput.value.trim();
+            if (!name) {
+                alert('请输入牌阵名称');
+                return;
+            }
+            
+            const positions = [];
+            const inputs = customPositions.querySelectorAll('.position-input');
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    positions.push(input.value.trim());
+                }
+            });
+            
+            if (positions.length === 0) {
+                alert('请至少添加一个位置含义');
+                return;
+            }
+            
+            currentCustomSpread = {
+                name: name,
+                positions: positions
+            };
+            
+            selectedSpread = 'custom';
+            drawBtn.disabled = false;
+            resetBtn.disabled = true;
+            
+            // 切换到占卜标签
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="divination"]').classList.add('active');
+            document.getElementById('divination-tab').classList.add('active');
+            
+            alert('已准备好使用自定义牌阵，点击"开始占卜"即可');
+        });
+        
+        // 牌库功能
+        function loadCardLibrary(filter = 'all') {
+            cardLibrary.innerHTML = '';
+            cardLibrary.style.display = 'flex';
+            cardDetail.style.display = 'none';
+            
+            tarotCards.forEach(card => {
+                const item = document.createElement('div');
+                item.className = 'card-library-item';
+                item.innerHTML = `
+                    <img src="${card.image}" alt="${card.name}">
+                    <p>${card.name}</p>
+                `;
+                
+                item.addEventListener('click', () => {
+                    showCardDetails(card.name.split('. ')[1] || card.name);
+                });
+                
+                cardLibrary.appendChild(item);
+            });
+        }
+        
+        function filterCardLibrary(arcana, suit) {
+            cardLibrary.innerHTML = '';
+            
+            let filteredCards = tarotCards;
+            
+            if (arcana === 'major') {
+                filteredCards = tarotCards.filter(card => card.arcana === 'major');
+            } else if (arcana === 'minor') {
+                filteredCards = tarotCards.filter(card => card.arcana === 'minor');
+            } else if (suit) {
+                filteredCards = tarotCards.filter(card => card.suit === suit);
+            }
+            
+            filteredCards.forEach(card => {
+                const item = document.createElement('div');
+                item.className = 'card-library-item';
+                item.innerHTML = `
+                    <img src="${card.image}" alt="${card.name}">
+                    <p>${card.name}</p>
+                `;
+                
+                item.addEventListener('click', () => {
+                    showCardDetails(card.name.split('. ')[1] || card.name);
+                });
+                
+                cardLibrary.appendChild(item);
+            });
+        }
+        
+        function showCardDetails(cardName) {
+            const card = tarotCards.find(c => c.name.includes(cardName));
+            if (!card) return;
+            
+            cardLibrary.style.display = 'none';
+            cardDetail.style.display = 'block';
+            cardDetail.innerHTML = `
+                <h3>${card.name}</h3>
+                <div style="text-align: center; margin: 15px 0;">
+                    <img src="${card.image}" alt="${card.name}" style="max-width: 150px; border-radius: 8px;">
+                </div>
+                
+                <h4>正位含义</h4>
+                <p>${card.meaning}</p>
+                
+                <h4>逆位含义</h4>
+                <p>${card.reversedMeaning}</p>
+                
+                <div class="card-details">
+                    <h4>牌面象征</h4>
+                    <div class="card-symbolism">
+                        ${card.element ? `<span class="symbol-item">元素: ${card.element}</span>` : ''}
+                        ${card.astrology ? `<span class="symbol-item">占星: ${card.astrology}</span>` : ''}
+                        ${card.numerology !== undefined ? `<span class="symbol-item">数字: ${card.numerology}</span>` : ''}
+                        ${card.keywords ? card.keywords.map(kw => `<span class="symbol-item">${kw}</span>`).join('') : ''}
+                    </div>
+                </div>
+                
+                <button class="btn" id="back-to-library" style="margin-top: 15px;">返回牌库</button>
+            `;
+            
+            document.getElementById('back-to-library').addEventListener('click', () => {
+                cardLibrary.style.display = 'flex';
+                cardDetail.style.display = 'none';
+            });
+            
+            cardDetail.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 时间线功能
+        function updateTimeline() {
+            timeline.innerHTML = '';
+            
+            if (readingHistory.length === 0) {
+                timeline.innerHTML = '<p>暂无占卜记录</p>';
+                return;
+            }
+            
+            // 按日期分组
+            const groupedByDate = {};
+            readingHistory.forEach(reading => {
+                const date = reading.date.split(',')[0]; // 只取日期部分
+                if (!groupedByDate[date]) {
+                    groupedByDate[date] = [];
+                }
+                groupedByDate[date].push(reading);
+            });
+            
+            // 显示时间线
+            Object.keys(groupedByDate).forEach(date => {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'timeline-item';
+                dateDiv.innerHTML = `
+                    <div class="timeline-date">${date}</div>
+                    <div class="timeline-content">
+                        <h4>${date}</h4>
+                `;
+                
+                groupedByDate[date].forEach(reading => {
+                    dateDiv.querySelector('.timeline-content').innerHTML += `
+                        <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
+                            <p><strong>${reading.title}</strong> (${getCategoryName(reading.category)})</p>
+                            <p>${reading.question || '无具体问题'}</p>
+                            <p style="font-size: 0.8rem; color: #666;">${reading.spread}</p>
+                        </div>
+                    `;
+                });
+                
+                dateDiv.querySelector('.timeline-content').innerHTML += `</div>`;
+                timeline.appendChild(dateDiv);
+            });
+        }
+        
+        // 切换主题
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>

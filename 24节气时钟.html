@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24节气北斗七星时钟</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', sans-serif;
+            touch-action: manipulation;
+        }
+        .clock-container {
+            position: relative;
+            margin-bottom: 20px;
+            width: 90vmin;
+            height: 90vmin;
+            max-width: 650px;
+            max-height: 650px;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: 2px solid #444;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.5);
+        }
+        .star-name {
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            text-shadow: 0 0 5px #000;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .info-panel {
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            font-size: calc(12px + 1vmin);
+        }
+        .info-title {
+            font-size: calc(16px + 1vmin);
+            margin-bottom: 8px;
+            color: #FFD700;
+        }
+        .info-text {
+            margin: 6px 0;
+        }
+        @media (max-width: 500px) {
+            .clock-container {
+                width: 95vmin;
+                height: 95vmin;
+            }
+            .info-panel {
+                width: 90%;
+                padding: 10px;
+            }
+            .star-name {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <canvas id="clock"></canvas>
+        <div id="starNames"></div>
+    </div>
+    
+    <div class="info-panel">
+        <div class="info-title">节气信息</div>
+        <div id="currentTerm" class="info-text"></div>
+        <div id="termProgress" class="info-text"></div>
+        <div id="nextTerm" class="info-text"></div>
+    </div>
+
+    <script>
+        // 初始化画布
+        const canvas = document.getElementById('clock');
+        const ctx = canvas.getContext('2d');
+        const starNamesContainer = document.getElementById('starNames');
+        const currentTermElement = document.getElementById('currentTerm');
+        const termProgressElement = document.getElementById('termProgress');
+        const nextTermElement = document.getElementById('nextTerm');
+        
+        // 设置画布实际尺寸
+        function setupCanvas() {
+            const size = Math.min(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+            canvas.width = size;
+            canvas.height = size;
+        }
+        
+        let centerX, centerY, radius;
+        
+        // 24节气名称
+        const solarTerms = [
+            "小寒", "大寒", "立春", "雨水", "惊蛰", "春分",
+            "清明", "谷雨", "立夏", "小满", "芒种", "夏至",
+            "小暑", "大暑", "立秋", "处暑", "白露", "秋分",
+            "寒露", "霜降", "立冬", "小雪", "大雪", "冬至"
+        ];
+
+        // 2025年24节气时间
+        const solarTermsDates2025 = [
+            new Date(2025, 0, 5), new Date(2025, 0, 20), new Date(2025, 1, 3),
+            new Date(2025, 1, 18), new Date(2025, 2, 5), new Date(2025, 2, 20),
+            new Date(2025, 3, 4), new Date(2025, 3, 19), new Date(2025, 4, 5),
+            new Date(2025, 4, 21), new Date(2025, 5, 5), new Date(2025, 5, 21),
+            new Date(2025, 6, 7), new Date(2025, 6, 22), new Date(2025, 7, 7),
+            new Date(2025, 7, 23), new Date(2025, 8, 7), new Date(2025, 8, 23),
+            new Date(2025, 9, 8), new Date(2025, 9, 23), new Date(2025, 10, 7),
+            new Date(2025, 10, 22), new Date(2025, 11, 7), new Date(2025, 11, 21)
+        ];
+
+        // 北斗七星定义（勺子形状）
+        const bigDipperStars = [
+            { name: '天枢', chinese: '天枢', magnitude: 1.8, color: '#FFD700', offsetX: 15, offsetY: -15 },
+            { name: '天璇', chinese: '天璇', magnitude: 2.4, color: '#FFA500', offsetX: -15, offsetY: -15 },
+            { name: '天玑', chinese: '天玑', magnitude: 2.5, color: '#FF6347', offsetX: -15, offsetY: 0 },
+            { name: '天权', chinese: '天权', magnitude: 3.3, color: '#87CEFA', offsetX: 15, offsetY: 0 },
+            { name: '玉衡', chinese: '玉衡', magnitude: 1.8, color: '#ADD8E6', offsetX: 30, offsetY: 15 },
+            { name: '开阳', chinese: '开阳', magnitude: 2.3, color: '#9370DB', offsetX: 45, offsetY: 30 },
+            { name: '摇光', chinese: '摇光', magnitude: 1.9, color: '#FF69B4', offsetX: 60, offsetY: 45 }
+        ];
+
+        function drawClock() {
+            setupCanvas();
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = Math.min(centerX, centerY) * 0.85;
+            
+            // 清空画布和星名
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            starNamesContainer.innerHTML = '';
+            
+            // 绘制时钟背景
+            drawClockBackground();
+            
+            // 获取当前时间
+            const now = new Date();
+            
+            // 计算当前节气
+            const currentTerm = getCurrentSolarTerm(now);
+            const nextTerm = getNextSolarTerm(now);
+            const termProgress = getTermProgress(now, currentTerm, nextTerm);
+            
+            // 计算当前节气角度
+            const termAngle = (currentTerm.index * 15 + termProgress * 15 - 90) * Math.PI / 180;
+            
+            // 绘制北斗七星（位于北极星和节气之间）
+            drawBigDipper(termAngle);
+            
+            // 绘制北极星
+            drawPolaris();
+            
+            // 更新信息面板
+            updateInfoPanel(currentTerm, nextTerm, termProgress);
+            
+            // 循环动画
+            requestAnimationFrame(drawClock);
+        }
+        
+        function drawBigDipper(termAngle) {
+            // 计算北斗七星位置（位于北极星和节气之间）
+            const polarisPos = { x: centerX, y: centerY };
+            const termPos = {
+                x: centerX + Math.cos(termAngle) * radius * 0.7,
+                y: centerY + Math.sin(termAngle) * radius * 0.7
+            };
+            
+            // 北斗七星整体位置（在北极星和节气中间偏北极星一侧）
+            const dipperCenter = {
+                x: polarisPos.x * 0.7 + termPos.x * 0.3,
+                y: polarisPos.y * 0.7 + termPos.y * 0.3
+            };
+            
+            // 计算北斗七星旋转角度（让摇光指向北极星）
+            const angleToPolaris = Math.atan2(
+                polarisPos.y - dipperCenter.y,
+                polarisPos.x - dipperCenter.x
+            );
+            
+            // 调整北斗七星角度（让天枢指向节气）
+            const targetAngle = angleToPolaris + Math.PI;
+            const currentAngle = termAngle + Math.PI;
+            const adjustAngle = (targetAngle - currentAngle) * 0.3;
+            
+            // 绘制北斗七星连线
+            ctx.save();
+            ctx.translate(dipperCenter.x, dipperCenter.y);
+            ctx.rotate(adjustAngle);
+            
+            // 计算北斗七星各点位置（勺子形状）
+            const dipperScale = radius * 0.15;
+            const points = [
+                { x: 0, y: -1 },    // 天枢（指向节气）
+                { x: -1, y: -1 },   // 天璇
+                { x: -1, y: 0 },    // 天玑
+                { x: 0, y: 0 },     // 天权
+                { x: 1, y: 0.5 },   // 玉衡
+                { x: 2, y: 1 },     // 开阳
+                { x: 3, y: 1.5 }    // 摇光（指向北极星）
+            ];
+            
+            // 绘制连线
+            ctx.beginPath();
+            for (let i = 0; i < points.length; i++) {
+                const x = points[i].x * dipperScale;
+                const y = points[i].y * dipperScale;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            
+            // 连线样式
+            const gradient = ctx.createLinearGradient(
+                0, -dipperScale, 
+                3 * dipperScale, 1.5 * dipperScale
+            );
+            gradient.addColorStop(0, '#FFD700');
+            gradient.addColorStop(0.5, '#87CEFA');
+            gradient.addColorStop(1, '#FF69B4');
+            
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            // 绘制星星和名称
+            for (let i = 0; i < points.length; i++) {
+                const x = points[i].x * dipperScale;
+                const y = points[i].y * dipperScale;
+                
+                // 计算屏幕坐标
+                const screenX = dipperCenter.x + Math.cos(adjustAngle) * x - Math.sin(adjustAngle) * y;
+                const screenY = dipperCenter.y + Math.sin(adjustAngle) * x + Math.cos(adjustAngle) * y;
+                
+                // 绘制星星
+                drawStar(screenX, screenY, 6 * (1.5 - bigDipperStars[i].magnitude / 5), bigDipperStars[i].color);
+                
+                // 添加星名
+                const nameElement = document.createElement('div');
+                nameElement.className = 'star-name';
+                nameElement.textContent = bigDipperStars[i].chinese;
+                nameElement.style.left = `${screenX + bigDipperStars[i].offsetX}px`;
+                nameElement.style.top = `${screenY + bigDipperStars[i].offsetY}px`;
+                nameElement.style.color = bigDipperStars[i].color;
+                starNamesContainer.appendChild(nameElement);
+            }
+            
+            ctx.restore();
+            
+            // 从天枢星画线指向当前节气
+            const dubhePos = {
+                x: dipperCenter.x + Math.cos(adjustAngle) * points[0].x * dipperScale - Math.sin(adjustAngle) * points[0].y * dipperScale,
+                y: dipperCenter.y + Math.sin(adjustAngle) * points[0].x * dipperScale + Math.cos(adjustAngle) * points[0].y * dipperScale
+            };
+            
+            ctx.beginPath();
+            ctx.moveTo(dubhePos.x, dubhePos.y);
+            ctx.lineTo(termPos.x, termPos.y);
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.lineWidth = 10;
+            ctx.stroke();
+            
+            // 从摇光星画线指向北极星
+            const alkaidPos = {
+                x: dipperCenter.x + Math.cos(adjustAngle) * points[6].x * dipperScale - Math.sin(adjustAngle) * points[6].y * dipperScale,
+                y: dipperCenter.y + Math.sin(adjustAngle) * points[6].x * dipperScale + Math.cos(adjustAngle) * points[6].y * dipperScale
+            };
+            
+            ctx.beginPath();
+            ctx.moveTo(alkaidPos.x, alkaidPos.y);
+            ctx.lineTo(centerX, centerY);
+            ctx.strokeStyle = 'rgba(255, 105, 180, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        function drawPolaris() {
+            // 绘制北极星
+            ctx.beginPath();
+            const size = Math.max(10, canvas.width / 40);
+            ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+            
+            const gradient = ctx.createRadialGradient(
+                centerX, centerY, 0, 
+                centerX, centerY, size
+            );
+            gradient.addColorStop(0, 'white');
+            gradient.addColorStop(0.7, '#FFD700');
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0.3)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 添加光芒
+            const rayCount = 12;
+            const rayLength = Math.max(25, canvas.width / 20);
+            
+            for (let i = 0; i < rayCount; i++) {
+                const angle = (i * Math.PI / (rayCount/2));
+                const length = rayLength + Math.sin(Date.now() / 200) * 5;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.sin(angle) * length,
+                    centerY + Math.cos(angle) * length
+                );
+                
+                const gradient2 = ctx.createLinearGradient(
+                    centerX, centerY,
+                    centerX + Math.sin(angle) * length,
+                    centerY + Math.cos(angle) * length
+                );
+                gradient2.addColorStop(0, 'white');
+                gradient2.addColorStop(1, 'transparent');
+                
+                ctx.strokeStyle = gradient2;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+        
+        function drawStar(x, y, size, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // 绘制五角星
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+                const outerX = Math.cos(angle) * size;
+                const outerY = Math.sin(angle) * size;
+                const innerAngle = angle + Math.PI / 5;
+                const innerX = Math.cos(innerAngle) * size * 0.4;
+                const innerY = Math.sin(innerAngle) * size * 0.4;
+                
+                if (i === 0) ctx.moveTo(outerX, outerY);
+                else ctx.lineTo(outerX, outerY);
+                ctx.lineTo(innerX, innerY);
+            }
+            ctx.closePath();
+            
+            // 添加发光效果
+            const gradient = ctx.createRadialGradient(0, 0, size * 0.2, 0, 0, size);
+            gradient.addColorStop(0, 'white');
+            gradient.addColorStop(0.7, color);
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 随机闪烁
+            if (Math.random() > 0.7) {
+                ctx.shadowColor = color;
+                ctx.shadowBlur = size * 2;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawClockBackground() {
+            // 绘制外圆
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            
+            const gradient = ctx.createRadialGradient(
+                centerX, centerY, radius * 0.3,
+                centerX, centerY, radius
+            );
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = '#4a4e69';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            
+            // 绘制星空
+            drawStarfield();
+            
+            // 绘制刻度
+            drawClockMarks();
+            
+            // 绘制节气名称
+            drawSolarTerms();
+        }
+        
+        function drawStarfield() {
+            ctx.save();
+            const starCount = Math.floor(canvas.width * canvas.height / 1000);
+            
+            for (let i = 0; i < starCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * radius * 0.9;
+                const x = centerX + Math.sin(angle) * dist;
+                const y = centerY + Math.cos(angle) * dist;
+                const size = Math.random() * 1.5;
+                const opacity = Math.random() * 0.7 + 0.3;
+                
+                const colors = ['#ffffff', '#ffffcc', '#ccffff'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${hexToRgb(color)}, ${opacity})`;
+                ctx.fill();
+                
+                if (Math.random() > 0.9) {
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = size * 3;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            ctx.restore();
+        }
+        
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+        
+        function drawClockMarks() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < 120; i++) {
+                const angle = (i * 3) * Math.PI / 180;
+                const isMainMark = i % 5 === 0;
+                
+                const innerRadius = isMainMark ? radius * 0.82 : radius * 0.86;
+                const outerRadius = radius * 0.9;
+                const lineWidth = isMainMark ? 2 : 1;
+                
+                ctx.beginPath();
+                ctx.moveTo(
+                    centerX + Math.sin(angle) * innerRadius,
+                    centerY - Math.cos(angle) * innerRadius
+                );
+                ctx.lineTo(
+                    centerX + Math.sin(angle) * outerRadius,
+                    centerY - Math.cos(angle) * outerRadius
+                );
+                ctx.strokeStyle = isMainMark ? '#FFF' : 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+        
+        function drawSolarTerms() {
+            const fontSize = Math.max(14, canvas.width / 25);
+            ctx.font = `bold ${fontSize}px Microsoft YaHei`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const currentTerm = getCurrentSolarTerm(new Date());
+            
+            for (let i = 0; i < solarTerms.length; i++) {
+                const angle = (i * 15 - 90) * Math.PI / 180;
+                const x = centerX + Math.sin(angle) * (radius * 0.72);
+                const y = centerY - Math.cos(angle) * (radius * 0.72);
+                
+                const isCurrentTerm = currentTerm.index === i;
+                ctx.fillStyle = isCurrentTerm ? '#FFD700' : '#FFF';
+                
+                ctx.fillText(solarTerms[i], x, y);
+                
+                if (isCurrentTerm) {
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 15;
+                    ctx.fillText(solarTerms[i], x, y);
+                    ctx.shadowColor = 'transparent';
+                }
+            }
+        }
+        
+        function getCurrentSolarTerm(date) {
+            for (let i = 0; i < solarTermsDates2025.length; i++) {
+                if (date >= solarTermsDates2025[i] && 
+                    (i === solarTermsDates2025.length - 1 || date < solarTermsDates2025[i + 1])) {
+                    return {
+                        name: solarTerms[i],
+                        date: solarTermsDates2025[i],
+                        index: i
+                    };
+                }
+            }
+            return {
+                name: solarTerms[solarTerms.length - 1],
+                date: solarTermsDates2025[solarTermsDates2025.length - 1],
+                index: solarTerms.length - 1
+            };
+        }
+        
+        function getNextSolarTerm(date) {
+            const current = getCurrentSolarTerm(date);
+            const nextIndex = (current.index + 1) % solarTerms.length;
+            return {
+                name: solarTerms[nextIndex],
+                date: solarTermsDates2025[nextIndex],
+                index: nextIndex
+            };
+        }
+        
+        function getTermProgress(date, currentTerm, nextTerm) {
+            const currentTime = date.getTime();
+            const termStart = currentTerm.date.getTime();
+            let termEnd;
+            
+            if (currentTerm.index === solarTermsDates2025.length - 1) {
+                termEnd = new Date(currentTerm.date.getFullYear() + 1, 0, 5).getTime();
+            } else {
+                termEnd = nextTerm.date.getTime();
+            }
+            
+            const termDuration = termEnd - termStart;
+            const elapsed = currentTime - termStart;
+            
+            return elapsed / termDuration;
+        }
+        
+        function updateInfoPanel(currentTerm, nextTerm, progress) {
+            const daysRemaining = Math.floor((nextTerm.date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            
+            currentTermElement.innerHTML = `<span style="color:#FFD700">当前节气:</span> ${currentTerm.name}`;
+            termProgressElement.innerHTML = `<span style="color:#FFD700">节气进度:</span> ${(progress * 100).toFixed(1)}%`;
+            nextTermElement.innerHTML = `<span style="color:#FFD700">下个节气:</span> ${nextTerm.name} (约${daysRemaining}天后)`;
+        }
+        
+        // 响应窗口大小变化
+        window.addEventListener('resize', drawClock);
+        
+        // 启动时钟
+        setupCanvas();
+        drawClock();
+    </script>
+</body>
+</html>
