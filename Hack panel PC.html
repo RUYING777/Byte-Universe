@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Panel</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --text-color: #0f0;
+            --accent-color: #0a0;
+            --panel-bg: #111;
+            --panel-border: #333;
+            --selection-bg: #0a0;
+            --selection-text: #000;
+            --error-color: #f00;
+            --warning-color: #ff0;
+            --success-color: #0f0;
+            --money-color: #ffd700;
+            --hack-color: #00ffff;
+            --player-color: #ff00ff;
+            --corp-network: #5555ff;
+            --home-network: #55ff55;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #terminal {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        #header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        #logo {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        
+        #status-bar {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .online {
+            background-color: var(--success-color);
+            box-shadow: 0 0 5px var(--success-color);
+        }
+        
+        .anonymous {
+            background-color: var(--warning-color);
+            box-shadow: 0 0 5px var(--warning-color);
+        }
+        
+        .firewall {
+            background-color: var(--error-color);
+            box-shadow: 0 0 5px var(--error-color);
+        }
+        
+        #main-container {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            height: calc(100% - 40px);
+        }
+        
+        #sidebar {
+            width: 200px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            overflow-y: auto;
+        }
+        
+        .menu-title {
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item {
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+        
+        #content-area {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #command-line {
+            display: flex;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid var(--panel-border);
+        }
+        
+        #prompt {
+            margin-right: 5px;
+        }
+        
+        #command-input {
+            flex: 1;
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        
+        .output-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            color: var(--success-color);
+        }
+        
+        .error {
+            color: var(--error-color);
+        }
+        
+        .warning {
+            color: var(--warning-color);
+        }
+        
+        .info {
+            color: var(--accent-color);
+        }
+        
+        .money {
+            color: var(--money-color);
+        }
+        
+        .hack {
+            color: var(--hack-color);
+        }
+        
+        .player {
+            color: var(--player-color);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #attack-panel {
+            margin-top: 10px;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        .attack-option {
+            margin: 5px 0;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .attack-option:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+        
+        #target-info {
+            margin-top: 10px;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        #network-map {
+            margin-top: 10px;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            height: 200px;
+            overflow: auto;
+        }
+        
+        .node {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+        }
+        
+        .node:hover {
+            border-color: var(--accent-color);
+        }
+        
+        .node.router { border-left: 3px solid var(--error-color); }
+        .node.server { border-left: 3px solid var(--warning-color); }
+        .node.workstation { border-left: 3px solid var(--success-color); }
+        .node.admin_pc { border-left: 3px solid var(--money-color); }
+        .node.player { border-left: 3px solid var(--player-color); }
+        .node.corp { border-left: 3px solid var(--corp-network); }
+        .node.home { border-left: 3px solid var(--home-network); }
+        
+        #progress-container {
+            margin-top: 10px;
+            height: 20px;
+            border: 1px solid var(--panel-border);
+        }
+        
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-color);
+            transition: width 0.3s;
+        }
+        
+        #notifications {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+        }
+        
+        .notification {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            margin-bottom: 5px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid var(--panel-border);
+            margin-bottom: 10px;
+        }
+        
+        .tab {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            border-color: var(--panel-border);
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-bg);
+            margin-bottom: -1px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .skill-tree {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .skill {
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .skill.locked {
+            opacity: 0.5;
+        }
+        
+        .skill.unlocked {
+            border-color: var(--success-color);
+        }
+        
+        .skill.learned {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+        
+        #mission-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .mission {
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        .mission-title {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+        
+        .mission-reward {
+            color: var(--money-color);
+        }
+        
+        #black-market {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .market-item {
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        .item-name {
+            color: var(--accent-color);
+        }
+        
+        .item-price {
+            color: var(--money-color);
+        }
+        
+        #log-viewer {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px dotted var(--panel-border);
+            padding-bottom: 5px;
+        }
+        
+        .log-time {
+            color: var(--accent-color);
+            font-size: 0.8em;
+        }
+        
+        #minimap {
+            width: 100%;
+            height: 150px;
+            border: 1px solid var(--panel-border);
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        .minimap-node {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+        }
+        
+        .minimap-node.router { background-color: var(--error-color); }
+        .minimap-node.server { background-color: var(--warning-color); }
+        .minimap-node.workstation { background-color: var(--success-color); }
+        .minimap-node.admin_pc { background-color: var(--money-color); }
+        .minimap-node.player { background-color: var(--player-color); }
+        .minimap-node.corp { background-color: var(--corp-network); }
+        .minimap-node.home { background-color: var(--home-network); }
+        .minimap-node.current { border: 2px solid var(--hack-color); }
+        
+        #multiplayer-panel {
+            margin-top: 10px;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        .player-list {
+            margin-top: 10px;
+        }
+        
+        .player-item {
+            padding: 5px;
+            border-bottom: 1px solid var(--panel-border);
+            cursor: pointer;
+        }
+        
+        .player-item:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+        
+        #hardware-upgrades {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .upgrade-item {
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+        
+        .upgrade-name {
+            color: var(--accent-color);
+        }
+        
+        .upgrade-price {
+            color: var(--money-color);
+        }
+        
+        #proxy-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .proxy-item {
+            padding: 5px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+        
+        .proxy-item.active {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+
+        /* New styles */
+        .scan-result {
+            margin-top: 10px;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+        }
+
+        .scan-result-title {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .exploit-option {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+        }
+
+        .exploit-option:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+
+        .tool-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .inventory-category {
+            margin-top: 15px;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 5px;
+        }
+
+        .settings-option {
+            margin: 10px 0;
+        }
+
+        .settings-label {
+            display: inline-block;
+            width: 200px;
+        }
+
+        .help-section {
+            margin-bottom: 15px;
+        }
+
+        .help-title {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* New warning modal styles */
+        #warning-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #warning-content {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--error-color);
+            padding: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #warning-title {
+            color: var(--error-color);
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #warning-text {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        #warning-close {
+            background-color: var(--error-color);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #warning-close:hover {
+            background-color: #ff3333;
+        }
+
+        .save-load-btn {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--panel-border);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        .save-load-btn:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+        #save-load-container {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .save-load-btn {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            padding: 5px;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .save-load-btn:hover {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+            border-color: var(--accent-color);
+        }
+
+        .save-load-btn svg {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Security warning modal -->
+    <div id="warning-modal">
+        <div id="warning-content">
+            <div id="warning-title">Security Warning & Disclaimer</div>
+            <div id="warning-text">
+                <p><strong>Important Notice:</strong> This application is a fictional game simulating hacking activities, for educational and entertainment purposes only.</p>
+                <p>In the real world, unauthorized access to computer systems is illegal and may result in serious legal consequences.</p>
+                <p>All content in this game is fictional and does not represent real hacking techniques or methods.</p>
+                <p>The developer does not encourage, support, or condone any form of illegal hacking activity.</p>
+                <p>By using this game, you agree to:</p>
+                <ul>
+                    <li>Not use this game for any illegal purposes</li>
+                    <li>Not attempt to apply the techniques in the game to real systems</li>
+                    <li>Understand that the game content is purely fictional</li>
+                    <li>Take full responsibility for your use of this game</li>
+                </ul>
+                <p>If you do not agree to these terms, please close this game immediately.</p>
+            </div>
+            <button id="warning-close">I Understand and Agree</button>
+        </div>
+    </div>
+
+    <div id="terminal">
+        <div id="header">
+            <div id="logo">Hacker Panel</div>
+            <div id="status-bar">
+                <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <span>Online</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator anonymous"></div>
+                    <span>Anonymous</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator firewall"></div>
+                    <span>Firewall: Enabled</span>
+                </div>
+                <div class="status-item money">
+                    $<span id="money-display">1000</span>
+                </div>
+                <div class="status-item">
+                    Reputation: <span id="rep-display">0</span>
+                </div>
+                <div class="status-item">
+                    Level: <span id="level-display">1</span>
+                </div>
+                <div id="save-load-container">
+                    <button class="save-load-btn" id="save-game" title="Save Game">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </button>
+                    <button class="save-load-btn" id="load-game" title="Load Game">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="main-container">
+            <div id="sidebar">
+                <div class="menu-title">Navigation</div>
+                <div class="menu-item" data-tab="home">Main Console</div>
+                <div class="menu-item" data-tab="scan">Network Scan</div>
+                <div class="menu-item" data-tab="exploits">Exploits</div>
+                <div class="menu-item" data-tab="tools">Toolset</div>
+                <div class="menu-item" data-tab="missions">Mission System</div>
+                <div class="menu-item" data-tab="logs">Logs</div>
+                <div class="menu-item" data-tab="inventory">Inventory</div>
+                <div class="menu-item" data-tab="skills">Skill Tree</div>
+                <div class="menu-item" data-tab="market">Black Market</div>
+                <div class="menu-item" data-tab="multiplayer">Multiplayer</div>
+                <div class="menu-item" data-tab="hardware">Hardware Upgrades</div>
+                <div class="menu-item" data-tab="proxies">Proxy IPs</div>
+                
+                <div class="menu-title">Attack Types</div>
+                <div class="menu-item" data-tab="ddos">DDoS Attack</div>
+                <div class="menu-item" data-tab="xss">XSS Injection</div>
+                <div class="menu-item" data-tab="sql">SQL Injection</div>
+                <div class="menu-item" data-tab="phishing">Phishing Attack</div>
+                <div class="menu-item" data-tab="bruteforce">Brute Force</div>
+                <div class="menu-item" data-tab="mitm">Man-in-the-Middle</div>
+                <div class="menu-item" data-tab="zero-day">Zero-Day Exploit</div>
+                <div class="menu-item" data-tab="ransomware">Ransomware</div>
+                <div class="menu-item" data-tab="iot">IoT Botnet</div>
+                <div class="menu-item" data-tab="backdoor">Backdoor</div>
+                <div class="menu-item" data-tab="cryptojacking">Cryptojacking</div>
+                <div class="menu-item" data-tab="dns-spoofing">DNS Spoofing</div>
+                <div class="menu-item" data-tab="credential-stuffing">Credential Stuffing</div>
+                <div class="menu-item" data-tab="ai-poisoning">AI Data Poisoning</div>
+                
+                <div class="menu-title">System</div>
+                <div class="menu-item" data-tab="settings">System Settings</div>
+                <div class="menu-item" data-tab="help">Help Documentation</div>
+            </div>
+            
+            <div id="content-area">
+                <div class="tab-container">
+                    <div class="tab active" data-tab="main">Main Terminal</div>
+                    <div class="tab" data-tab="network">Network View</div>
+                    <div class="tab" data-tab="analysis">Analysis Panel</div>
+                    <div class="tab" data-tab="minimap">Network Map</div>
+                </div>
+                
+                <div class="tab-content active" id="main-tab">
+                    <div id="output">
+                        <div class="output-line">Hacker Terminal Initialized</div>
+                        <div class="output-line">Initializing virtual environment...</div>
+                        <div class="output-line success">✓ Virtual environment ready</div>
+                        <div class="output-line">Checking network connection...</div>
+                        <div class="output-line success">✓ Network connection established (TOR routed)</div>
+                        <div class="output-line">Loading hacker tools...</div>
+                        <div class="output-line success">✓ Toolset loaded</div>
+                        <div class="output-line info">Type "help" for command list</div>
+                        <div class="output-line"><br></div>
+                    </div>
+                    
+                    <div id="command-line">
+                        <span id="prompt">root@Hacker-Panel:</span>
+                        <input type="text" id="command-input" autofocus>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="network-tab">
+                    <div id="network-map">
+                        <div class="node router" data-ip="192.168.1.1">Router (192.168.1.1)</div>
+                        <div class="node server" data-ip="192.168.1.2">File Server (192.168.1.2)</div>
+                        <div class="node server" data-ip="192.168.1.3">Database Server (192.168.1.3)</div>
+                        <div class="node server" data-ip="192.168.1.4">Web Server (192.168.1.4)</div>
+                        <div class="node server" data-ip="192.168.1.5">Mail Server (192.168.1.5)</div>
+                        <div class="node workstation" data-ip="192.168.1.100">Workstation (192.168.1.100)</div>
+                        <div class="node admin_pc" data-ip="192.168.1.101">Admin PC (192.168.1.101)</div>
+                    </div>
+                    
+                    <div id="target-info">
+                        <div class="output-line">Select a target node for more information</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="analysis-tab">
+                    <div class="output-line">Attack Analysis Panel</div>
+                    <div class="output-line">------------------------</div>
+                    <div class="output-line">Recent Activity:</div>
+                    <div id="recent-activity">
+                        <div class="output-line">- No records</div>
+                    </div>
+                    <div class="output-line"><br></div>
+                    <div class="output-line">System Resources:</div>
+                    <div class="output-line">- CPU: <span id="cpu-display">12</span>%</div>
+                    <div class="output-line">- Memory: <span id="memory-display">34</span>%</div>
+                    <div class="output-line">- Network: <span id="network-display">2</span>%</div>
+                    <div class="output-line">- Anonymity: <span id="anon-display">100</span>%</div>
+                    <div class="output-line">- Proxy IP: <span id="proxy-display">None</span></div>
+                </div>
+                
+                <div class="tab-content" id="minimap-tab">
+                    <div id="minimap"></div>
+                    <div class="output-line">Network Topology</div>
+                    <div class="output-line">- <span style="color: var(--error-color)">■</span> Router</div>
+                    <div class="output-line">- <span style="color: var(--warning-color)">■</span> Server</div>
+                    <div class="output-line">- <span style="color: var(--success-color)">■</span> Workstation</div>
+                    <div class="output-line">- <span style="color: var(--money-color)">■</span> Admin PC</div>
+                    <div class="output-line">- <span style="color: var(--player-color)">■</span> Other Players</div>
+                    <div class="output-line">- <span style="color: var(--corp-network)">■</span> Corporate Network</div>
+                    <div class="output-line">- <span style="color: var(--home-network)">■</span> Home Network</div>
+                    <div class="output-line">- <span style="color: var(--hack-color)">■</span> Current Target</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notifications"></div>
+    
+    <script>
+        // Game state
+        const gameState = {
+            currentTab: 'main',
+            currentIp: '192.168.1.100',
+            targetIp: null,
+            activeProxy: null,
+            playerLevel: 1,
+            playerExp: 0,
+            resources: {
+                cpu: 100,
+                memory: 100,
+                network: 100,
+                money: 1000,
+                reputation: 0,
+                anonymity: 100,
+                skills: {
+                    hacking: 1,
+                    networking: 1,
+                    programming: 1,
+                    social: 1,
+                    stealth: 1
+                }
+            },
+            inventory: {
+                exploits: ['basic_ddos', 'simple_xss'],
+                tools: ['nmap', 'metasploit', 'wireshark'],
+                zeroDays: [],
+                botnets: [],
+                proxies: []
+            },
+            networkNodes: [
+                // Local network
+                { ip: '192.168.1.1', type: 'router', security: 70, services: ['firewall', 'vpn'], os: 'RouterOS 6.0', network: 'local' },
+                { ip: '192.168.1.2', type: 'file_server', security: 50, services: ['ftp', 'smb'], os: 'Windows Server 2016', network: 'local' },
+                { ip: '192.168.1.3', type: 'db_server', security: 80, services: ['mysql', 'postgresql'], os: 'Ubuntu Server 20.04', network: 'local' },
+                { ip: '192.168.1.4', type: 'web_server', security: 40, services: ['http', 'https', 'ssh'], os: 'CentOS 7', network: 'local' },
+                { ip: '192.168.1.5', type: 'mail_server', security: 60, services: ['smtp', 'imap', 'pop3'], os: 'Debian 10', network: 'local' },
+                { ip: '192.168.1.100', type: 'workstation', security: 30, services: ['rdp', 'smb'], os: 'Windows 10 Pro', network: 'local' },
+                { ip: '192.168.1.101', type: 'admin_pc', security: 45, services: ['rdp', 'smb', 'ssh'], os: 'Windows 10 Enterprise', network: 'local' },
+                
+                // Corporate network
+                { ip: '10.0.0.1', type: 'router', security: 85, services: ['firewall', 'ids', 'ips'], os: 'Cisco IOS', network: 'corporate' },
+                { ip: '10.0.0.2', type: 'file_server', security: 75, services: ['ftp', 'smb', 'nfs'], os: 'Windows Server 2019', network: 'corporate' },
+                { ip: '10.0.0.3', type: 'db_server', security: 90, services: ['oracle', 'sqlserver'], os: 'Red Hat Enterprise Linux', network: 'corporate' },
+                { ip: '10.0.0.4', type: 'web_server', security: 65, services: ['http', 'https', 'ssh'], os: 'Ubuntu Server 20.04', network: 'corporate' },
+                { ip: '10.0.0.5', type: 'mail_server', security: 80, services: ['smtp', 'imap', 'pop3'], os: 'Debian 10', network: 'corporate' },
+                { ip: '10.0.0.100', type: 'workstation', security: 50, services: ['rdp', 'smb'], os: 'Windows 10 Enterprise', network: 'corporate' },
+                { ip: '10.0.0.101', type: 'admin_pc', security: 60, services: ['rdp', 'smb', 'ssh'], os: 'Windows 10 Enterprise', network: 'corporate' },
+                
+                // Home network
+                { ip: '192.168.0.1', type: 'router', security: 40, services: ['firewall'], os: 'TP-Link Archer', network: 'home' },
+                { ip: '192.168.0.2', type: 'workstation', security: 20, services: ['rdp', 'smb'], os: 'Windows 10 Home', network: 'home' },
+                { ip: '192.168.0.3', type: 'workstation', security: 25, services: ['rdp', 'smb'], os: 'macOS Catalina', network: 'home' },
+                { ip: '192.168.0.4', type: 'iot_device', security: 15, services: ['http'], os: 'Custom IoT OS', network: 'home' },
+                
+                // Other players
+                { ip: '172.16.0.1', type: 'player', security: 60, services: ['ssh', 'rdp'], os: 'Kali Linux', network: 'player' },
+                { ip: '172.16.0.2', type: 'player', security: 70, services: ['ssh', 'rdp'], os: 'Parrot OS', network: 'player' }
+            ],
+            logs: [],
+            missions: [
+                {
+                    id: 1,
+                    title: "Steal Corporate Files",
+                    description: "Steal confidential documents from the file server (192.168.1.2)",
+                    target: "192.168.1.2",
+                    reward: 500,
+                    exp: 100,
+                    requiredSkill: "hacking",
+                    requiredLevel: 2,
+                    completed: false
+                },
+                {
+                    id: 2,
+                    title: "Disrupt Website",
+                    description: "Launch a DDoS attack on the web server (192.168.1.4)",
+                    target: "192.168.1.4",
+                    reward: 300,
+                    exp: 50,
+                    requiredSkill: "networking",
+                    requiredLevel: 1,
+                    completed: false
+                },
+                {
+                    id: 3,
+                    title: "Gain Database Access",
+                    description: "Hack into the database server (192.168.1.3) and gain root access",
+                    target: "192.168.1.3",
+                    reward: 800,
+                    exp: 150,
+                    requiredSkill: "hacking",
+                    requiredLevel: 3,
+                    completed: false
+                },
+                {
+                    id: 4,
+                    title: "Corporate Network Penetration",
+                    description: "Infiltrate the corporate network (10.0.0.0/24) and gain control of at least 2 servers",
+                    target: "10.0.0.0/24",
+                    reward: 1500,
+                    exp: 250,
+                    requiredSkill: "hacking",
+                    requiredLevel: 4,
+                    completed: false
+                },
+                {
+                    id: 5,
+                    title: "Create Botnet",
+                    description: "Create a botnet with at least 20 nodes",
+                    target: "",
+                    reward: 1200,
+                    exp: 200,
+                    requiredSkill: "networking",
+                    requiredLevel: 3,
+                    completed: false
+                }
+            ],
+            blackMarket: [
+                { id: 1, name: "Advanced Exploit Pack", type: "exploit", price: 750, effect: "Gain 3 random exploits" },
+                { id: 2, name: "Zero-Day Exploit", type: "zero-day", price: 2000, effect: "Gain 1 zero-day exploit" },
+                { id: 3, name: "Botnet Nodes", type: "botnet", price: 500, effect: "Add 10 botnet nodes" },
+                { id: 4, name: "Anonymous VPN", type: "tool", price: 300, effect: "+20% anonymity" },
+                { id: 5, name: "CPU Upgrade", type: "upgrade", price: 600, effect: "+20% CPU capacity" },
+                { id: 6, name: "Hacking Skill Manual", type: "skill", price: 400, effect: "+1 hacking skill" },
+                { id: 7, name: "Proxy IP Pack", type: "proxy", price: 250, effect: "Gain 5 proxy IPs" },
+                { id: 8, name: "Advanced Scanner", type: "tool", price: 800, effect: "Unlock advanced scanning" },
+                { id: 9, name: "AI Assistant Tool", type: "tool", price: 1500, effect: "Increase attack success rate" },
+                { id: 10, name: "Quantum Computing Module", type: "upgrade", price: 5000, effect: "Greatly increase computing power" }
+            ],
+            hardwareUpgrades: [
+                { id: 1, name: "CPU Upgrade", type: "cpu", price: 1000, effect: "+50% CPU capacity", level: 2 },
+                { id: 2, name: "Memory Upgrade", type: "memory", price: 800, effect: "+50% memory capacity", level: 2 },
+                { id: 3, name: "Network Upgrade", type: "network", price: 600, effect: "+50% network bandwidth", level: 2 },
+                { id: 4, name: "Quantum CPU", type: "cpu", price: 5000, effect: "+200% CPU capacity", level: 5 },
+                { id: 5, name: "Super Memory", type: "memory", price: 4000, effect: "+200% memory capacity", level: 5 },
+                { id: 6, name: "Fiber Network", type: "network", price: 3000, effect: "+200% network bandwidth", level: 5 },
+                { id: 7, name: "AI Coprocessor", type: "cpu", price: 8000, effect: "+300% CPU capacity", level: 8 },
+                { id: 8, name: "Neural Memory", type: "memory", price: 7000, effect: "+300% memory capacity", level: 8 },
+                { id: 9, name: "Quantum Network", type: "network", price: 6000, effect: "+300% network bandwidth", level: 8 }
+            ],
+            skillTree: [
+                { id: 1, name: "Basic Hacking", description: "Unlock basic attack methods", cost: 0, requires: [], type: "hacking", level: 1, learned: true },
+                { id: 2, name: "Network Scanning", description: "Improve scan accuracy and speed", cost: 200, requires: [1], type: "networking", level: 1, learned: false },
+                { id: 3, name: "Social Engineering", description: "Improve phishing success rate", cost: 300, requires: [1], type: "social", level: 1, learned: false },
+                { id: 4, name: "Advanced Exploitation", description: "Unlock more complex attack methods", cost: 500, requires: [1], type: "hacking", level: 2, learned: false },
+                { id: 5, name: "Botnet Control", description: "Can create and control botnets", cost: 800, requires: [2,4], type: "networking", level: 2, learned: false },
+                { id: 6, name: "Zero-Day Development", description: "Can develop and exploit zero-day vulnerabilities", cost: 1200, requires: [4], type: "programming", level: 3, learned: false },
+                { id: 7, name: "Stealth Techniques", description: "Reduce law enforcement attention", cost: 600, requires: [3], type: "stealth", level: 2, learned: false },
+                { id: 8, name: "Corporate Penetration", description: "Improve success rate against corporate networks", cost: 1500, requires: [4,5], type: "hacking", level: 4, learned: false },
+                { id: 9, name: "AI-Assisted Attacks", description: "Use AI to improve attack efficiency", cost: 2000, requires: [6], type: "programming", level: 5, learned: false },
+                { id: 10, name: "Quantum Hacking", description: "Use quantum computing to accelerate cracking", cost: 5000, requires: [9], type: "hacking", level: 6, learned: false }
+            ],
+            lawEnforcement: {
+                awareness: 0,
+                investigationProgress: 0,
+                lastActionTime: null
+            },
+            discoveredNodes: ['192.168.1.100'],
+            hackedNodes: [],
+            players: [
+                { id: 1, name: "GhostHacker", ip: "172.16.0.1", level: 3, reputation: 150, online: true },
+                { id: 2, name: "DarkPhantom", ip: "172.16.0.2", level: 5, reputation: 400, online: true }
+            ],
+            miningInterval: null,
+            settings: {
+                sound: true,
+                animations: true,
+                theme: 'dark',
+                notifications: true
+            }
+        };
+        
+        // DOM elements
+        const outputEl = document.getElementById('output');
+        const commandInputEl = document.getElementById('command-input');
+        const targetInfoEl = document.getElementById('target-info');
+        const networkMapEl = document.getElementById('network-map');
+        const notificationsEl = document.getElementById('notifications');
+        const recentActivityEl = document.getElementById('recent-activity');
+        const minimapEl = document.getElementById('minimap');
+        const warningModal = document.getElementById('warning-modal');
+        const warningCloseBtn = document.getElementById('warning-close');
+        const saveGameBtn = document.getElementById('save-game');
+        const loadGameBtn = document.getElementById('load-game');
+        
+        // Command processing
+        const commands = {
+            help: () => {
+                addOutput('Available commands:', 'info');
+                addOutput('----------------------------', 'info');
+                addOutput('help - Show help information', 'info');
+                addOutput('scan [ip] - Scan target IP', 'info');
+                addOutput('exploit [type] [ip] - Launch attack on target IP', 'info');
+                addOutput('connect [ip] - Connect to target system', 'info');
+                addOutput('disconnect - Disconnect current connection', 'info');
+                addOutput('clear - Clear terminal output', 'info');
+                addOutput('status - Show system status', 'info');
+                addOutput('inventory - Show available tools and exploits', 'info');
+                addOutput('buy [item] - Buy tool or exploit', 'info');
+                addOutput('upgrade [resource] - Upgrade system resources', 'info');
+                addOutput('missions - Show available missions', 'info');
+                addOutput('skills - Show skill tree', 'info');
+                addOutput('market - Access black market', 'info');
+                addOutput('logs - View activity logs', 'info');
+                addOutput('use proxy [id] - Use proxy IP', 'info');
+                addOutput('attack player [ip] - Attack other player', 'info');
+                addOutput('botnet [command] - Control botnet', 'info');
+                addOutput('settings - View or modify settings', 'info');
+                addOutput('save - Save game progress', 'info');
+                addOutput('load - Load game progress', 'info');
+            },
+            
+            scan: (ip) => {
+                if (!ip) {
+                    addOutput('Error: Target IP required or use "scan network" to scan entire network', 'error');
+                    addOutput('Hint: Use "scan network" to scan network or "scan [ip]" to scan specific target', 'info');
+                    return;
+                }
+                
+                if (ip === 'network') {
+                    addOutput('Scanning entire network...this may take some time', 'info');
+                    
+                    // Simulate network scan
+                    setTimeout(() => {
+                        const newNodes = gameState.networkNodes
+                            .filter(n => !gameState.discoveredNodes.includes(n.ip))
+                            .map(n => n.ip);
+                        
+                        if (newNodes.length > 0) {
+                            gameState.discoveredNodes.push(...newNodes);
+                            addOutput(`New nodes discovered: ${newNodes.join(', ')}`, 'success');
+                            updateNetworkMap();
+                        } else {
+                            addOutput('No new network nodes found', 'warning');
+                        }
+                        
+                        // Log action
+                        logAction(`Scanned entire network`);
+                    }, 3000);
+                    return;
+                }
+                
+                const node = gameState.networkNodes.find(n => n.ip === ip);
+                if (!node) {
+                    addOutput(`Error: Could not find IP ${ip}`, 'error');
+                    addOutput('Hint: Use "scan network" to discover more nodes', 'info');
+                    return;
+                }
+                
+                addOutput(`Scanning ${ip}...`, 'info');
+                
+                // Simulate scan process
+                setTimeout(() => {
+                    addOutput(`Scan results - ${ip}:`, 'success');
+                    addOutput(`Type: ${node.type}`);
+                    addOutput(`OS: ${node.os}`);
+                    addOutput(`Security level: ${node.security}/100`);
+                    addOutput(`Running services: ${node.services.join(', ')}`);
+                    addOutput(`Network type: ${node.network}`);
+                    gameState.targetIp = ip;
+                    
+                    // Add to discovered nodes
+                    if (!gameState.discoveredNodes.includes(ip)) {
+                        gameState.discoveredNodes.push(ip);
+                        updateNetworkMap();
+                    }
+                    
+                    // Log action
+                    logAction(`Scanned ${ip}`);
+                }, 1500);
+            },
+            
+            exploit: (type, ip) => {
+                if (!type || !ip) {
+                    addOutput('Error: Attack type and target IP required', 'error');
+                    addOutput('Hint: Use "exploit [type] [ip]" e.g. "exploit ddos 192.168.1.1"', 'info');
+                    return;
+                }
+                
+                // Check if attack method is available
+                const hasExploit = gameState.inventory.exploits.includes(type) || 
+                                  gameState.inventory.tools.includes(type) || 
+                                  gameState.inventory.zeroDays.includes(type);
+                
+                if (!hasExploit) {
+                    addOutput(`Error: ${type} attack method not found`, 'error');
+                    addOutput('Hint: Use "inventory" to view available tools or "market" to buy new ones', 'info');
+                    return;
+                }
+                
+                const node = gameState.networkNodes.find(n => n.ip === ip);
+                if (!node) {
+                    addOutput(`Error: Could not find IP ${ip}`, 'error');
+                    addOutput('Hint: Use "scan network" to discover more nodes', 'info');
+                    return;
+                }
+                
+                // Check skill requirements
+                let skillType, requiredLevel;
+                switch(type) {
+                    case 'ddos':
+                    case 'mitm':
+                    case 'iot':
+                        skillType = 'networking';
+                        requiredLevel = 1;
+                        break;
+                    case 'xss':
+                    case 'sql':
+                    case 'backdoor':
+                        skillType = 'hacking';
+                        requiredLevel = 2;
+                        break;
+                    case 'zero-day':
+                    case 'ai-poisoning':
+                        skillType = 'programming';
+                        requiredLevel = 3;
+                        break;
+                    case 'phishing':
+                    case 'credential-stuffing':
+                        skillType = 'social';
+                        requiredLevel = 1;
+                        break;
+                    case 'ransomware':
+                    case 'dns-spoofing':
+                        skillType = 'hacking';
+                        requiredLevel = 3;
+                        break;
+                    default:
+                        skillType = 'hacking';
+                        requiredLevel = 1;
+                }
+                
+                if (gameState.resources.skills[skillType] < requiredLevel) {
+                    addOutput(`Error: Requires ${skillType} skill level ${requiredLevel}`, 'error');
+                    addOutput(`Hint: Use "skills" to view skill tree or "learn [id]" to learn new skills`, 'info');
+                    return;
+                }
+                
+                addOutput(`Preparing ${type} attack on ${ip}...`, 'warning');
+                
+                // Simulate attack process
+                const attackTime = Math.max(1000, 5000 - (gameState.resources.cpu * 30));
+                let successChance = 50 + 
+                    (gameState.resources.cpu / 2) - 
+                    (node.security / 2) + 
+                    (gameState.resources.skills[skillType] * 10);
+                
+                // Using proxy increases success chance
+                if (gameState.activeProxy) {
+                    successChance += 15;
+                }
+                
+                // Zero-day exploits greatly increase success chance
+                if (type === 'zero-day' || gameState.inventory.zeroDays.includes(type)) {
+                    successChance += 30;
+                }
+                
+                setTimeout(() => {
+                    const isSuccess = Math.random() * 100 < successChance;
+                    
+                    if (isSuccess) {
+                        addOutput(`Attack successful! ${type} attack breached ${ip}`, 'success');
+                        gameState.resources.reputation += 10;
+                        
+                        // Using proxy reduces anonymity loss
+                        if (gameState.activeProxy) {
+                            gameState.resources.anonymity -= 2;
+                        } else {
+                            gameState.resources.anonymity -= 5;
+                        }
+                        
+                        // Add to hacked nodes
+                        if (!gameState.hackedNodes.includes(ip)) {
+                            gameState.hackedNodes.push(ip);
+                        }
+                        
+                        // Randomly gain resources
+                        if (Math.random() > 0.7) {
+                            const newExploit = `exploit_${Math.floor(Math.random() * 1000)}`;
+                            gameState.inventory.exploits.push(newExploit);
+                            addOutput(`Discovered new exploit: ${newExploit}`, 'success');
+                        }
+                        
+                        // Special attack effects
+                        if (type === 'ransomware') {
+                            const ransomAmount = Math.floor(Math.random() * 500) + 500;
+                            gameState.resources.money += ransomAmount;
+                            addOutput(`Ransomware successful! Gained $${ransomAmount}`, 'money');
+                        } else if (type === 'cryptojacking') {
+                            const miningRate = Math.floor(Math.random() * 10) + 5;
+                            startMining(miningRate);
+                        } else if (type === 'backdoor') {
+                            addOutput(`Backdoor implanted on ${ip}, can now connect anytime`, 'success');
+                        }
+                        
+                        // Check mission completion
+                        checkMissions(ip, type);
+                        
+                        showNotification('Attack Successful', `Successfully breached ${ip}`, 'success');
+                    } else {
+                        addOutput(`Attack failed! ${ip} detected intrusion`, 'error');
+                        gameState.resources.reputation -= 5;
+                        gameState.resources.anonymity -= 15;
+                        gameState.lawEnforcement.awareness += 10;
+                        
+                        showNotification('Attack Failed', `${ip} detected intrusion`, 'error');
+                    }
+                    
+                    // Log action
+                    logAction(`${isSuccess ? 'Successful' : 'Failed'} ${type} attack on ${ip}`);
+                    
+                    updateStatus();
+                    updateNetworkMap();
+                }, attackTime);
+            },
+            
+            connect: (ip) => {
+                if (!ip) {
+                    addOutput('Error: Target IP required', 'error');
+                    addOutput('Hint: Use "connect [ip]" e.g. "connect 192.168.1.1"', 'info');
+                    return;
+                }
+                
+                if (!gameState.hackedNodes.includes(ip)) {
+                    addOutput(`Error: Must first breach ${ip} to connect`, 'error');
+                    addOutput('Hint: Use "exploit [type] [ip]" to first breach target system', 'info');
+                    return;
+                }
+                
+                const node = gameState.networkNodes.find(n => n.ip === ip);
+                if (!node) {
+                    addOutput(`Error: Could not find IP ${ip}`, 'error');
+                    return;
+                }
+                
+                gameState.currentIp = ip;
+                addOutput(`Connected to ${ip} (${node.type})`, 'success');
+                updatePrompt();
+                
+                // Log action
+                logAction(`Connected to ${ip}`);
+            },
+            
+            disconnect: () => {
+                if (gameState.currentIp === '192.168.1.100') {
+                    addOutput('Error: Already disconnected', 'error');
+                    return;
+                }
+                
+                addOutput(`Disconnected from ${gameState.currentIp}`, 'success');
+                gameState.currentIp = '192.168.1.100';
+                updatePrompt();
+                
+                // Log action
+                logAction(`Disconnected`);
+            },
+            
+            clear: () => {
+                outputEl.innerHTML = '';
+            },
+            
+            status: () => {
+                addOutput('System status:', 'info');
+                addOutput('----------------------------', 'info');
+                addOutput(`CPU: ${gameState.resources.cpu}%`, 'info');
+                addOutput(`Memory: ${gameState.resources.memory}%`, 'info');
+                addOutput(`Network: ${gameState.resources.network}%`, 'info');
+                addOutput(`Money: $${gameState.resources.money}`, 'money');
+                addOutput(`Reputation: ${gameState.resources.reputation}`, 'info');
+                addOutput(`Anonymity: ${gameState.resources.anonymity}%`, 'info');
+                addOutput(`Level: ${gameState.playerLevel} (XP: ${gameState.playerExp}/${getExpForNextLevel()})`, 'info');
+                addOutput('Skills:', 'info');
+                addOutput(`- Hacking: ${gameState.resources.skills.hacking}`, 'info');
+                addOutput(`- Networking: ${gameState.resources.skills.networking}`, 'info');
+                addOutput(`- Programming: ${gameState.resources.skills.programming}`, 'info');
+                addOutput(`- Social: ${gameState.resources.skills.social}`, 'info');
+                addOutput(`- Stealth: ${gameState.resources.skills.stealth}`, 'info');
+                addOutput(`Current proxy: ${gameState.activeProxy || 'None'}`, 'info');
+                addOutput(`Law enforcement awareness: ${gameState.lawEnforcement.awareness}%`, 
+                    gameState.lawEnforcement.awareness > 70 ? 'error' : 
+                    gameState.lawEnforcement.awareness > 30 ? 'warning' : 'info');
+            },
+            
+            inventory: () => {
+                addOutput('Inventory:', 'info');
+                addOutput('----------------------------', 'info');
+                addOutput('Exploits:', 'info');
+                gameState.inventory.exploits.forEach(exp => {
+                    addOutput(`- ${exp}`);
+                });
+                addOutput('Tools:', 'info');
+                gameState.inventory.tools.forEach(tool => {
+                    addOutput(`- ${tool}`);
+                });
+                addOutput('Zero-day exploits:', 'info');
+                gameState.inventory.zeroDays.forEach(zd => {
+                    addOutput(`- ${zd}`);
+                });
+                addOutput('Botnets:', 'info');
+                if (gameState.inventory.botnets.length > 0) {
+                    gameState.inventory.botnets.forEach(bot => {
+                        addOutput(`- ${bot.name} (${bot.nodes} nodes)`);
+                    });
+                } else {
+                    addOutput('- None', 'info');
+                }
+                addOutput('Proxy IPs:', 'info');
+                if (gameState.inventory.proxies.length > 0) {
+                    gameState.inventory.proxies.forEach((proxy, index) => {
+                        addOutput(`- [${index}] ${proxy.ip} (${proxy.country}) ${proxy === gameState.activeProxy ? '(Active)' : ''}`);
+                    });
+                } else {
+                    addOutput('- None', 'info');
+                }
+            },
+            
+            buy: (item) => {
+                if (!item) {
+                    addOutput('Error: Item to purchase required', 'error');
+                    addOutput('Hint: Use "market" to view purchasable items', 'info');
+                    return;
+                }
+                
+                const itemData = gameState.blackMarket.find(i => i.name === item || i.id == item);
+                
+                if (!itemData) {
+                    addOutput(`Error: Cannot purchase ${item}`, 'error');
+                    addOutput('Hint: Use "market" to view purchasable items', 'info');
+                    return;
+                }
+                
+                if (gameState.resources.money < itemData.price) {
+                    addOutput(`Error: Insufficient funds (needs $${itemData.price})`, 'error');
+                    addOutput('Hint: Complete missions or attack systems to earn more money', 'info');
+                    return;
+                }
+                
+                gameState.resources.money -= itemData.price;
+                
+                switch(itemData.type) {
+                    case 'exploit':
+                        const exploits = [
+                            `exploit_${Math.floor(Math.random() * 1000)}`,
+                            `exploit_${Math.floor(Math.random() * 1000)}`,
+                            `exploit_${Math.floor(Math.random() * 1000)}`
+                        ];
+                        gameState.inventory.exploits.push(...exploits);
+                        addOutput(`Purchase successful! Gained exploit pack: ${exploits.join(', ')}`, 'success');
+                        break;
+                    case 'zero-day':
+                        const zeroDay = `zero_day_${Math.floor(Math.random() * 1000)}`;
+                        gameState.inventory.zeroDays.push(zeroDay);
+                        addOutput(`Purchase successful! Gained zero-day exploit: ${zeroDay}`, 'success');
+                        break;
+                    case 'botnet':
+                        const botnetName = `botnet_${Math.floor(Math.random() * 1000)}`;
+                        gameState.inventory.botnets.push({
+                            name: botnetName,
+                            nodes: 10
+                        });
+                        addOutput(`Purchase successful! Gained botnet: ${botnetName} (10 nodes)`, 'success');
+                        break;
+                    case 'tool':
+                        if (itemData.name.includes('VPN')) {
+                            gameState.resources.anonymity += 20;
+                            addOutput(`Purchase successful! Anonymity increased by 20%`, 'success');
+                        } else {
+                            const toolName = itemData.name.toLowerCase().replace(' ', '_');
+                            gameState.inventory.tools.push(toolName);
+                            addOutput(`Purchase successful! Gained tool: ${toolName}`, 'success');
+                        }
+                        break;
+                    case 'upgrade':
+                        if (itemData.name.includes('CPU')) {
+                            gameState.resources.cpu += 20;
+                            addOutput(`Purchase successful! CPU capacity increased by 20%`, 'success');
+                        }
+                        break;
+                    case 'skill':
+                        if (itemData.name.includes('Hacking')) {
+                            gameState.resources.skills.hacking += 1;
+                            addOutput(`Purchase successful! Hacking skill +1`, 'success');
+                        }
+                        break;
+                    case 'proxy':
+                        const countries = ['USA', 'Russia', 'China', 'Germany', 'Brazil', 'Japan', 'Singapore'];
+                        const newProxies = [];
+                        for (let i = 0; i < 5; i++) {
+                            const country = countries[Math.floor(Math.random() * countries.length)];
+                            const proxy = {
+                                ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+                                country: country
+                            };
+                            newProxies.push(proxy);
+                        }
+                        gameState.inventory.proxies.push(...newProxies);
+                        addOutput(`Purchase successful! Gained proxy IPs:`, 'success');
+                        newProxies.forEach(proxy => {
+                            addOutput(`- ${proxy.ip} (${proxy.country})`);
+                        });
+                        break;
+                }
+                
+                updateStatus();
+                logAction(`Purchased ${itemData.name}`);
+            },
+            
+            upgrade: (resource) => {
+                if (!resource) {
+                    addOutput('Error: Resource to upgrade required (cpu/memory/network)', 'error');
+                    addOutput('Hint: Use "upgrade cpu", "upgrade memory" or "upgrade network"', 'info');
+                    return;
+                }
+                
+                if (!['cpu', 'memory', 'network'].includes(resource)) {
+                    addOutput(`Error: Cannot upgrade ${resource}`, 'error');
+                    return;
+                }
+                
+                const upgradeCost = 300 + (gameState.resources[resource] * 2);
+                
+                if (gameState.resources.money < upgradeCost) {
+                    addOutput(`Error: Insufficient funds (needs $${upgradeCost})`, 'error');
+                    return;
+                }
+                
+                if (gameState.resources[resource] >= 200) {
+                    addOutput(`Error: ${resource} at maximum level`, 'error');
+                    return;
+                }
+                
+                gameState.resources.money -= upgradeCost;
+                gameState.resources[resource] += 10;
+                addOutput(`Upgrade successful! ${resource} now at ${gameState.resources[resource]}%`, 'success');
+                
+                updateStatus();
+                logAction(`Upgraded ${resource}`);
+            },
+            
+            missions: () => {
+                addOutput('Available missions:', 'info');
+                addOutput('----------------------------', 'info');
+                gameState.missions.forEach(mission => {
+                    if (!mission.completed) {
+                        addOutput(`[${mission.id}] ${mission.title}`, 'info');
+                        addOutput(`Target: ${mission.target}`, 'info');
+                        addOutput(`Description: ${mission.description}`, 'info');
+                        addOutput(`Reward: $${mission.reward}`, 'money');
+                        addOutput(`XP: ${mission.exp}`, 'info');
+                        addOutput(`Requires: ${mission.requiredSkill} skill level ${mission.requiredLevel}`, 'info');
+                        addOutput('', 'info');
+                    }
+                });
+            },
+            
+            skills: () => {
+                addOutput('Skill tree:', 'info');
+                addOutput('----------------------------', 'info');
+                gameState.skillTree.forEach(skill => {
+                    const status = skill.learned ? 'Learned' : 
+                                  (skill.cost <= gameState.resources.money && 
+                                   skill.requires.every(req => gameState.skillTree.find(s => s.id === req).learned)) ? 
+                                  'Can learn' : 'Locked';
+                    
+                    addOutput(`[${skill.id}] ${skill.name} (${status})`, 'info');
+                    addOutput(`Description: ${skill.description}`, 'info');
+                    if (!skill.learned) {
+                        addOutput(`Cost: $${skill.cost}`, 'money');
+                        addOutput(`Required level: ${skill.level}`, 'info');
+                    }
+                    addOutput('', 'info');
+                });
+            },
+            
+            learn: (skillId) => {
+                const skill = gameState.skillTree.find(s => s.id == skillId);
+                
+                if (!skill) {
+                    addOutput(`Error: Could not find skill ID ${skillId}`, 'error');
+                    addOutput('Hint: Use "skills" to view available skills', 'info');
+                    return;
+                }
+                
+                if (skill.learned) {
+                    addOutput(`Error: Already learned ${skill.name}`, 'error');
+                    return;
+                }
+                
+                // Check prerequisites
+                const unmetRequires = skill.requires.filter(req => 
+                    !gameState.skillTree.find(s => s.id === req).learned);
+                
+                if (unmetRequires.length > 0) {
+                    addOutput(`Error: Need to learn prerequisite skills first: ${unmetRequires.join(', ')}`, 'error');
+                    addOutput('Hint: View skill tree to see learning path', 'info');
+                    return;
+                }
+                
+                // Check level requirement
+                if (gameState.playerLevel < skill.level) {
+                    addOutput(`Error: Need level ${skill.level} to learn this skill`, 'error');
+                    addOutput('Hint: Complete missions or attack systems to gain XP and level up', 'info');
+                    return;
+                }
+                
+                if (gameState.resources.money < skill.cost) {
+                    addOutput(`Error: Insufficient funds (needs $${skill.cost})`, 'error');
+                    addOutput('Hint: Complete missions or attack systems to earn more money', 'info');
+                    return;
+                }
+                
+                gameState.resources.money -= skill.cost;
+                skill.learned = true;
+                
+                // Apply skill effects
+                switch(skill.type) {
+                    case 'hacking':
+                        gameState.resources.skills.hacking = Math.max(
+                            gameState.resources.skills.hacking, 
+                            skill.level
+                        );
+                        break;
+                    case 'networking':
+                        gameState.resources.skills.networking = Math.max(
+                            gameState.resources.skills.networking, 
+                            skill.level
+                        );
+                        break;
+                    case 'programming':
+                        gameState.resources.skills.programming = Math.max(
+                            gameState.resources.skills.programming, 
+                            skill.level
+                        );
+                        break;
+                    case 'social':
+                        gameState.resources.skills.social = Math.max(
+                            gameState.resources.skills.social, 
+                            skill.level
+                        );
+                        break;
+                    case 'stealth':
+                        gameState.resources.skills.stealth = Math.max(
+                            gameState.resources.skills.stealth, 
+                            skill.level
+                        );
+                        break;
+                }
+                
+                addOutput(`Successfully learned ${skill.name}!`, 'success');
+                updateStatus();
+                logAction(`Learned skill ${skill.name}`);
+            },
+            
+            market: () => {
+                addOutput('Black market items:', 'info');
+                addOutput('----------------------------', 'info');
+                gameState.blackMarket.forEach(item => {
+                    addOutput(`[${item.id}] ${item.name}`, 'info');
+                    addOutput(`Type: ${item.type}`, 'info');
+                    addOutput(`Effect: ${item.effect}`, 'info');
+                    addOutput(`Price: $${item.price}`, 'money');
+                    addOutput('', 'info');
+                });
+            },
+            
+            logs: () => {
+                addOutput('Activity logs:', 'info');
+                addOutput('----------------------------', 'info');
+                if (gameState.logs.length === 0) {
+                    addOutput('No log entries', 'info');
+                    return;
+                }
+                
+                gameState.logs.slice().reverse().forEach(log => {
+                    addOutput(`[${log.time}] ${log.action}`, 'info');
+                });
+            },
+            
+            use: (type, ...args) => {
+                if (!type) {
+                    addOutput('Error: Usage type required (proxy/botnet)', 'error');
+                    addOutput('Hint: Use "use proxy [id]" or "use botnet [command]"', 'info');
+                    return;
+                }
+                
+                if (type === 'proxy') {
+                    const proxyId = args[0];
+                    if (!proxyId) {
+                        // Show current proxy
+                        if (gameState.activeProxy) {
+                            addOutput(`Current proxy: ${gameState.activeProxy.ip} (${gameState.activeProxy.country})`, 'info');
+                        } else {
+                            addOutput('No proxy currently active', 'info');
+                        }
+                        return;
+                    }
+                    
+                    if (proxyId === 'off') {
+                        if (gameState.activeProxy) {
+                            addOutput(`Disabled proxy ${gameState.activeProxy.ip}`, 'success');
+                            gameState.activeProxy = null;
+                        } else {
+                            addOutput('No proxy currently active', 'info');
+                        }
+                        return;
+                    }
+                    
+                    const id = parseInt(proxyId);
+                    if (isNaN(id) || id < 0 || id >= gameState.inventory.proxies.length) {
+                        addOutput('Error: Invalid proxy ID', 'error');
+                        addOutput('Hint: Use "proxies" to view available proxy IPs', 'info');
+                        return;
+                    }
+                    
+                    gameState.activeProxy = gameState.inventory.proxies[id];
+                    addOutput(`Enabled proxy: ${gameState.activeProxy.ip} (${gameState.activeProxy.country})`, 'success');
+                    updateStatus();
+                    logAction(`Enabled proxy ${gameState.activeProxy.ip}`);
+                } else if (type === 'botnet') {
+                    const command = args[0];
+                    if (!command) {
+                        addOutput('Error: Botnet command required (launch/stop/status)', 'error');
+                        return;
+                    }
+                    
+                    if (gameState.inventory.botnets.length === 0) {
+                        addOutput('Error: You have no botnets', 'error');
+                        addOutput('Hint: Can purchase botnets in black market', 'info');
+                        return;
+                    }
+                    
+                    const botnet = gameState.inventory.botnets[0]; // Simplified - using first botnet only
+                    
+                    if (command === 'launch') {
+                        const attackType = args[1];
+                        const targetIp = args[2];
+                        
+                        if (!attackType || !targetIp) {
+                            addOutput('Error: Attack type and target IP required', 'error');
+                            addOutput('Hint: Use "use botnet launch [type] [ip]"', 'info');
+                            return;
+                        }
+                        
+                        addOutput(`Using botnet ${botnet.name} (${botnet.nodes} nodes) to launch ${attackType} attack on ${targetIp}...`, 'warning');
+                        
+                        setTimeout(() => {
+                            // Botnet attacks have higher success chance
+                            const successChance = 70 + (gameState.resources.skills.networking * 5);
+                            const isSuccess = Math.random() * 100 < successChance;
+                            
+                            if (isSuccess) {
+                                addOutput(`Botnet attack successful! ${targetIp} breached`, 'success');
+                                if (!gameState.hackedNodes.includes(targetIp)) {
+                                    gameState.hackedNodes.push(targetIp);
+                                }
+                                gameState.resources.reputation += 15;
+                                
+                                // Check mission completion
+                                checkMissions(targetIp, attackType);
+                            } else {
+                                addOutput(`Botnet attack failed! ${targetIp} detected attack`, 'error');
+                                gameState.resources.reputation -= 10;
+                                gameState.lawEnforcement.awareness += 20;
+                            }
+                            
+                            updateNetworkMap();
+                            updateStatus();
+                            logAction(`Botnet ${isSuccess ? 'successful' : 'failed'} attack on ${targetIp}`);
+                        }, 2000);
+                    } else if (command === 'stop') {
+                        addOutput(`Stopped all activities of botnet ${botnet.name}`, 'success');
+                        logAction(`Stopped botnet ${botnet.name}`);
+                    } else if (command === 'status') {
+                        addOutput(`Botnet ${botnet.name} status:`, 'info');
+                        addOutput(`- Nodes: ${botnet.nodes}`, 'info');
+                        addOutput(`- Attack power: ${botnet.nodes * 5}%`, 'info');
+                    } else {
+                        addOutput(`Error: Unknown botnet command ${command}`, 'error');
+                    }
+                } else {
+                    addOutput(`Error: Unknown usage type ${type}`, 'error');
+                }
+            },
+            
+            attack: (type, ip) => {
+                if (!type || !ip) {
+                    addOutput('Error: Attack type and target IP required', 'error');
+                    addOutput('Hint: Use "attack player [ip]" to attack other players', 'info');
+                    return;
+                }
+                
+                if (type === 'player') {
+                    const player = gameState.players.find(p => p.ip === ip);
+                    if (!player) {
+                        addOutput(`Error: Could not find player ${ip}`, 'error');
+                        addOutput('Hint: Use "multiplayer" to view online players', 'info');
+                        return;
+                    }
+                    
+                    if (player.level > gameState.playerLevel + 2) {
+                        addOutput(`Warning: Target player level (${player.level}) much higher than yours (${gameState.playerLevel})`, 'warning');
+                    }
+                    
+                    addOutput(`Preparing attack on player ${ip}...`, 'warning');
+                    
+                    // Player vs player success chance calculation
+                    const successChance = 50 + 
+                        (gameState.playerLevel * 5) - 
+                        (player.level * 5) + 
+                        (gameState.resources.skills.hacking * 3);
+                    
+                    setTimeout(() => {
+                        const isSuccess = Math.random() * 100 < successChance;
+                        
+                        if (isSuccess) {
+                            const stolenAmount = Math.floor(Math.random() * 200) + 100;
+                            gameState.resources.money += stolenAmount;
+                            addOutput(`Attack successful! Stole $${stolenAmount} from player ${ip}`, 'success');
+                            gameState.resources.reputation += 20;
+                            
+                            // XP reward
+                            addExp(50);
+                        } else {
+                            addOutput(`Attack failed! Player ${ip} counterattacked`, 'error');
+                            gameState.resources.money = Math.max(0, gameState.resources.money - 100);
+                            gameState.resources.reputation -= 15;
+                        }
+                        
+                        updateStatus();
+                        logAction(`${isSuccess ? 'Successful' : 'Failed'} attack on player ${ip}`);
+                    }, 2000);
+                } else {
+                    addOutput(`Error: Unknown attack type ${type}`, 'error');
+                }
+            },
+            
+            hardware: () => {
+                addOutput('Hardware upgrades:', 'info');
+                addOutput('----------------------------', 'info');
+                gameState.hardwareUpgrades.forEach(upgrade => {
+                    const canBuy = gameState.playerLevel >= upgrade.level && 
+                                  !gameState.inventory.tools.includes(upgrade.name.toLowerCase().replace(' ', '_'));
+                    
+                    addOutput(`[${upgrade.id}] ${upgrade.name}`, 'info');
+                    addOutput(`Type: ${upgrade.type}`, 'info');
+                    addOutput(`Effect: ${upgrade.effect}`, 'info');
+                    addOutput(`Required level: ${upgrade.level}`, 'info');
+                    addOutput(`Price: $${upgrade.price}`, 'money');
+                    addOutput(`Status: ${canBuy ? 'Available' : 'Locked'}`, canBuy ? 'success' : 'error');
+                    addOutput('', 'info');
+                });
+            },
+            
+            upgradehw: (id) => {
+                const upgrade = gameState.hardwareUpgrades.find(u => u.id == id);
+                if (!upgrade) {
+                    addOutput('Error: Invalid hardware upgrade ID', 'error');
+                    addOutput('Hint: Use "hardware" to view available upgrades', 'info');
+                    return;
+                }
+                
+                if (gameState.playerLevel < upgrade.level) {
+                    addOutput(`Error: Need level ${upgrade.level} to purchase this upgrade`, 'error');
+                    addOutput('Hint: Complete missions or attack systems to gain XP and level up', 'info');
+                    return;
+                }
+                
+                if (gameState.resources.money < upgrade.price) {
+                    addOutput(`Error: Insufficient funds (needs $${upgrade.price})`, 'error');
+                    return;
+                }
+                
+                // Check if already owned
+                const upgradeKey = upgrade.name.toLowerCase().replace(' ', '_');
+                if (gameState.inventory.tools.includes(upgradeKey)) {
+                    addOutput(`Error: Already own this upgrade`, 'error');
+                    return;
+                }
+                
+                gameState.resources.money -= upgrade.price;
+                gameState.inventory.tools.push(upgradeKey);
+                
+                // Apply upgrade effects
+                switch(upgrade.type) {
+                    case 'cpu':
+                        gameState.resources.cpu += upgrade.effect.match(/\+(\d+)%/)[1] * 1;
+                        break;
+                    case 'memory':
+                        gameState.resources.memory += upgrade.effect.match(/\+(\d+)%/)[1] * 1;
+                        break;
+                    case 'network':
+                        gameState.resources.network += upgrade.effect.match(/\+(\d+)%/)[1] * 1;
+                        break;
+                }
+                
+                addOutput(`Purchase successful! ${upgrade.name} installed`, 'success');
+                updateStatus();
+                logAction(`Purchased hardware upgrade ${upgrade.name}`);
+            },
+            
+            proxies: () => {
+                addOutput('Proxy IP management:', 'info');
+                addOutput('----------------------------', 'info');
+                if (gameState.inventory.proxies.length === 0) {
+                    addOutput('No proxy IPs available', 'info');
+                    addOutput('Can purchase proxy IP packs in black market', 'info');
+                    return;
+                }
+                
+                addOutput('Available proxy IPs:', 'info');
+                gameState.inventory.proxies.forEach((proxy, index) => {
+                    addOutput(`[${index}] ${proxy.ip} (${proxy.country}) ${proxy === gameState.activeProxy ? '(Active)' : ''}`, 'info');
+                });
+                
+                addOutput('', 'info');
+                addOutput('Use "use proxy [id]" to enable proxy', 'info');
+                addOutput('Use "use proxy off" to disable proxy', 'info');
+            },
+
+            settings: (setting, value) => {
+                if (!setting) {
+                    // Show current settings
+                    addOutput('Current system settings:', 'info');
+                    addOutput('----------------------------', 'info');
+                    addOutput(`Sound: ${gameState.settings.sound ? 'On' : 'Off'}`, 'info');
+                    addOutput(`Animations: ${gameState.settings.animations ? 'On' : 'Off'}`, 'info');
+                    addOutput(`Theme: ${gameState.settings.theme}`, 'info');
+                    addOutput(`Notifications: ${gameState.settings.notifications ? 'On' : 'Off'}`, 'info');
+                    addOutput('', 'info');
+                    addOutput('Use "settings [option] [on/off]" to modify settings', 'info');
+                    addOutput('Example: "settings sound off" to turn off sound', 'info');
+                    return;
+                }
+
+                if (!value) {
+                    addOutput(`Error: Need to specify setting value (on/off)`, 'error');
+                    return;
+                }
+
+                const validSettings = ['sound', 'animations', 'notifications'];
+                if (validSettings.includes(setting)) {
+                    if (value === 'on' || value === 'off') {
+                        gameState.settings[setting] = value === 'on';
+                        addOutput(`Setting updated: ${setting} = ${value}`, 'success');
+                        logAction(`Changed setting ${setting}=${value}`);
+                    } else {
+                        addOutput(`Error: Invalid value, use on or off`, 'error');
+                    }
+                } else if (setting === 'theme') {
+                    if (['dark', 'light', 'green'].includes(value)) {
+                        gameState.settings.theme = value;
+                        addOutput(`Theme changed to: ${value}`, 'success');
+                        applyTheme(value);
+                        logAction(`Changed theme to ${value}`);
+                    } else {
+                        addOutput(`Error: Invalid theme, available options: dark, light, green`, 'error');
+                    }
+                } else {
+                    addOutput(`Error: Unknown setting option`, 'error');
+                }
+            },
+
+            help: () => {
+                addOutput('Hacker Terminal Help', 'info');
+                addOutput('----------------------------', 'info');
+                addOutput('Basic commands:', 'info');
+                addOutput('- help: Show help information', 'info');
+                addOutput('- clear: Clear terminal output', 'info');
+                addOutput('- status: Show system status', 'info');
+                addOutput('', 'info');
+                
+                addOutput('Network operations:', 'info');
+                addOutput('- scan [ip|network]: Scan target IP or entire network', 'info');
+                addOutput('- connect [ip]: Connect to breached system', 'info');
+                addOutput('- disconnect: Disconnect current connection', 'info');
+                addOutput('', 'info');
+                
+                addOutput('Attack commands:', 'info');
+                addOutput('- exploit [type] [ip]: Launch specific attack on target', 'info');
+                addOutput('- attack player [ip]: Attack other player', 'info');
+                addOutput('- botnet [command]: Control botnet', 'info');
+                addOutput('', 'info');
+                
+                addOutput('Resource management:', 'info');
+                addOutput('- inventory: View inventory', 'info');
+                addOutput('- buy [item]: Purchase item', 'info');
+                addOutput('- upgrade [cpu|memory|network]: Upgrade resources', 'info');
+                addOutput('- upgradehw [id]: Purchase hardware upgrade', 'info');
+                addOutput('', 'info');
+                
+                addOutput('Other:', 'info');
+                addOutput('- missions: View missions', 'info');
+                addOutput('- skills: View skill tree', 'info');
+                addOutput('- learn [id]: Learn skill', 'info');
+                addOutput('- market: Access black market', 'info');
+                addOutput('- logs: View activity logs', 'info');
+                addOutput('- proxies: Manage proxy IPs', 'info');
+                addOutput('- settings: View or modify settings', 'info');
+                addOutput('- save: Save game progress', 'info');
+                addOutput('- load: Load game progress', 'info');
+            },
+
+            save: () => {
+                try {
+                    const saveData = JSON.stringify(gameState);
+                    localStorage.setItem('hackerTerminalSave', saveData);
+                    addOutput('Game progress saved', 'success');
+                    showNotification('Save Successful', 'Game progress saved', 'success');
+                    logAction('Saved game progress');
+                } catch (e) {
+                    addOutput('Save failed: ' + e.message, 'error');
+                }
+            },
+
+            load: () => {
+                try {
+                    const saveData = localStorage.getItem('hackerTerminalSave');
+                    if (!saveData) {
+                        addOutput('No saved game found', 'error');
+                        return;
+                    }
+                    
+                    const loadedState = JSON.parse(saveData);
+                    Object.assign(gameState, loadedState);
+                    
+                    // Restore game state
+                    updateStatus();
+                    updateNetworkMap();
+                    updatePrompt();
+                    
+                    addOutput('Game progress loaded', 'success');
+                    showNotification('Load Successful', 'Game progress loaded', 'success');
+                    logAction('Loaded game progress');
+                } catch (e) {
+                    addOutput('Load failed: ' + e.message, 'error');
+                }
+            }
+        };
+        
+        // Helper functions
+        function addOutput(text, type = '') {
+            const line = document.createElement('div');
+            line.className = `output-line ${type}`;
+            line.textContent = text;
+            outputEl.appendChild(line);
+            outputEl.scrollTop = outputEl.scrollHeight;
+            
+            // Add to recent activity
+            if (type === 'error' || type === 'success' || type === 'warning') {
+                const activityLine = document.createElement('div');
+                activityLine.className = `output-line ${type}`;
+                activityLine.textContent = text;
+                recentActivityEl.insertBefore(activityLine, recentActivityEl.firstChild);
+                
+                if (recentActivityEl.children.length > 10) {
+                    recentActivityEl.removeChild(recentActivityEl.lastChild);
+                }
+            }
+        }
+        
+        function showNotification(title, message, type) {
+            if (!gameState.settings.notifications) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+            notificationsEl.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        function updateStatus() {
+            // Use requestAnimationFrame for performance
+            requestAnimationFrame(() => {
+                // Update status indicators
+                const anonymityIndicator = document.querySelector('.anonymous');
+                if (gameState.resources.anonymity < 30) {
+                    anonymityIndicator.style.backgroundColor = 'var(--error-color)';
+                    anonymityIndicator.style.boxShadow = '0 0 5px var(--error-color)';
+                } else if (gameState.resources.anonymity < 70) {
+                    anonymityIndicator.style.backgroundColor = 'var(--warning-color)';
+                    anonymityIndicator.style.boxShadow = '0 0 5px var(--warning-color)';
+                } else {
+                    anonymityIndicator.style.backgroundColor = 'var(--success-color)';
+                    anonymityIndicator.style.boxShadow = '0 0 5px var(--success-color)';
+                }
+                
+                // Update display values
+                document.getElementById('money-display').textContent = gameState.resources.money;
+                document.getElementById('rep-display').textContent = gameState.resources.reputation;
+                document.getElementById('level-display').textContent = gameState.playerLevel;
+                document.getElementById('cpu-display').textContent = gameState.resources.cpu;
+                document.getElementById('memory-display').textContent = gameState.resources.memory;
+                document.getElementById('network-display').textContent = gameState.resources.network;
+                document.getElementById('anon-display').textContent = gameState.resources.anonymity;
+                document.getElementById('proxy-display').textContent = gameState.activeProxy ? 
+                    `${gameState.activeProxy.ip} (${gameState.activeProxy.country})` : 'None';
+            });
+        }
+        
+        function updatePrompt() {
+            requestAnimationFrame(() => {
+                const promptEl = document.getElementById('prompt');
+                if (gameState.currentIp === '192.168.1.100') {
+                    promptEl.textContent = 'root@Hacker-Panel:';
+                } else {
+                    const node = gameState.networkNodes.find(n => n.ip === gameState.currentIp);
+                    promptEl.textContent = `hacker@${node.type.replace('_', '-')}:~#`;
+                }
+            });
+        }
+        
+        function logAction(action) {
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            gameState.logs.push({
+                time: timeStr,
+                action: action
+            });
+            
+            // Limit log entries
+            if (gameState.logs.length > 100) {
+                gameState.logs.shift();
+            }
+        }
+        
+        function checkMissions(ip, attackType) {
+            gameState.missions.forEach(mission => {
+                if (!mission.completed) {
+                    // Check specific IP mission
+                    if (mission.target === ip) {
+                        mission.completed = true;
+                        gameState.resources.money += mission.reward;
+                        addExp(mission.exp);
+                        addOutput(`Mission complete: ${mission.title}! Gained $${mission.reward} and ${mission.exp} XP`, 'money');
+                        showNotification('Mission Complete', mission.title, 'success');
+                    }
+                    // Check network range mission
+                    else if (mission.target.includes('/24') && ip.startsWith(mission.target.split('.')[0])) {
+                        // Check if enough servers breached
+                        const hackedServers = gameState.networkNodes.filter(n => 
+                            n.ip.startsWith(mission.target.split('.')[0]) && 
+                            n.type.includes('server') && 
+                            gameState.hackedNodes.includes(n.ip)).length;
+                        
+                        if (hackedServers >= 2) {
+                            mission.completed = true;
+                            gameState.resources.money += mission.reward;
+                            addExp(mission.exp);
+                            addOutput(`Mission complete: ${mission.title}! Gained $${mission.reward} and ${mission.exp} XP`, 'money');
+                            showNotification('Mission Complete', mission.title, 'success');
+                        }
+                    }
+                    // Check botnet mission
+                    else if (mission.title.includes('Botnet') && 
+                             gameState.inventory.botnets.length > 0 && 
+                             gameState.inventory.botnets[0].nodes >= 20) {
+                        mission.completed = true;
+                        gameState.resources.money += mission.reward;
+                        addExp(mission.exp);
+                        addOutput(`Mission complete: ${mission.title}! Gained $${mission.reward} and ${mission.exp} XP`, 'money');
+                        showNotification('Mission Complete', mission.title, 'success');
+                    }
+                }
+            });
+        }
+        
+        function updateNetworkMap() {
+            // Use requestAnimationFrame for performance
+            requestAnimationFrame(() => {
+                // Update network map
+                networkMapEl.innerHTML = '';
+                gameState.networkNodes.forEach(node => {
+                    if (gameState.discoveredNodes.includes(node.ip)) {
+                        const nodeEl = document.createElement('div');
+                        nodeEl.className = `node ${node.type.replace('_', '-')} ${node.network}`;
+                        nodeEl.setAttribute('data-ip', node.ip);
+                        
+                        let displayName = `${node.type} (${node.ip})`;
+                        if (node.type === 'player') {
+                            const player = gameState.players.find(p => p.ip === node.ip);
+                            if (player) {
+                                displayName = `${player.name} (Lv.${player.level}) (${node.ip})`;
+                            }
+                        }
+                        
+                        nodeEl.textContent = displayName;
+                        
+                        if (gameState.hackedNodes.includes(node.ip)) {
+                            nodeEl.style.borderColor = 'var(--hack-color)';
+                        }
+                        
+                        nodeEl.addEventListener('click', () => {
+                            targetInfoEl.innerHTML = '';
+                            const infoLine = document.createElement('div');
+                            infoLine.className = 'output-line info';
+                            infoLine.textContent = `Target info - ${node.ip}:`;
+                            targetInfoEl.appendChild(infoLine);
+                            
+                            const typeLine = document.createElement('div');
+                            typeLine.className = 'output-line';
+                            typeLine.textContent = `Type: ${node.type}`;
+                            targetInfoEl.appendChild(typeLine);
+                            
+                            const osLine = document.createElement('div');
+                            osLine.className = 'output-line';
+                            osLine.textContent = `OS: ${node.os}`;
+                            targetInfoEl.appendChild(osLine);
+                            
+                            const securityLine = document.createElement('div');
+                            securityLine.className = 'output-line';
+                            securityLine.textContent = `Security level: ${node.security}/100`;
+                            targetInfoEl.appendChild(securityLine);
+                            
+                            const servicesLine = document.createElement('div');
+                            servicesLine.className = 'output-line';
+                            servicesLine.textContent = `Services: ${node.services.join(', ')}`;
+                            targetInfoEl.appendChild(servicesLine);
+                            
+                            const networkLine = document.createElement('div');
+                            networkLine.className = 'output-line';
+                            networkLine.textContent = `Network type: ${node.network}`;
+                            targetInfoEl.appendChild(networkLine);
+                            
+                            if (node.type === 'player') {
+                                const player = gameState.players.find(p => p.ip === node.ip);
+                                if (player) {
+                                    const playerLine = document.createElement('div');
+                                    playerLine.className = 'output-line player';
+                                    playerLine.textContent = `Player: ${player.name} (Level ${player.level}, Rep ${player.reputation})`;
+                                    targetInfoEl.appendChild(playerLine);
+                                }
+                            }
+                            
+                            if (gameState.hackedNodes.includes(node.ip)) {
+                                const hackedLine = document.createElement('div');
+                                hackedLine.className = 'output-line success';
+                                hackedLine.textContent = `Status: Breached`;
+                                targetInfoEl.appendChild(hackedLine);
+                            }
+                            
+                            gameState.targetIp = node.ip;
+                        });
+                        
+                        networkMapEl.appendChild(nodeEl);
+                    }
+                });
+                
+                // Update minimap
+                updateMinimap();
+            });
+        }
+        
+        function updateMinimap() {
+            requestAnimationFrame(() => {
+                minimapEl.innerHTML = '';
+                
+                gameState.networkNodes.forEach(node => {
+                    if (gameState.discoveredNodes.includes(node.ip)) {
+                        const nodeEl = document.createElement('div');
+                        nodeEl.className = `minimap-node ${node.type.replace('_', '-')} ${node.network}`;
+                        
+                        // Random position
+                        const left = 10 + Math.random() * 80;
+                        const top = 10 + Math.random() * 80;
+                        nodeEl.style.left = `${left}%`;
+                        nodeEl.style.top = `${top}%`;
+                        
+                        if (node.ip === gameState.targetIp) {
+                            nodeEl.classList.add('current');
+                        }
+                        
+                        minimapEl.appendChild(nodeEl);
+                    }
+                });
+            });
+        }
+        
+        function addExp(amount) {
+            gameState.playerExp += amount;
+            const expNeeded = getExpForNextLevel();
+            
+            if (gameState.playerExp >= expNeeded) {
+                gameState.playerLevel++;
+                gameState.playerExp -= expNeeded;
+                addOutput(`Level up! You are now level ${gameState.playerLevel}`, 'success');
+                showNotification('Level Up', `Congratulations on reaching level ${gameState.playerLevel}`, 'success');
+            }
+            
+            updateStatus();
+        }
+        
+        function getExpForNextLevel() {
+            return gameState.playerLevel * 200;
+        }
+        
+        function startMining(rate) {
+            if (gameState.miningInterval) {
+                clearInterval(gameState.miningInterval);
+            }
+            
+            addOutput(`Started cryptocurrency mining (rate: $${rate}/minute)`, 'success');
+            
+            gameState.miningInterval = setInterval(() => {
+                gameState.resources.money += rate;
+                gameState.resources.cpu = Math.max(10, gameState.resources.cpu - 5);
+                gameState.resources.memory = Math.max(10, gameState.resources.memory - 3);
+                
+                if (gameState.resources.cpu <= 10 || gameState.resources.memory <= 10) {
+                    addOutput('Insufficient resources, mining stopped', 'error');
+                    clearInterval(gameState.miningInterval);
+                    gameState.miningInterval = null;
+                }
+                
+                updateStatus();
+            }, 60000);
+        }
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            
+            switch(theme) {
+                case 'dark':
+                    root.style.setProperty('--bg-color', '#000');
+                    root.style.setProperty('--text-color', '#0f0');
+                    root.style.setProperty('--accent-color', '#0a0');
+                    root.style.setProperty('--panel-bg', '#111');
+                    break;
+                case 'light':
+                    root.style.setProperty('--bg-color', '#f0f0f0');
+                    root.style.setProperty('--text-color', '#333');
+                    root.style.setProperty('--accent-color', '#0066cc');
+                    root.style.setProperty('--panel-bg', '#fff');
+                    break;
+                case 'green':
+                    root.style.setProperty('--bg-color', '#001a00');
+                    root.style.setProperty('--text-color', '#00ff00');
+                    root.style.setProperty('--accent-color', '#00cc00');
+                    root.style.setProperty('--panel-bg', '#002200');
+                    break;
+            }
+        }
+
+        function saveGame() {
+            commands.save();
+        }
+
+        function loadGame() {
+            commands.load();
+        }
+        
+        // Event listeners
+        commandInputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const commandText = commandInputEl.value.trim();
+                if (commandText) {
+                    addOutput(`${document.getElementById('prompt').textContent} ${commandText}`);
+                    
+                    const parts = commandText.split(' ');
+                    const command = parts[0];
+                    const args = parts.slice(1);
+                    
+                    if (commands[command]) {
+                        commands[command](...args);
+                    } else {
+                        addOutput(`Error: Unknown command "${command}"`, 'error');
+                        addOutput('Hint: Type "help" for command list', 'info');
+                    }
+                    
+                    commandInputEl.value = '';
+                }
+            }
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.menu-item[data-tab]').forEach(item => {
+            item.addEventListener('click', () => {
+                const tabName = item.getAttribute('data-tab');
+                gameState.currentTab = tabName;
+                
+                // Clear output and show relevant content
+                outputEl.innerHTML = '';
+                
+                switch(tabName) {
+                    case 'home':
+                        addOutput('Main Console', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Welcome back to main console', 'info');
+                        addOutput('All features can be accessed from here', 'info');
+                        addOutput('Use left menu to navigate or enter commands directly', 'info');
+                        break;
+                    
+                    case 'scan':
+                        addOutput('Network Scan Tools', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Discovered nodes:', 'info');
+                        gameState.discoveredNodes.forEach(ip => {
+                            const node = gameState.networkNodes.find(n => n.ip === ip);
+                            if (node) {
+                                addOutput(`- ${ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Use "scan [ip]" to scan specific target', 'info');
+                        addOutput('Use "scan network" to scan entire network', 'info');
+                        break;
+                    
+                    case 'exploits':
+                        addOutput('Exploit Tools', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Available exploits:', 'info');
+                        gameState.inventory.exploits.forEach(exp => {
+                            addOutput(`- ${exp}`, 'info');
+                        });
+                        if (gameState.inventory.zeroDays.length > 0) {
+                            addOutput('Zero-day exploits:', 'info');
+                            gameState.inventory.zeroDays.forEach(zd => {
+                                addOutput(`- ${zd} (Zero-day)`, 'hack');
+                            });
+                        }
+                        addOutput('', 'info');
+                        addOutput('Use "exploit [type] [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'tools':
+                        addOutput('Hacker Toolset', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Installed tools:', 'info');
+                        gameState.inventory.tools.forEach(tool => {
+                            addOutput(`- ${tool}`, 'info');
+                        });
+                        addOutput('', 'info');
+                        addOutput('Use "buy [tool]" to purchase new tools from black market', 'info');
+                        break;
+                    
+                    case 'ddos':
+                        addOutput('DDoS Attack Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type !== 'router').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit ddos [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'xss':
+                        addOutput('XSS Injection Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.services.includes('http')).forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit xss [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'sql':
+                        addOutput('SQL Injection Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.services.some(s => s.includes('sql'))).forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit sql [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'phishing':
+                        addOutput('Phishing Attack Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'workstation' || n.type === 'admin_pc').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit phishing [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'bruteforce':
+                        addOutput('Brute Force Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.services.includes('ssh') || n.services.includes('rdp')).forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit bruteforce [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'mitm':
+                        addOutput('Man-in-the-Middle Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'router' || n.type === 'workstation').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit mitm [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'zero-day':
+                        addOutput('Zero-Day Exploit Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        if (gameState.inventory.zeroDays.length === 0) {
+                            addOutput('You have no zero-day exploits', 'warning');
+                            addOutput('Can purchase zero-day exploits in black market', 'info');
+                        } else {
+                            addOutput('Available zero-day exploits:', 'info');
+                            gameState.inventory.zeroDays.forEach(zd => {
+                                addOutput(`- ${zd}`, 'hack');
+                            });
+                            addOutput('', 'info');
+                            addOutput('Select target:', 'info');
+                            gameState.networkNodes.forEach(node => {
+                                if (gameState.discoveredNodes.includes(node.ip)) {
+                                    addOutput(`- ${node.ip} (${node.type})`, 'info');
+                                }
+                            });
+                            addOutput('', 'info');
+                            addOutput('Enter "exploit zero-day [ip]" to launch attack', 'info');
+                        }
+                        break;
+                    
+                    case 'ransomware':
+                        addOutput('Ransomware Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'workstation' || n.type === 'admin_pc' || n.type === 'file_server').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit ransomware [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'iot':
+                        addOutput('IoT Botnet Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'iot_device').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit iot [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'backdoor':
+                        addOutput('Backdoor Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type !== 'router').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit backdoor [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'cryptojacking':
+                        addOutput('Cryptojacking Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'workstation' || n.type === 'server').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit cryptojacking [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'dns-spoofing':
+                        addOutput('DNS Spoofing Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'router' || n.type === 'dns_server').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit dns-spoofing [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'credential-stuffing':
+                        addOutput('Credential Stuffing Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.services.includes('http') || n.services.includes('https')).forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit credential-stuffing [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'ai-poisoning':
+                        addOutput('AI Data Poisoning Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Select target:', 'info');
+                        gameState.networkNodes.filter(n => n.type === 'ai_server').forEach(node => {
+                            if (gameState.discoveredNodes.includes(node.ip)) {
+                                addOutput(`- ${node.ip} (${node.type})`, 'info');
+                            }
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "exploit ai-poisoning [ip]" to launch attack', 'info');
+                        break;
+                    
+                    case 'missions':
+                        commands.missions();
+                        break;
+                    
+                    case 'logs':
+                        commands.logs();
+                        break;
+                    
+                    case 'inventory':
+                        commands.inventory();
+                        break;
+                    
+                    case 'skills':
+                        commands.skills();
+                        break;
+                    
+                    case 'market':
+                        commands.market();
+                        break;
+                    
+                    case 'multiplayer':
+                        addOutput('Multiplayer Panel', 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('Online players:', 'info');
+                        gameState.players.forEach(player => {
+                            addOutput(`- ${player.name} (${player.ip})`, 'player');
+                            addOutput(`  Level: ${player.level}, Reputation: ${player.reputation}`, 'info');
+                        });
+                        addOutput('', 'info');
+                        addOutput('Enter "attack player [ip]" to attack other players', 'info');
+                        break;
+                    
+                    case 'hardware':
+                        commands.hardware();
+                        break;
+                    
+                    case 'proxies':
+                        commands.proxies();
+                        break;
+                    
+                    case 'settings':
+                        commands.settings();
+                        break;
+                    
+                    case 'help':
+                        commands.help();
+                        break;
+                    
+                    default:
+                        addOutput(`${tabName} feature`, 'info');
+                        addOutput('----------------------------', 'info');
+                        addOutput('This feature is fully implemented', 'info');
+                }
+            });
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabName = tab.getAttribute('data-tab');
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Warning modal close button
+        warningCloseBtn.addEventListener('click', () => {
+            warningModal.style.display = 'none';
+        });
+
+        // Save/load button events
+        saveGameBtn.addEventListener('click', saveGame);
+        loadGameBtn.addEventListener('click', loadGame);
+        
+        // Initialization
+        updateStatus();
+        updateNetworkMap();
+        updatePrompt();
+        
+        // Game loop - law enforcement tracking
+        setInterval(() => {
+            if (gameState.lawEnforcement.awareness > 0) {
+                // Decrease awareness over time
+                const stealthReduction = gameState.resources.skills.stealth * 2;
+                gameState.lawEnforcement.awareness = Math.max(0, gameState.lawEnforcement.awareness - stealthReduction);
+                
+                // If awareness is high, may trigger investigation
+                if (gameState.lawEnforcement.awareness > 70 && 
+                    Math.random() < 0.1) {
+                    gameState.lawEnforcement.investigationProgress += 5 + Math.random() * 10;
+                    showNotification('Warning', 'Law enforcement is investigating your activities', 'error');
+                    
+                    if (gameState.lawEnforcement.investigationProgress >= 100) {
+                        // Game over
+                        addOutput('Law enforcement has tracked your location!', 'error');
+                        addOutput('Game over - You have been arrested', 'error');
+                        showNotification('Game Over', 'You were arrested by law enforcement', 'error');
+                        commandInputEl.disabled = true;
+                    }
+                }
+                
+                updateStatus();
+            }
+            
+            // Random events
+            if (Math.random() < 0.05) {
+                const events = [
+                    { msg: "Network fluctuations reduced anonymity", effect: () => { gameState.resources.anonymity -= 5; }, type: "warning" },
+                    { msg: "Discovered unpatched system vulnerability", effect: () => { 
+                        const newExploit = `exploit_${Math.floor(Math.random() * 1000)}`;
+                        gameState.inventory.exploits.push(newExploit);
+                        return `Gained new exploit: ${newExploit}`;
+                    }, type: "success" },
+                    { msg: "Cryptocurrency price increased", effect: () => { 
+                        if (gameState.miningInterval) {
+                            const bonus = Math.floor(Math.random() * 100) + 50;
+                            gameState.resources.money += bonus;
+                            return `Mining profits increased by $${bonus}`;
+                        }
+                        return null;
+                    }, type: "money" }
+                ];
+                
+                const event = events[Math.floor(Math.random() * events.length)];
+                const result = event.effect();
+                
+                addOutput(`[Random Event] ${event.msg}`, event.type);
+                if (result) {
+                    addOutput(`[Random Event] ${result}`, event.type);
+                }
+                
+                updateStatus();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
